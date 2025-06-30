@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Imprinted Assembly - Debug Mode</title>
+
+    <!-- Early console capture - must be first! -->
+    <script>
+        // Capture ALL console output from the very beginning
+        window.earlyLogs = [];
+        const originalLog = console.log;
+        const originalWarn = console.warn;
+        const originalError = console.error;
+        const originalInfo = console.info;
+
+        function captureConsoleOutput(type, args) {
+            // Get call stack information
+            const stack = new Error().stack;
+            const stackLines = stack ? stack.split('\n').slice(2) : []; // Skip Error constructor and this function
+
+            // Parse stack to get file and line info
+            const callInfo = stackLines.map(line => {
+                const match = line.match(/at\s+(.+?)\s+\((.+?):(\d+):(\d+)\)/);
+                if (match) {
+                    return {
+                        function: match[1],
+                        file: match[2],
+                        line: parseInt(match[3]),
+                        column: parseInt(match[4])
+                    };
+                }
+                // Handle anonymous functions
+                const anonMatch = line.match(/at\s+(.+?):(\d+):(\d+)/);
+                if (anonMatch) {
+                    return {
+                        function: '(anonymous)',
+                        file: anonMatch[1],
+                        line: parseInt(anonMatch[2]),
+                        column: parseInt(anonMatch[3])
+                    };
+                }
+                return null;
+            }).filter(Boolean);
+
+            window.earlyLogs.push({
+                type,
+                args,
+                timestamp: new Date().toISOString(),
+                callStack: callInfo
+            });
+        }
+
+        console.log = function (...args) {
+            originalLog.apply(console, args);
+            captureConsoleOutput('LOG', args);
+        };
+
+        console.warn = function (...args) {
+            originalWarn.apply(console, args);
+            captureConsoleOutput('WARN', args);
+        };
+
+        console.error = function (...args) {
+            originalError.apply(console, args);
+            captureConsoleOutput('ERROR', args);
+        };
+
+        console.info = function (...args) {
+            originalInfo.apply(console, args);
+            captureConsoleOutput('INFO', args);
+        };
+    </script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Add any custom CSS here */
+    </style>
+</head>
+
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold text-gray-800 mb-8">Imprinted Assembly</h1>
+
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">Debug Interface</h2>
+            <p class="text-gray-600 mb-4">This page has automatic logging enabled. Check the logs/ directory for output
+                files.</p>
+
+            <div class="space-y-4">
+                <button id="test-log" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
+                    Test Console Log
+                </button>
+                <button id="test-warn" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded">
+                    Test Console Warn
+                </button>
+                <button id="test-error" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">
+                    Test Console Error
+                </button>
+                <button id="add-element" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded">
+                    Add Test Element
+                </button>
+            </div>
+        </div>
+
+        <div id="dynamic-content" class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-lg font-semibold mb-4">Dynamic Content Area</h3>
+            <p class="text-gray-600">Elements added here will be captured in DOM snapshots.</p>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
