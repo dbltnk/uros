@@ -1,0 +1,83 @@
+﻿UROS	(Floating Villages)
+A 15-minute abstract board game for 2 players.
+
+
+Introduction
+
+A two-player abstract game. Build houses on floating islands, and place the islands onto the lake. The player who finishes with the largest village (connected group of houses) wins.
+
+Equipment
+
+Board:	A gridded board divided into squares. This represents the Lake.
+
+Tiles:	9 differently-shaped tiles, each divided into squares. These represent Islands.
+
+Pieces:	15 pieces of their colour (Red or Blue) for each player. These represent their Houses.
+
+
+Setting up
+
+    • Place the board between the players.
+
+    • Place the Islands to one side, within reach of both players. This is the Reedbed area.
+
+    • Give one player the Red Houses, and the other player the Blue Houses. This is their pool of Houses to be placed on Islands. (When your pool is empty, you cannot place any more Houses, and can only place Islands.)
+
+Villages
+
+Players are competing to construct the largest Village on the Lake. A Village is a group of Houses of the same colour that are orthogonally connected. i.e. each House must be orthogonally adjacent to at least one other House in the same Village. Each House in the Village must be on an Island that is on the Lake. (See diagram 1.) 
+
+Overview of Gameplay
+
+The players decide who will take the first turn. The first player makes one placement. After that play alternates between the players, each making two placements on their turn.
+
+When making a placement you must either:
+    • Place one House from your pool onto any Island, or
+    • Place any Island from the Reedbed onto the Lake.
+
+You cannot pass. If on your turn there is any legal placement available, you must make one.
+If it is your turn and you have no legal placement available, the game immediately ends.
+
+Your pool of Houses should be clearly visible at all times, so that the number of Houses you have left is known to your opponent.
+
+Placement Rules
+
+When placing a House onto an Island, it must be placed onto an unoccupied square of that Island, i.e. one that has no other House on it. (Any Island may be chosen, whether it is on the board or in the Reedbed.)
+
+When placing an Island onto the Lake, the Island is taken from the Reedbed. (Any Island there may be chosen, whether or not it contains any Houses.)
+Move the chosen Island to the Lake without disturbing any Houses that may be on it. Then place the Island so that each of its squares sits on an unoccupied square of the Lake, i.e. one that has no other Island on it.
+If the Island cannot be placed like this, then the placement is not legal and some other placement must be chosen as your turn.
+
+Once a House is placed on an Island, or an Island placed on the Lake, it is on that spot for the duration of the game. It cannot on a later turn be removed, or moved to a different location.
+
+Ending the Game
+
+The game ends when the current player cannot make a legal placement, i.e.
+- They have no more Houses left in their pool,  AND
+- There is no Island in the Reedbed that can be legally placed on the board.
+
+A game can finish before that, if both players agree that the final result is already determined.
+The winner is the player who has the largest Village, i.e. the Village with the most Houses.
+
+If players tie for the largest Village, the winner is the player whose Village extends onto the greater number of Islands. If still tied, the result is a draw.
+
+Playing a Series
+
+If playing a series of games, players should alternate being the start player, and play an even number of games. A player scores 1 point for each game that they win, and half a point for each game they draw. The player who accumulates the most points over the series is the series winner.
+
+
+Diagram 1
+Example of scoring: 
+Red’s best Village (R) has 11 Houses, and Blue’s (B) has 7 Houses. So if this were the final position, Red would be the winner.
+
+6		B	B		B	
+5	B	B	B	B		R
+4	B	R	R	R	R	
+3	R	R	B	R	R	R
+2	B	B	B	B	R	B
+1	R	R			R	
+	A	B	C	D	E	F
+Theme
+
+Some communities live in floating villages on the surface of lakes. The Uros people of Lake Titicaca in Peru have created their own floating reed islands on which they build their houses.
+
