@@ -1,0 +1,150 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Browser Logging System - Agent Debugging Guide
+
+Automated browser console and DOM state capture system optimized for LLM agent consumption. Provides comprehensive debugging data with minimal performance impact.
+
+## System Architecture
+
+**Components:**
+- `index.html` - Web application with early console capture
+- `app.js` - Browser logging logic with call stack capture
+- `server.js` - Node.js HTTP server for log aggregation
+- `logs/` - Output directory for debugging data
+
+**Data Flow:**
+1. Early console capture in HTML head (before any scripts)
+2. Console method override with call stack extraction
+3. Periodic HTTP transmission to local server (2-second intervals)
+4. File-based storage with session management
+
+## Log Format Specifications
+
+### Console Logs (`logs/logs.txt`)
+**Format:** `[HH:MM:SS] TYPE: message\n  @line:file → @line:file`
+
+**Example:**
+```
+=== SESSION START: session-1735123456789 ===
+[12:30:24] WARN: cdn.tailwindcss.com should not be used in production
+  @24:index.html
+[12:30:56] LOG: Test button clicked
+  @79:app.js → @281:app.js
+[12:30:57] ERROR: API call failed
+  @84:app.js → @285:app.js
+=== SESSION END: session-1735123456789 ===
+```
+
+**Features:**
+- Token-efficient timestamps (HH:MM:SS)
+- Call stack with file:line format
+- Session boundaries with unique IDs
+- Chronological ordering (no grouping)
+
+### DOM Snapshots (`logs/dom-snapshot.json`)
+**Structure:**
+```json
+{
+  "session": "session-1735123456789",
+  "sessionStart": "2025-06-25T12:30:24.496Z",
+  "timestamp": "12:30:58",
+  "url": "http://localhost:3000",
+  "summary": {
+    "totalElements": 45,
+    "elementsWithId": 8,
+    "elementsWithClasses": 23,
+    "elementsWithCssConflicts": 2
+  },
+  "elements": [
+    {
+      "tag": "button",
+      "id": "test-log",
+      "classes": ["bg-blue-500", "hover:bg-blue-600"],
+      "computedStyles": {
+        "background-color": "rgb(59, 130, 246)",
+        "color": "rgb(255, 255, 255)"
+      },
+      "position": {"x": 100, "y": 200},
+      "dimensions": {"width": 120, "height": 40},
+      "cssConflicts": ["Element hidden by display:none but visibility:visible"]
+    }
+  ]
+}
+```
+
+**Features:**
+- Complete DOM element capture
+- Computed CSS styles for layout debugging
+- CSS conflict detection
+- Position and dimension data
+- Session metadata and statistics
+
+## Captured Data Types
+
+### Console Output
+- `console.log()` - Standard logging
+- `console.warn()` - Warning messages
+- `console.error()` - Error messages
+- `console.info()` - Information messages
+- Uncaught errors and promise rejections
+- Call stack information for all console calls
+
+### DOM State
+- All HTML elements with computed styles
+- Element IDs, classes, and data attributes
+- Position and dimension information
+- CSS rule conflicts and layout issues
+- Text content and innerHTML (truncated)
+
+### Performance Optimizations
+- 2-second buffering intervals
+- Change detection for DOM snapshots
+- Minimal CSS property capture (layout-relevant only)
+- Efficient call stack parsing
+
+## Session Management
+
+**Session Lifecycle:**
+1. Page load triggers session start
+2. Unique session ID generated
+3. Previous logs cleared automatically
+4. Continuous logging until page unload
+5. Session end marker written on server shutdown
+
+**Session Boundaries:**
+- Clear start/end markers in logs
+- Session metadata in DOM snapshots
+- Automatic cleanup on page reload
+
+## Error Handling
+
+**Graceful Degradation:**
+- Network failures logged to console
+- DOM processing errors captured
+- Server connection timeouts handled
+- File system errors reported
+
+**Recovery Mechanisms:**
+- Automatic retry on network failures
+- Fallback to localStorage if server unavailable
+- Graceful server shutdown with connection cleanup
+
+## LLM Agent Integration
+
+**Key Features for AI Consumption:**
+- Structured, parseable formats
+- Token-efficient representation
+- Clear session boundaries
+- Comprehensive debugging context
+- Minimal noise and redundancy
+
+**Expected Usage:**
+- Agent reads logs for debugging context
+- DOM snapshots provide layout state
+- Call stacks enable precise error location
+- Session boundaries maintain context across interactions
+
+**Note:** The user must start the logging server (`node server.js`) before opening the web application. The agent will receive logs via the file system, not direct server communication. 
