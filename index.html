@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Imprinted Assembly - Debug Mode</title>
+    <title>Uros - Floating Villages</title>
 
     <!-- Early console capture - must be first! -->
     <script>
@@ -75,38 +75,313 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Add any custom CSS here */
+        .game-grid {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            grid-template-rows: auto 1fr;
+            height: 100vh;
+            gap: 1rem;
+        }
+
+        .main-board-area {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            justify-content: center;
+            gap: 2rem;
+            width: 100%;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .lake-board {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 2px;
+            background: #1e40af;
+            padding: 8px;
+            border-radius: 8px;
+            border: 3px solid #1e3a8a;
+            width: 420px;
+            height: 420px;
+            box-sizing: border-box;
+        }
+
+        .lake-cell {
+            aspect-ratio: 1;
+            background: #3b82f6;
+            border: 1px solid #1e3a8a;
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .reedbed {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            padding: 1rem;
+            background: #fef3c7;
+            border-radius: 8px;
+            border: 2px solid #f59e0b;
+            width: 420px;
+            min-width: 420px;
+            max-width: 420px;
+            box-sizing: border-box;
+        }
+
+        .tile-preview {
+            background: #10b981;
+            border: 2px solid #047857;
+            border-radius: 6px;
+            padding: 0;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            width: 120px;
+            height: 120px;
+            max-width: 120px;
+            max-height: 120px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tile-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 2px;
+            width: 108px;
+            height: 108px;
+            background: #059669;
+            border-radius: 4px;
+            border: 2px solid #047857;
+        }
+
+        .tile-cell {
+            aspect-ratio: 1;
+            background: #10b981;
+            border: 1px solid #047857;
+            border-radius: 2px;
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .house {
+            width: 80%;
+            height: 80%;
+            border-radius: 50%;
+            position: absolute;
+            top: 10%;
+            left: 10%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
+        }
+
+        .house.red {
+            background: #dc2626;
+        }
+
+        .house.blue {
+            background: #2563eb;
+        }
+
+        .player-houses {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .player-section {
+            padding: 1rem;
+            border-radius: 8px;
+            border: 2px solid;
+        }
+
+        .player-section.red {
+            background: #fef2f2;
+            border-color: #dc2626;
+        }
+
+        .player-section.blue {
+            background: #eff6ff;
+            border-color: #2563eb;
+        }
+
+        .house-pool {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-top: 0.5rem;
+        }
+
+        .house-token {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.6em;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .house-token:hover {
+            transform: scale(1.1);
+        }
+
+        .house-token.used {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .status-bar {
+            grid-column: 1 / -1;
+            background: #1f2937;
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .hotkeys {
+            background: #f3f4f6;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .hotkey {
+            display: inline-block;
+            background: #e5e7eb;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-family: monospace;
+            font-size: 0.8em;
+            margin: 0 2px;
+        }
+
+        .game-over {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            text-align: center;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
     </style>
 </head>
 
-<body class="bg-gray-100 p-8">
-    <div class="max-w-4xl mx-auto">
-        <h1 class="text-3xl font-bold text-gray-800 mb-8">Imprinted Assembly</h1>
-
-        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h2 class="text-xl font-semibold mb-4">Debug Interface</h2>
-            <p class="text-gray-600 mb-4">This page has automatic logging enabled. Check the logs/ directory for output
-                files.</p>
-
-            <div class="space-y-4">
-                <button id="test-log" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
-                    Test Console Log
-                </button>
-                <button id="test-warn" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded">
-                    Test Console Warn
-                </button>
-                <button id="test-error" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">
-                    Test Console Error
-                </button>
-                <button id="add-element" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded">
-                    Add Test Element
+<body class="bg-gray-100 p-4">
+    <div class="game-grid">
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div class="flex items-center gap-4">
+                <h1 class="text-2xl font-bold">🏘️ Uros - Floating Villages</h1>
+                <div id="game-status" class="text-lg">Red's turn (1 placement)</div>
+            </div>
+            <div class="flex items-center gap-4">
+                <div id="village-scores" class="text-sm">
+                    <span class="text-red-500">Red: 0</span> |
+                    <span class="text-blue-500">Blue: 0</span>
+                </div>
+                <button id="new-game-btn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
+                    🆕 New Game
                 </button>
             </div>
         </div>
 
-        <div id="dynamic-content" class="bg-white rounded-lg shadow-md p-6">
-            <h3 class="text-lg font-semibold mb-4">Dynamic Content Area</h3>
-            <p class="text-gray-600">Elements added here will be captured in DOM snapshots.</p>
+        <!-- Left Column: Controls and Player Info -->
+        <div class="flex flex-col gap-4">
+            <!-- Game Controls -->
+            <div class="bg-white rounded-lg shadow-md p-4">
+                <h2 class="text-lg font-semibold mb-3">🎮 Game Controls</h2>
+                <div class="hotkeys">
+                    <div class="mb-2"><span class="hotkey">Q</span> / <span class="hotkey">E</span> - Rotate selected
+                        tile</div>
+                    <div class="mb-2"><span class="hotkey">ESC</span> - Cancel selection</div>
+                    <div class="mb-2"><span class="hotkey">Click</span> - Select tile/house</div>
+                    <div><span class="hotkey">Click</span> - Place on board</div>
+                </div>
+            </div>
+
+            <!-- Player Houses -->
+            <div class="player-houses">
+                <div class="player-section red">
+                    <h3 class="font-semibold text-red-700">🔴 Red Player</h3>
+                    <div class="text-sm text-red-600">Houses remaining: <span id="red-houses-left">15</span></div>
+                    <div class="house-pool" id="red-house-pool">
+                        <!-- Houses will be generated here -->
+                    </div>
+                </div>
+
+                <div class="player-section blue">
+                    <h3 class="font-semibold text-blue-700">🔵 Blue Player</h3>
+                    <div class="text-sm text-blue-600">Houses remaining: <span id="blue-houses-left">15</span></div>
+                    <div class="house-pool" id="blue-house-pool">
+                        <!-- Houses will be generated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Board Area: Lake Board and Reedbed side by side -->
+        <div class="main-board-area">
+            <!-- Lake Board -->
+            <div class="bg-white rounded-lg shadow-md p-4 flex flex-col items-center">
+                <h2 class="text-lg font-semibold mb-3">🌊 Lake Board</h2>
+                <div class="lake-board" id="lake-board">
+                    <!-- 6x6 grid will be generated here -->
+                </div>
+            </div>
+
+            <!-- Reedbed -->
+            <div class="bg-white rounded-lg shadow-md p-4 flex flex-col items-center">
+                <h2 class="text-lg font-semibold mb-3">🌾 Reedbed (Available Islands)</h2>
+                <div class="reedbed" id="reedbed">
+                    <!-- Tiles will be generated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div id="game-over-modal" class="hidden">
+        <div class="overlay"></div>
+        <div class="game-over">
+            <h2 class="text-2xl font-bold mb-4" id="game-over-title">Game Over!</h2>
+            <div class="text-lg mb-6" id="game-over-result"></div>
+            <button id="play-again-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg text-lg">
+                🎮 Play Again
+            </button>
         </div>
     </div>
 

@@ -1,0 +1,188 @@
+{
+  "session": "session-1751359528850",
+  "sessionStart": "2025-07-01T08:45:28.850Z",
+  "timestamp": "9:46:00 AM",
+  "url": "http://localhost:52330/index.html",
+  "summary": {
+    "totalElements": 6,
+    "elementsWithId": 6,
+    "elementsWithClasses": 6,
+    "elementsWithCssConflicts": 0
+  },
+  "elements": [
+    {
+      "tag": "div",
+      "id": "lake-board",
+      "classes": [
+        "lake-board"
+      ],
+      "computedStyles": {
+        "background-color": "rgb(30, 64, 175)",
+        "color": "rgb(0, 0, 0)",
+        "display": "grid",
+        "position": "static",
+        "width": "420px",
+        "height": "420px",
+        "border": "3px solid rgb(30, 58, 138)",
+        "border-radius": "8px",
+        "opacity": "1",
+        "visibility": "visible"
+      },
+      "position": {
+        "x": 348,
+        "y": 160
+      },
+      "dimensions": {
+        "width": 420,
+        "height": 420
+      },
+      "cssConflicts": [],
+      "textContent": ""
+    },
+    {
+      "tag": "div",
+      "id": "reedbed",
+      "classes": [
+        "reedbed"
+      ],
+      "computedStyles": {
+        "background-color": "rgb(254, 243, 199)",
+        "color": "rgb(0, 0, 0)",
+        "display": "grid",
+        "position": "static",
+        "width": "420px",
+        "height": "428px",
+        "border": "2px solid rgb(245, 158, 11)",
+        "border-radius": "8px",
+        "opacity": "1",
+        "visibility": "visible"
+      },
+      "position": {
+        "x": 832,
+        "y": 160
+      },
+      "dimensions": {
+        "width": 420,
+        "height": 428
+      },
+      "cssConflicts": [],
+      "textContent": ""
+    },
+    {
+      "tag": "div",
+      "id": "red-house-pool",
+      "classes": [
+        "house-pool"
+      ],
+      "computedStyles": {
+        "background-color": "rgba(0, 0, 0, 0)",
+        "color": "rgb(0, 0, 0)",
+        "display": "flex",
+        "position": "static",
+        "width": "264px",
+        "height": "52px",
+        "border": "0px solid rgb(229, 231, 235)",
+        "border-radius": "0px",
+        "opacity": "1",
+        "visibility": "visible"
+      },
+      "position": {
+        "x": 34,
+        "y": 422.4375
+      },
+      "dimensions": {
+        "width": 264,
+        "height": 52
+      },
+      "cssConflicts": [],
+      "textContent": "🏠🏠🏠🏠🏠🏠🏠🏠🏠🏠🏠🏠🏠🏠🏠"
+    },
+    {
+      "tag": "div",
+      "id": "blue-house-pool",
+      "classes": [
+        "house-pool"
+      ],
+      "computedStyles": {
+        "background-color": "rgba(0, 0, 0, 0)",
+        "color": "rgb(0, 0, 0)",
+        "display": "flex",
+        "position": "static",
+        "width": "264px",
+        "height": "52px",
+        "border": "0px solid rgb(229, 231, 235)",
+        "border-radius": "0px",
+        "opacity": "1",
+        "visibility": "visible"
+      },
+      "position": {
+        "x": 34,
+        "y": 578.4375
+      },
+      "dimensions": {
+        "width": 264,
+        "height": 52
+      },
+      "cssConflicts": [],
+      "textContent": "🏘️🏘️🏘️🏘️🏘️🏘️🏘️🏘️🏘️🏘️🏘️🏘️🏘️🏘️🏘️"
+    },
+    {
+      "tag": "div",
+      "id": "game-status",
+      "classes": [
+        "text-lg"
+      ],
+      "computedStyles": {
+        "background-color": "rgba(0, 0, 0, 0)",
+        "color": "rgb(255, 255, 255)",
+        "display": "block",
+        "position": "static",
+        "width": "224.016px",
+        "height": "28px",
+        "border": "0px solid rgb(229, 231, 235)",
+        "border-radius": "0px",
+        "opacity": "1",
+        "visibility": "visible"
+      },
+      "position": {
+        "x": 334.1875,
+        "y": 38
+      },
+      "dimensions": {
+        "width": 224,
+        "height": 28
+      },
+      "cssConflicts": [],
+      "textContent": "🔴 Red's turn (1 placement)"
+    },
+    {
+      "tag": "div",
+      "id": "village-scores",
+      "classes": [
+        "text-sm"
+      ],
+      "computedStyles": {
+        "background-color": "rgba(0, 0, 0, 0)",
+        "color": "rgb(255, 255, 255)",
+        "display": "block",
+        "position": "static",
+        "width": "95.5px",
+        "height": "20px",
+        "border": "0px solid rgb(229, 231, 235)",
+        "border-radius": "0px",
+        "opacity": "1",
+        "visibility": "visible"
+      },
+      "position": {
+        "x": 1007.65625,
+        "y": 42
+      },
+      "dimensions": {
+        "width": 96,
+        "height": 20
+      },
+      "cssConflicts": [],
+      "textContent": "\n            Red: 0 | \n            Blue: 0\n        "
+    }
+  ]
+}

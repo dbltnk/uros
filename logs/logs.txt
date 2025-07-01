@@ -1,0 +1,27 @@
+=== SESSION START: session-1751359528850 ===
+[09:45:28] WARN: cdn.tailwindcss.com should not be used in production. To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: https://tailwindcss.com/docs/installation
+  @62:index.html → @64:https://cdn.tailwindcss.com/ → @64:https://cdn.tailwindcss.com/
+[09:45:28] LOG: Browser logging system initialized
+  @767:app.js → @710:app.js → @687:app.js → @998:app.js
+[09:45:28] LOG: Initializing Uros game
+  @767:app.js → @18:app.js → @14:app.js → @1001:app.js
+[09:45:28] LOG: Uros game and logging system initialized
+  @767:app.js → @1004:app.js
+[09:45:28] LOG: Loaded 9 tiles
+  @767:app.js → @33:app.js
+[09:45:28] LOG: Starting new game
+  @767:app.js → @60:app.js → @34:app.js
+[09:45:31] LOG: Selected tile: S-tetromino
+  @767:app.js → @571:app.js → @529:app.js
+[09:45:31] LOG: Selected tile: Domino
+  @767:app.js → @571:app.js → @529:app.js
+[09:45:31] LOG: Selected tile: P-pentomino
+  @767:app.js → @571:app.js → @529:app.js
+[09:45:32] LOG: Selected tile: I-tromino
+  @767:app.js → @571:app.js → @529:app.js
+[09:45:32] WARN: Cannot place tile at 4 5
+  @772:app.js → @139:app.js → @599:app.js → @470:app.js
+[09:45:33] LOG: Selected house for red
+  @767:app.js → @589:app.js → @549:app.js
+[09:45:34] WARN: Not your turn
+  @772:app.js → @585:app.js → @563:app.js
