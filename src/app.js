@@ -41,6 +41,15 @@ class UrosGame {
             global: null
         };
 
+        // Bot management
+        this.botPlayers = {
+            red: null,
+            blue: null
+        };
+        this.gameMode = 'bot-vs-bot'; // 'human-vs-human', 'human-vs-bot', 'bot-vs-bot'
+        this.botThinkingTime = 1000; // ms
+        this.botMoveDelay = 500; // ms delay between bot moves for better UX
+
         this.init();
     }
 
@@ -89,42 +98,7 @@ class UrosGame {
         ];
     }
 
-    startNewGame() {
-        console.log('Starting new game');
 
-        this.gameState = {
-            board: Array(this.boardSize).fill(null).map(() => Array(this.boardSize).fill(null)),
-            placedTiles: [], // tiles placed on the board
-            reedbed: this.tiles.map(tile => ({
-                ...tile,
-                houses: Array(tile.shape_grid.length).fill(null).map(() => Array(tile.shape_grid[0].length).fill(null))
-            })), // available tiles with house tracking
-            players: {
-                red: { houses: this.housesPerPlayer, color: 'red' },
-                blue: { houses: this.housesPerPlayer, color: 'blue' }
-            },
-            currentPlayer: 'red',
-            isFirstTurn: true,
-            placementsThisTurn: 0,
-            placementsRequired: 1, // 1 for first turn, 2 for all others
-            gameOver: false,
-            gameOverWinner: null,
-            gameOverRedLargest: null,
-            gameOverBlueLargest: null
-        };
-
-        // Reset interaction state
-        this.interactionState = {
-            mode: null,
-            selectedTile: null,
-            selectedPlayer: null,
-            preview: null,
-            hoveredTileId: null
-        };
-
-        this.updateStatus();
-        this.render();
-    }
 
     rotateTile(tile, direction = 1) {
         if (!tile) return tile;
@@ -380,7 +354,22 @@ class UrosGame {
             return false;
         });
 
+        // Check if current player has any valid moves (including house placements)
+        const validMoves = this.getValidMoves();
+        const hasValidMoves = validMoves.length > 0;
+
+        console.log(`checkGameOver: ${currentPlayer} has ${validMoves.length} valid moves, ${hasValidMoves ? 'can continue' : 'no moves available'}`);
+
+        // Game ends if current player has no valid moves
+        if (!hasValidMoves) {
+            console.log(`Game over: ${currentPlayer} has no valid moves available`);
+            this.endGame();
+            return true;
+        }
+
+        // Also check the original condition (no houses and no placeable tiles)
         if (!hasHouses && !hasPlaceableTiles) {
+            console.log(`Game over: ${currentPlayer} has no houses and no placeable tiles`);
             this.endGame();
             return true;
         }
@@ -496,7 +485,12 @@ class UrosGame {
             const placementsLeft = (this.gameState.placementsRequired || 2) - (this.gameState.placementsThisTurn || 0);
             const playerName = currentPlayer === 'red' ? '🔴 Red' : '🔵 Blue';
 
-            status.textContent = `${playerName}'s turn (${placementsLeft} placement${placementsLeft > 1 ? 's' : ''} left)`;
+            // Add bot indicator if current player is a bot
+            const isBot = this.isCurrentPlayerBot();
+            const botIndicator = isBot ? ' 🤖' : '';
+            const playerType = isBot ? 'Bot' : 'Human';
+
+            status.textContent = `${playerName} ${playerType}${botIndicator}'s turn (${placementsLeft} placement${placementsLeft > 1 ? 's' : ''} left)`;
             redHouses.textContent = this.gameState.players.red.houses;
             blueHouses.textContent = this.gameState.players.blue.houses;
 
@@ -505,9 +499,13 @@ class UrosGame {
             const redLargest = this.getLargestVillage(villages.red);
             const blueLargest = this.getLargestVillage(villages.blue);
 
+            // Add bot type indicators
+            const redBotType = this.botPlayers.red ? ` (${this.getBotTypeName(this.botPlayers.red)})` : '';
+            const blueBotType = this.botPlayers.blue ? ` (${this.getBotTypeName(this.botPlayers.blue)})` : '';
+
             scores.innerHTML = `
-                <span class="text-red-500">Red: ${redLargest.size}</span> | 
-                <span class="text-blue-500">Blue: ${blueLargest.size}</span>
+                <span class="text-red-500">Red${redBotType}: ${redLargest.size}</span> | 
+                <span class="text-blue-500">Blue${blueBotType}: ${blueLargest.size}</span>
             `;
         }
     }
@@ -758,8 +756,77 @@ class UrosGame {
             this.startNewGame();
         });
 
+        // Bot configuration handlers
+        this.setupBotConfigurationHandlers();
+    }
+
+    /**
+     * Set up bot configuration event handlers
+     */
+    setupBotConfigurationHandlers() {
+        // Thinking time slider
+        const thinkingTimeSlider = document.getElementById('bot-thinking-time');
+        const thinkingTimeDisplay = document.getElementById('thinking-time-display');
+
+        if (thinkingTimeSlider && thinkingTimeDisplay) {
+            thinkingTimeSlider.addEventListener('input', (e) => {
+                const value = e.target.value;
+                thinkingTimeDisplay.textContent = `${value}ms`;
+                this.botThinkingTime = parseInt(value);
+            });
+        }
+
+
+
+        // Apply configuration button
+        const applyConfigBtn = document.getElementById('apply-bot-config');
+        if (applyConfigBtn) {
+            applyConfigBtn.addEventListener('click', () => {
+                this.applyBotConfiguration();
+            });
+        }
+
 
     }
+
+    /**
+     * Apply bot configuration from UI
+     */
+    applyBotConfiguration() {
+        const redPlayerSelect = document.getElementById('red-player-select');
+        const bluePlayerSelect = document.getElementById('blue-player-select');
+
+        if (!redPlayerSelect || !bluePlayerSelect) {
+            console.error('Bot configuration elements not found');
+            return;
+        }
+
+        const redPlayerType = redPlayerSelect.value;
+        const bluePlayerType = bluePlayerSelect.value;
+
+        // Clear existing bots
+        this.botPlayers.red = null;
+        this.botPlayers.blue = null;
+
+        // Set up bots based on configuration
+        if (redPlayerType !== 'human') {
+            this.setPlayerBot('red', redPlayerType);
+        }
+
+        if (bluePlayerType !== 'human') {
+            this.setPlayerBot('blue', bluePlayerType);
+        }
+
+        // Update game mode automatically based on player types
+        this.updateGameMode();
+
+        console.log(`Applied bot configuration: Red=${redPlayerType}, Blue=${bluePlayerType}`);
+
+        // Start new game with new configuration
+        this.startNewGame();
+    }
+
+
 
     /**
      * Centralized click handling system using event delegation
@@ -1514,6 +1581,367 @@ class UrosGame {
      */
     cancelInteraction() {
         this.completeInteraction();
+    }
+
+    // ===== BOT MANAGEMENT METHODS =====
+
+    /**
+ * Set a bot player for the specified color
+ */
+    setPlayerBot(player, botType, config = {}) {
+        if (player !== 'red' && player !== 'blue') {
+            console.error('Player must be red or blue');
+            return;
+        }
+
+        // This will be set up after the bot system is loaded
+        this.pendingBotConfig = this.pendingBotConfig || {};
+        this.pendingBotConfig[player] = { botType, config };
+        console.log(`Queued ${player} player to ${botType} bot`);
+    }
+
+    /**
+ * Initialize bot system after it's loaded
+ */
+    initializeBotSystem() {
+        if (!this.pendingBotConfig) return;
+
+        console.log('Initializing bot system with config:', this.pendingBotConfig);
+
+        // Import bot system
+        import('./uros-bots.js').then(module => {
+            console.log('Bot system loaded successfully:', module);
+
+            for (const [player, config] of Object.entries(this.pendingBotConfig)) {
+                const finalConfig = { ...config.config, thinkingTime: this.botThinkingTime };
+                this.botPlayers[player] = module.createUrosPlayer(config.botType, this, player, finalConfig);
+                console.log(`Set ${player} player to ${config.botType} bot`);
+            }
+
+            this.pendingBotConfig = null;
+            this.updateGameMode();
+            this.render();
+        }).catch(error => {
+            console.error('Failed to load bot system:', error);
+            console.error('Error details:', error.message, error.stack);
+        });
+    }
+
+    /**
+     * Update game mode based on current bot configuration
+     */
+    updateGameMode() {
+        const redIsBot = this.botPlayers.red !== null;
+        const blueIsBot = this.botPlayers.blue !== null;
+
+        if (redIsBot && blueIsBot) {
+            this.gameMode = 'bot-vs-bot';
+        } else if (redIsBot || blueIsBot) {
+            this.gameMode = 'human-vs-bot';
+        } else {
+            this.gameMode = 'human-vs-human';
+        }
+
+        console.log(`Game mode updated to: ${this.gameMode}`);
+    }
+
+    /**
+     * Check if current player is a bot
+     */
+    isCurrentPlayerBot() {
+        const currentPlayer = this.gameState.currentPlayer;
+        return this.botPlayers[currentPlayer] !== null;
+    }
+
+    /**
+     * Get all valid moves for the current player (for bot use)
+     */
+    getValidMoves() {
+        const moves = [];
+        const currentPlayer = this.gameState.currentPlayer;
+
+        // Check if game is over
+        if (this.gameState.gameOver) {
+            return moves;
+        }
+
+        // Get valid tile placements
+        for (const tile of this.gameState.reedbed) {
+            for (let row = 0; row < this.boardSize; row++) {
+                for (let col = 0; col < this.boardSize; col++) {
+                    // Try different anchor positions
+                    const grid = tile.shape_grid;
+                    const rows = grid.length;
+                    const cols = grid[0].length;
+
+                    for (let anchorRow = 0; anchorRow < rows; anchorRow++) {
+                        for (let anchorCol = 0; anchorCol < cols; anchorCol++) {
+                            if (grid[anchorRow][anchorCol] === 1 && this.canPlaceTile(tile, row, col, anchorRow, anchorCol)) {
+                                moves.push({
+                                    type: 'tile-placement',
+                                    tile: { ...tile },
+                                    row: row,
+                                    col: col,
+                                    anchorTileRow: anchorRow,
+                                    anchorTileCol: anchorCol
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Get valid house placements
+        if (this.gameState.players[currentPlayer].houses > 0) {
+            // Check placed tiles on board only (houses can only be placed on tiles that are on the board)
+            for (const tile of this.gameState.placedTiles) {
+                for (let r = 0; r < tile.houses.length; r++) {
+                    for (let c = 0; c < tile.houses[r].length; c++) {
+                        if (tile.shape_grid[r][c] === 1 && tile.houses[r][c] === null) {
+                            moves.push({
+                                type: 'house-placement',
+                                tile: tile,
+                                tileRow: r,
+                                tileCol: c,
+                                player: currentPlayer
+                            });
+                        }
+                    }
+                }
+            }
+        }
+
+        return moves;
+    }
+
+    /**
+     * Get current game state for bot evaluation
+     */
+    getGameState() {
+        return {
+            board: this.gameState.board.map(row => row.map(cell => cell)),
+            placedTiles: this.gameState.placedTiles.map(tile => ({
+                ...tile,
+                houses: tile.houses.map(row => [...row])
+            })),
+            reedbed: this.gameState.reedbed.map(tile => ({
+                ...tile,
+                houses: tile.houses.map(row => [...row])
+            })),
+            players: {
+                red: { ...this.gameState.players.red },
+                blue: { ...this.gameState.players.blue }
+            },
+            currentPlayer: this.gameState.currentPlayer,
+            isFirstTurn: this.gameState.isFirstTurn,
+            placementsThisTurn: this.gameState.placementsThisTurn,
+            placementsRequired: this.gameState.placementsRequired,
+            gameOver: this.gameState.gameOver,
+            gameOverWinner: this.gameState.gameOverWinner,
+            gameOverRedLargest: this.gameState.gameOverRedLargest,
+            gameOverBlueLargest: this.gameState.gameOverBlueLargest
+        };
+    }
+
+    /**
+     * Execute a bot move
+     */
+    makeBotMove(move) {
+        if (move.type === 'tile-placement') {
+            return this.placeTile(move.tile, move.row, move.col, move.anchorTileRow, move.anchorTileCol);
+        } else if (move.type === 'house-placement') {
+            return this.placeHouse(move.tile, move.tileRow, move.tileCol, move.player);
+        }
+        return false;
+    }
+
+    /**
+ * Execute bot turn with delay for better UX
+ */
+    executeBotTurn() {
+        // Check if game is over or current player is not a bot
+        if (!this.isCurrentPlayerBot() || this.gameState.gameOver) {
+            return;
+        }
+
+        const currentPlayer = this.gameState.currentPlayer;
+        const bot = this.botPlayers[currentPlayer];
+
+        if (!bot) {
+            console.error('Bot not found for current player');
+            return;
+        }
+
+        // Show thinking indicator
+        this.showBotThinking(currentPlayer);
+
+        // Execute bot move after a short delay
+        setTimeout(() => {
+            try {
+                // Double-check game state before making move
+                if (this.gameState.gameOver) {
+                    console.log('Game is over, stopping bot execution');
+                    return;
+                }
+
+                const move = bot.chooseMove();
+                if (move) {
+                    console.log(`${currentPlayer} bot chose move:`, move);
+                    const success = this.makeBotMove(move);
+                    if (success) {
+                        this.completeInteraction();
+                        this.nextTurn();
+
+                        // Continue with next bot turn if needed
+                        // Add additional check for game over state
+                        if (this.isCurrentPlayerBot() && !this.gameState.gameOver) {
+                            setTimeout(() => this.executeBotTurn(), this.botMoveDelay);
+                        }
+                    } else {
+                        console.error('Bot move failed');
+                    }
+                } else {
+                    // Bot returned null move - this is normal when no valid moves exist
+                    console.log(`${currentPlayer} bot has no valid moves available`);
+                    // Switch to next player and check if game should end
+                    this.nextTurn();
+                    return;
+                }
+            } catch (error) {
+                console.error('Bot move execution failed:', error);
+            } finally {
+                this.hideBotThinking();
+            }
+        }, this.botMoveDelay);
+    }
+
+    /**
+     * Show bot thinking indicator
+     */
+    showBotThinking(player) {
+        const status = document.getElementById('game-status');
+        if (status) {
+            const playerName = player === 'red' ? '🔴 Red' : '🔵 Blue';
+            status.textContent = `${playerName} bot is thinking...`;
+        }
+    }
+
+    /**
+     * Hide bot thinking indicator
+     */
+    hideBotThinking() {
+        // Status will be updated by updateStatus() call
+    }
+
+    /**
+     * Override nextTurn to handle bot turns
+     */
+    nextTurn() {
+        // Call original nextTurn logic
+        this.gameState.placementsThisTurn = (this.gameState.placementsThisTurn || 0) + 1;
+        if (this.gameState.isFirstTurn) {
+            // First turn: only 1 placement
+            if (this.gameState.placementsThisTurn >= 1) {
+                this.gameState.isFirstTurn = false;
+                this.gameState.currentPlayer = 'blue';
+                this.gameState.placementsThisTurn = 0;
+                this.gameState.placementsRequired = 2;
+            }
+        } else {
+            // All subsequent turns: 2 placements per turn
+            if (this.gameState.placementsThisTurn >= 2) {
+                this.gameState.currentPlayer = this.gameState.currentPlayer === 'red' ? 'blue' : 'red';
+                this.gameState.placementsThisTurn = 0;
+                this.gameState.placementsRequired = 2;
+            }
+        }
+
+        this.updateStatus();
+        if (this.checkGameOver()) {
+            return;
+        }
+        this.render();
+
+        // Check if current player is a bot and execute bot turn
+        if (this.isCurrentPlayerBot() && !this.gameState.gameOver) {
+            setTimeout(() => this.executeBotTurn(), this.botMoveDelay);
+        }
+    }
+
+    /**
+     * Override startNewGame to set up default bot configuration
+     */
+    startNewGame() {
+        console.log('Starting new game');
+
+        this.gameState = {
+            board: Array(this.boardSize).fill(null).map(() => Array(this.boardSize).fill(null)),
+            placedTiles: [], // tiles placed on the board
+            reedbed: this.tiles.map(tile => ({
+                ...tile,
+                houses: Array(tile.shape_grid.length).fill(null).map(() => Array(tile.shape_grid[0].length).fill(null))
+            })), // available tiles with house tracking
+            players: {
+                red: { houses: this.housesPerPlayer, color: 'red' },
+                blue: { houses: this.housesPerPlayer, color: 'blue' }
+            },
+            currentPlayer: 'red',
+            isFirstTurn: true,
+            placementsThisTurn: 0,
+            placementsRequired: 1, // 1 for first turn, 2 for all others
+            gameOver: false,
+            gameOverWinner: null,
+            gameOverRedLargest: null,
+            gameOverBlueLargest: null
+        };
+
+        // Reset interaction state
+        this.interactionState = {
+            mode: null,
+            selectedTile: null,
+            selectedPlayer: null,
+            preview: null,
+            hoveredTileId: null
+        };
+
+        // Set up default bot configuration (deterministic vs deterministic)
+        this.setupDefaultBots();
+
+        // Initialize bot system
+        this.initializeBotSystem();
+
+        this.updateStatus();
+        this.render();
+
+        // Start bot turn if current player is a bot
+        if (this.isCurrentPlayerBot() && !this.gameState.gameOver) {
+            setTimeout(() => this.executeBotTurn(), this.botMoveDelay);
+        }
+    }
+
+    /**
+     * Set up default bot configuration
+     */
+    setupDefaultBots() {
+        // Default to deterministic vs deterministic for testing
+        this.setPlayerBot('red', 'deterministic');
+        this.setPlayerBot('blue', 'deterministic');
+    }
+
+    /**
+     * Get bot type name for display
+     */
+    getBotTypeName(bot) {
+        if (!bot) return '';
+
+        const botTypeMap = {
+            'UrosDeterministicPlayer': 'Deterministic',
+            'UrosRandomPlayer': 'Random',
+            'UrosMinimaxPlayer': 'Minimax'
+        };
+
+        return botTypeMap[bot.constructor.name] || 'Bot';
     }
 }
 
