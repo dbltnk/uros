@@ -222,36 +222,6 @@
             border-color: #2563eb;
         }
 
-        .house-pool {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 4px;
-            margin-top: 0.5rem;
-        }
-
-        .house-token {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.6em;
-            font-weight: bold;
-            color: white;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .house-token:hover {
-            transform: scale(1.1);
-        }
-
-        .house-token.used {
-            opacity: 0.3;
-            cursor: not-allowed;
-        }
-
         .status-bar {
             grid-column: 1 / -1;
             background: #1f2937;
@@ -282,28 +252,7 @@
             margin: 0 2px;
         }
 
-        .game-over {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
-            text-align: center;
-        }
 
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 999;
-        }
 
         .highlight-house-cell {
             border: 2px solid #facc15 !important;
@@ -415,17 +364,7 @@
         </div>
     </div>
 
-    <!-- Game Over Modal -->
-    <div id="game-over-modal" class="hidden">
-        <div class="overlay"></div>
-        <div class="game-over">
-            <h2 class="text-2xl font-bold mb-4" id="game-over-title">Game Over!</h2>
-            <div class="text-lg mb-6" id="game-over-result"></div>
-            <button id="play-again-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg text-lg">
-                🎮 Play Again
-            </button>
-        </div>
-    </div>
+
 
     <script src="app.js"></script>
 </body>

@@ -8,6 +8,19 @@ class UrosGame {
         this.tiles = [];
         this.gameState = null;
 
+        // Define different green tones for tile styling (shared between board and reedbed)
+        this.islandStyles = [
+            { bg: '#22c55e', border: '#15803d' }, // Standard green
+            { bg: '#16a34a', border: '#166534' }, // Darker green
+            { bg: '#4ade80', border: '#22c55e' }, // Lighter green
+            { bg: '#aad3bb', border: '#0891b2' }, // Teal
+            { bg: '#34d399', border: '#059669' }, // Emerald
+            { bg: '#10b981', border: '#047857' }, // Green
+            { bg: '#84cc16', border: '#65a30d' }, // Lime
+            { bg: '#a3e635', border: '#84cc16' }, // Light lime
+            { bg: '#bef264', border: '#a3e635' }  // Very light lime
+        ];
+
         // Centralized state management for all interactions
         this.interactionState = {
             mode: null, // 'tile-selection', 'tile-placement', 'house-placement', null
@@ -152,47 +165,6 @@ class UrosGame {
     }
 
     /**
-     * Returns all valid placements of the tile where any green cell is anchored at (boardRow, boardCol)
-     * Each result is {row, col, anchor: {tileRow, tileCol}}
-     * Only green (island) cells matter for placement; brown cells can hang off the board.
-     */
-    getAllValidTilePlacements(tile, boardRow, boardCol) {
-        if (!tile) return [];
-        const grid = tile.shape_grid;
-        const rows = grid.length;
-        const cols = grid[0].length;
-        const results = [];
-        for (let tr = 0; tr < rows; tr++) {
-            for (let tc = 0; tc < cols; tc++) {
-                if (grid[tr][tc] !== 1) continue;
-                // Try to anchor tile[tr][tc] at (boardRow, boardCol)
-                let valid = true;
-                for (let r = 0; r < rows; r++) {
-                    for (let c = 0; c < cols; c++) {
-                        if (grid[r][c] !== 1) continue;
-                        const br = boardRow + (r - tr);
-                        const bc = boardCol + (c - tc);
-                        // Only green cells must be on the board and on empty water
-                        if (br < 0 || br >= this.boardSize || bc < 0 || bc >= this.boardSize) {
-                            valid = false;
-                            break;
-                        }
-                        if (this.gameState.board[br][bc]) {
-                            valid = false;
-                            break;
-                        }
-                    }
-                    if (!valid) break;
-                }
-                if (valid) {
-                    results.push({ row: boardRow - tr, col: boardCol - tc, anchor: { tileRow: tr, tileCol: tc } });
-                }
-            }
-        }
-        return results;
-    }
-
-    /**
      * Checks if a tile can be placed at (row, col) with anchor (anchorTileRow, anchorTileCol)
      * Only green (island) cells matter for placement; brown cells can hang off the board.
      */
@@ -260,15 +232,10 @@ class UrosGame {
         return true;
     }
 
-    canPlaceHouse(tile, tileRow, tileCol, player) {
-        if (!tile || this.gameState.players[player].houses <= 0) return false;
-
-        // Check if this is an island cell (green) and the square is empty
-        return tile.shape_grid[tileRow][tileCol] === 1 && tile.houses[tileRow][tileCol] === null;
-    }
-
     placeHouse(tile, tileRow, tileCol, player) {
-        if (!this.canPlaceHouse(tile, tileRow, tileCol, player)) {
+        // Check if this is an island cell (green) and the square is empty
+        if (!tile || this.gameState.players[player].houses <= 0 ||
+            tile.shape_grid[tileRow][tileCol] !== 1 || tile.houses[tileRow][tileCol] !== null) {
             console.warn('Cannot place house');
             return false;
         }
@@ -552,19 +519,6 @@ class UrosGame {
         board.innerHTML = '';
         console.log('Rendering board with size:', this.boardSize);
 
-        // Define different green tones and outline colors for each tile
-        const islandStyles = [
-            { bg: '#22c55e', border: '#15803d' }, // Standard green
-            { bg: '#16a34a', border: '#166534' }, // Darker green
-            { bg: '#4ade80', border: '#22c55e' }, // Lighter green
-            { bg: '#aad3bb', border: '#0891b2' }, // Teal
-            { bg: '#34d399', border: '#059669' }, // Emerald
-            { bg: '#10b981', border: '#047857' }, // Green
-            { bg: '#84cc16', border: '#65a30d' }, // Lime
-            { bg: '#a3e635', border: '#84cc16' }, // Light lime
-            { bg: '#bef264', border: '#a3e635' }  // Very light lime
-        ];
-
         for (let row = 0; row < this.boardSize; row++) {
             for (let col = 0; col < this.boardSize; col++) {
                 const cell = document.createElement('div');
@@ -616,8 +570,8 @@ class UrosGame {
                         cell.style.cursor = 'pointer';
 
                         // Apply unique styling based on tile ID (no borders)
-                        const styleIndex = tile.id % islandStyles.length;
-                        const style = islandStyles[styleIndex];
+                        const styleIndex = tile.id % this.islandStyles.length;
+                        const style = this.islandStyles[styleIndex];
                         cell.style.backgroundColor = style.bg;
 
                         const house = tile.houses[tileRow][tileCol];
@@ -697,19 +651,6 @@ class UrosGame {
 
         reedbed.innerHTML = '';
 
-        // Define different green tones and outline colors for each tile (same as lake board)
-        const islandStyles = [
-            { bg: '#22c55e', border: '#15803d' }, // Standard green
-            { bg: '#16a34a', border: '#166534' }, // Darker green
-            { bg: '#4ade80', border: '#22c55e' }, // Lighter green
-            { bg: '#aad3bb', border: '#0891b2' }, // Teal
-            { bg: '#34d399', border: '#059669' }, // Emerald
-            { bg: '#10b981', border: '#047857' }, // Green
-            { bg: '#84cc16', border: '#65a30d' }, // Lime
-            { bg: '#a3e635', border: '#84cc16' }, // Light lime
-            { bg: '#bef264', border: '#a3e635' }  // Very light lime
-        ];
-
         for (const tile of this.gameState.reedbed) {
             const tileElement = document.createElement('div');
             tileElement.className = 'tile-preview';
@@ -739,8 +680,8 @@ class UrosGame {
                         cell.style.cursor = 'pointer';
 
                         // Apply unique styling based on tile ID (same as lake board, no borders)
-                        const styleIndex = tile.id % islandStyles.length;
-                        const style = islandStyles[styleIndex];
+                        const styleIndex = tile.id % this.islandStyles.length;
+                        const style = this.islandStyles[styleIndex];
                         cell.style.backgroundColor = style.bg;
 
                         // Render house if present
@@ -791,19 +732,6 @@ class UrosGame {
         }
     }
 
-    placeHouseOnReedbed(tile, tileRow, tileCol, player) {
-        if (!tile || this.gameState.players[player].houses <= 0) return false;
-
-        // Check if this is an island cell (green) and the square is empty
-        if (tile.shape_grid[tileRow][tileCol] !== 1 || tile.houses[tileRow][tileCol] !== null) return false;
-
-        tile.houses[tileRow][tileCol] = player;
-        this.gameState.players[player].houses--;
-
-        console.log(`${player} placed house on reedbed tile at (${tileRow}, ${tileCol})`);
-        return true;
-    }
-
     /**
      * Set up button event handlers (separate from click handling for clarity)
      */
@@ -826,11 +754,7 @@ class UrosGame {
             this.startNewGame();
         });
 
-        // Play again button
-        document.getElementById('play-again-btn').addEventListener('click', () => {
-            document.getElementById('game-over-modal').classList.add('hidden');
-            this.startNewGame();
-        });
+
     }
 
     /**
@@ -1070,8 +994,8 @@ class UrosGame {
     }
 
     /**
- * Handle house placement on the main board
- */
+     * Handle house placement on the main board
+     */
     handleBoardHousePlacement(row, col) {
         if (!this.interactionState.selectedPlayer) {
             console.error('Player must be selected for house placement');
@@ -1145,7 +1069,7 @@ class UrosGame {
             return;
         }
 
-        if (this.placeHouseOnReedbed(tile, tileRow, tileCol, this.interactionState.selectedPlayer)) {
+        if (this.placeHouse(tile, tileRow, tileCol, this.interactionState.selectedPlayer)) {
             this.completeInteraction();
             this.nextTurn();
         } else {
@@ -1815,8 +1739,6 @@ class BrowserLogger {
         const keyElements = [
             '#lake-board',
             '#reedbed',
-            '#red-house-pool',
-            '#blue-house-pool',
             '#game-status',
             '#village-scores'
         ];
@@ -1849,16 +1771,6 @@ class BrowserLogger {
         return { x: rect.left, y: rect.top };
     }
 
-    getDataAttributes(element) {
-        const data = {};
-        for (let attr of element.attributes) {
-            if (attr.name.startsWith('data-')) {
-                data[attr.name] = attr.value;
-            }
-        }
-        return data;
-    }
-
     getRelevantStyles(computedStyle) {
         return {
             'background-color': computedStyle.backgroundColor,
@@ -1889,14 +1801,7 @@ class BrowserLogger {
     }
 
     updateDebugPanel() {
-        // Update debug info if panel exists
-        const debugPanel = document.getElementById('debug-panel');
-        if (debugPanel) {
-            debugPanel.innerHTML = `
-                <div>Logs sent: ${this.logCount}</div>
-                <div>DOM updates: ${this.domUpdateCount}</div>
-            `;
-        }
+        // Debug panel removed - no longer needed
     }
 
     setupEventListeners() {
