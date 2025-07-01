@@ -2,14 +2,10 @@
 // Combines game logic with existing logging system
 
 class UrosGame {
-    constructor() {
-        this.boardSize = 6;
-        this.housesPerPlayer = 15;
-        this.tiles = [];
-        this.gameState = null;
-
-        // Define different green tones for tile styling (shared between board and reedbed)
-        this.islandStyles = [
+    static CONFIG = {
+        BOARD_SIZE: 6,
+        HOUSES_PER_PLAYER: 15,
+        ISLAND_STYLES: [
             { bg: '#22c55e', border: '#15803d' }, // Standard green
             { bg: '#16a34a', border: '#166534' }, // Darker green
             { bg: '#4ade80', border: '#22c55e' }, // Lighter green
@@ -19,7 +15,15 @@ class UrosGame {
             { bg: '#84cc16', border: '#65a30d' }, // Lime
             { bg: '#a3e635', border: '#84cc16' }, // Light lime
             { bg: '#bef264', border: '#a3e635' }  // Very light lime
-        ];
+        ]
+    };
+
+    constructor() {
+        this.boardSize = UrosGame.CONFIG.BOARD_SIZE;
+        this.housesPerPlayer = UrosGame.CONFIG.HOUSES_PER_PLAYER;
+        this.tiles = [];
+        this.gameState = null;
+        this.islandStyles = UrosGame.CONFIG.ISLAND_STYLES;
 
         // Centralized state management for all interactions
         this.interactionState = {
@@ -51,7 +55,7 @@ class UrosGame {
 
     loadTiles() {
         // Load tiles from JSON file
-        fetch('tiles.json')
+        fetch('content/tiles.json')
             .then(response => response.json())
             .then(data => {
                 this.tiles = data.tiles.map((tile, index) => ({
