@@ -1,7 +1,7 @@
 {
-  "session": "session-1751372550716",
-  "sessionStart": "2025-07-01T12:22:30.716Z",
-  "timestamp": "1:23:06 PM",
+  "session": "session-1751373125744",
+  "sessionStart": "2025-07-01T12:32:05.744Z",
+  "timestamp": "1:32:25 PM",
   "url": "http://localhost:52330/index.html",
   "summary": {
     "totalElements": 4,
@@ -37,7 +37,7 @@
         "height": 420
       },
       "cssConflicts": [],
-      "textContent": "🏠🏘️🏘️🏠🏘️🏠🏠🏘️"
+      "textContent": "🏠🏠🏘️"
     },
     {
       "tag": "div",
@@ -51,7 +51,7 @@
         "display": "grid",
         "position": "static",
         "width": "420px",
-        "height": "428px",
+        "height": "292px",
         "border": "2px solid rgb(245, 158, 11)",
         "border-radius": "8px",
         "opacity": "1",
@@ -63,7 +63,7 @@
       },
       "dimensions": {
         "width": 420,
-        "height": 428
+        "height": 292
       },
       "cssConflicts": [],
       "textContent": "🏘️"
@@ -108,7 +108,7 @@
         "color": "rgb(255, 255, 255)",
         "display": "block",
         "position": "static",
-        "width": "93.7812px",
+        "width": "92.8594px",
         "height": "20px",
         "border": "0px solid rgb(229, 231, 235)",
         "border-radius": "0px",
@@ -116,15 +116,15 @@
         "visibility": "visible"
       },
       "position": {
-        "x": 1026.375,
+        "x": 1027.296875,
         "y": 42
       },
       "dimensions": {
-        "width": 94,
+        "width": 93,
         "height": 20
       },
       "cssConflicts": [],
-      "textContent": "\n            Red: 2 | \n            Blue: 3\n        "
+      "textContent": "\n            Red: 2 | \n            Blue: 1\n        "
     }
   ]
 }

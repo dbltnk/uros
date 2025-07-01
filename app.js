@@ -536,12 +536,27 @@ class UrosGame {
         const board = document.getElementById('lake-board');
         board.innerHTML = '';
         console.log('Rendering board with size:', this.boardSize);
+
+        // Define different green tones and outline colors for each tile
+        const islandStyles = [
+            { bg: '#22c55e', border: '#15803d' }, // Standard green
+            { bg: '#16a34a', border: '#166534' }, // Darker green
+            { bg: '#4ade80', border: '#22c55e' }, // Lighter green
+            { bg: '#22d3aa', border: '#0891b2' }, // Teal
+            { bg: '#34d399', border: '#059669' }, // Emerald
+            { bg: '#10b981', border: '#047857' }, // Green
+            { bg: '#84cc16', border: '#65a30d' }, // Lime
+            { bg: '#a3e635', border: '#84cc16' }, // Light lime
+            { bg: '#bef264', border: '#a3e635' }  // Very light lime
+        ];
+
         for (let row = 0; row < this.boardSize; row++) {
             for (let col = 0; col < this.boardSize; col++) {
                 const cell = document.createElement('div');
                 cell.className = 'lake-cell';
                 cell.dataset.row = row;
                 cell.dataset.col = col;
+
                 // Preview overlay
                 if (this.interactionState.preview && this.interactionState.mode === 'tile-placement') {
                     const { row: prow, col: pcol, anchor, tile } = this.interactionState.preview;
@@ -572,6 +587,7 @@ class UrosGame {
                         }
                     }
                 }
+
                 // Normal rendering
                 const tile = this.gameState.board[row][col];
                 if (tile) {
@@ -579,10 +595,16 @@ class UrosGame {
                     const anchor = tile.anchor || { tileRow: 0, tileCol: 0 };
                     const tileRow = anchor.tileRow + (row - tile.row);
                     const tileCol = anchor.tileCol + (col - tile.col);
+
                     if (tile.shape_grid[tileRow] && tile.shape_grid[tileRow][tileCol] === 1) {
                         cell.classList.add('island');
-                        cell.style.backgroundColor = '#22c55e';
                         cell.style.cursor = 'pointer';
+
+                        // Apply unique styling based on tile ID (no borders)
+                        const styleIndex = tile.id % islandStyles.length;
+                        const style = islandStyles[styleIndex];
+                        cell.style.backgroundColor = style.bg;
+
                         const house = tile.houses[tileRow][tileCol];
                         if (house) {
                             const houseElement = document.createElement('div');
@@ -604,6 +626,7 @@ class UrosGame {
                     cell.style.backgroundColor = '#0ea5e9';
                     cell.style.cursor = 'pointer';
                 }
+
                 board.appendChild(cell);
             }
         }
@@ -617,6 +640,19 @@ class UrosGame {
         }
 
         reedbed.innerHTML = '';
+
+        // Define different green tones and outline colors for each tile (same as lake board)
+        const islandStyles = [
+            { bg: '#22c55e', border: '#15803d' }, // Standard green
+            { bg: '#16a34a', border: '#166534' }, // Darker green
+            { bg: '#4ade80', border: '#22c55e' }, // Lighter green
+            { bg: '#22d3aa', border: '#0891b2' }, // Teal
+            { bg: '#34d399', border: '#059669' }, // Emerald
+            { bg: '#10b981', border: '#047857' }, // Green
+            { bg: '#84cc16', border: '#65a30d' }, // Lime
+            { bg: '#a3e635', border: '#84cc16' }, // Light lime
+            { bg: '#bef264', border: '#a3e635' }  // Very light lime
+        ];
 
         for (const tile of this.gameState.reedbed) {
             const tileElement = document.createElement('div');
@@ -645,6 +681,11 @@ class UrosGame {
                     if (grid[row][col] === 1) {
                         cell.classList.add('island');
                         cell.style.cursor = 'pointer';
+
+                        // Apply unique styling based on tile ID (same as lake board, no borders)
+                        const styleIndex = tile.id % islandStyles.length;
+                        const style = islandStyles[styleIndex];
+                        cell.style.backgroundColor = style.bg;
 
                         // Render house if present
                         const house = tile.houses[row][col];
