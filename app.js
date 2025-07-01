@@ -90,7 +90,10 @@ class UrosGame {
             isFirstTurn: true,
             placementsThisTurn: 0,
             placementsRequired: 1, // 1 for first turn, 2 for all others
-            gameOver: false
+            gameOver: false,
+            gameOverWinner: null,
+            gameOverRedLargest: null,
+            gameOverBlueLargest: null
         };
 
         // Reset interaction state
@@ -444,37 +447,17 @@ class UrosGame {
             winner = 'blue';
         }
 
-        this.showGameOverModal(winner, redLargest, blueLargest);
+        this.showGameOverInStatusBar(winner, redLargest, blueLargest);
     }
 
-    showGameOverModal(winner, redLargest, blueLargest) {
-        const modal = document.getElementById('game-over-modal');
-        const title = document.getElementById('game-over-title');
-        const result = document.getElementById('game-over-result');
+    showGameOverInStatusBar(winner, redLargest, blueLargest) {
+        // Store game over state for status bar updates
+        this.gameState.gameOverWinner = winner;
+        this.gameState.gameOverRedLargest = redLargest;
+        this.gameState.gameOverBlueLargest = blueLargest;
 
-        if (winner) {
-            title.textContent = `🏆 ${winner.toUpperCase()} Wins!`;
-            result.innerHTML = `
-                <div class="mb-4">
-                    <div class="text-red-500">🔴 Red: ${redLargest.size} houses on ${redLargest.islands} islands</div>
-                    <div class="text-blue-500">🔵 Blue: ${blueLargest.size} houses on ${blueLargest.islands} islands</div>
-                </div>
-                <div class="text-lg font-semibold text-${winner === 'red' ? 'red' : 'blue'}-600">
-                    ${winner === 'red' ? '🔴 Red' : '🔵 Blue'} has the largest village!
-                </div>
-            `;
-        } else {
-            title.textContent = "🤝 It's a Tie!";
-            result.innerHTML = `
-                <div class="mb-4">
-                    <div class="text-red-500">🔴 Red: ${redLargest.size} houses on ${redLargest.islands} islands</div>
-                    <div class="text-blue-500">🔵 Blue: ${blueLargest.size} houses on ${blueLargest.islands} islands</div>
-                </div>
-                <div class="text-lg font-semibold text-gray-600">Both players have equal villages!</div>
-            `;
-        }
-
-        modal.classList.remove('hidden');
+        // Update status bar immediately
+        this.updateStatus();
     }
 
     nextTurn() {
@@ -508,24 +491,65 @@ class UrosGame {
         const redHouses = document.getElementById('red-houses-left');
         const blueHouses = document.getElementById('blue-houses-left');
         const scores = document.getElementById('village-scores');
+        const statusBar = document.querySelector('.status-bar');
 
-        const currentPlayer = this.gameState.currentPlayer;
-        const placementsLeft = (this.gameState.placementsRequired || 2) - (this.gameState.placementsThisTurn || 0);
-        const playerName = currentPlayer === 'red' ? '🔴 Red' : '🔵 Blue';
+        // Check if game is over
+        if (this.gameState.gameOver) {
+            const winner = this.gameState.gameOverWinner;
+            const redLargest = this.gameState.gameOverRedLargest;
+            const blueLargest = this.gameState.gameOverBlueLargest;
 
-        status.textContent = `${playerName}'s turn (${placementsLeft} placement${placementsLeft > 1 ? 's' : ''} left)`;
-        redHouses.textContent = this.gameState.players.red.houses;
-        blueHouses.textContent = this.gameState.players.blue.houses;
+            // Change status bar background color based on winner
+            if (winner === 'red') {
+                statusBar.style.backgroundColor = '#dc2626';
+                statusBar.style.color = 'white';
+            } else if (winner === 'blue') {
+                statusBar.style.backgroundColor = '#2563eb';
+                statusBar.style.color = 'white';
+            } else {
+                statusBar.style.backgroundColor = '#6b7280';
+                statusBar.style.color = 'white';
+            }
 
-        // Calculate current village sizes
-        const villages = this.calculateVillages();
-        const redLargest = this.getLargestVillage(villages.red);
-        const blueLargest = this.getLargestVillage(villages.blue);
+            // Show game over message
+            if (winner) {
+                status.textContent = `🏆 ${winner === 'red' ? '🔴 Red' : '🔵 Blue'} Wins!`;
+            } else {
+                status.textContent = "🤝 It's a Tie!";
+            }
 
-        scores.innerHTML = `
-            <span class="text-red-500">Red: ${redLargest.size}</span> | 
-            <span class="text-blue-500">Blue: ${blueLargest.size}</span>
-        `;
+            // Show final scores
+            scores.innerHTML = `
+                <span class="text-red-300">Red: ${redLargest.size} houses on ${redLargest.islands} islands</span> | 
+                <span class="text-blue-300">Blue: ${blueLargest.size} houses on ${blueLargest.islands} islands</span>
+            `;
+
+            // Hide house counts since game is over
+            redHouses.textContent = '0';
+            blueHouses.textContent = '0';
+        } else {
+            // Normal game state
+            statusBar.style.backgroundColor = '#1f2937';
+            statusBar.style.color = 'white';
+
+            const currentPlayer = this.gameState.currentPlayer;
+            const placementsLeft = (this.gameState.placementsRequired || 2) - (this.gameState.placementsThisTurn || 0);
+            const playerName = currentPlayer === 'red' ? '🔴 Red' : '🔵 Blue';
+
+            status.textContent = `${playerName}'s turn (${placementsLeft} placement${placementsLeft > 1 ? 's' : ''} left)`;
+            redHouses.textContent = this.gameState.players.red.houses;
+            blueHouses.textContent = this.gameState.players.blue.houses;
+
+            // Calculate current village sizes
+            const villages = this.calculateVillages();
+            const redLargest = this.getLargestVillage(villages.red);
+            const blueLargest = this.getLargestVillage(villages.blue);
+
+            scores.innerHTML = `
+                <span class="text-red-500">Red: ${redLargest.size}</span> | 
+                <span class="text-blue-500">Blue: ${blueLargest.size}</span>
+            `;
+        }
     }
 
     render() {
