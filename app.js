@@ -1143,14 +1143,46 @@ class UrosGame {
         }
 
         this.keyboardHandler = (e) => {
+            // --- Rotation hotkeys ---
             if (e.key === 'q' || e.key === 'Q') {
-                // Flip: Q = clockwise (-1)
                 this.rotateSelectedTile(-1);
+                return;
             } else if (e.key === 'e' || e.key === 'E') {
-                // Flip: E = counterclockwise (+1)
                 this.rotateSelectedTile(1);
+                return;
             } else if (e.key === 'Escape') {
                 this.cancelInteraction();
+                return;
+            }
+
+            // --- Place House hotkey (W) ---
+            if ((e.key === 'w' || e.key === 'W') && this.interactionState.mode !== 'house-placement') {
+                // Only allow if current player has houses left
+                const player = this.gameState.currentPlayer;
+                const housesLeft = this.gameState.players[player].houses;
+                // Defensive: assert player is red or blue
+                console.assert(player === 'red' || player === 'blue', 'Current player must be red or blue');
+                if (housesLeft > 0) {
+                    this.enterHousePlacementMode(player);
+                }
+                return;
+            }
+
+            // --- Reedbed tile selection hotkeys (1-9) ---
+            // Only allow if not in house-placement mode
+            if (this.interactionState.mode !== 'house-placement') {
+                // 1-9 keys (top row and numpad)
+                const keyNum = parseInt(e.key, 10);
+                if (!isNaN(keyNum) && keyNum >= 1 && keyNum <= 9) {
+                    const idx = keyNum - 1;
+                    const reedbed = this.gameState.reedbed;
+                    if (reedbed && idx < reedbed.length) {
+                        const tile = reedbed[idx];
+                        // Defensive: assert tile exists
+                        console.assert(tile, 'Reedbed tile must exist for hotkey selection');
+                        this.handleTileSelection(tile);
+                    }
+                }
             }
         };
 
