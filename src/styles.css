@@ -1,0 +1,211 @@
+/* Uros Game Styles */
+
+.game-grid {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    grid-template-rows: auto 1fr;
+    height: 100vh;
+    gap: 1rem;
+}
+
+.main-board-area {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 2rem;
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.lake-board {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 2px;
+    background: #1e40af;
+    padding: 8px;
+    border-radius: 8px;
+    border: 3px solid #1e3a8a;
+    width: 420px;
+    height: 420px;
+    box-sizing: border-box;
+}
+
+.lake-cell {
+    aspect-ratio: 1;
+    background: #3b82f6;
+    border: 1px solid #1e3a8a;
+    border-radius: 4px;
+    position: relative;
+}
+
+.reedbed {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    padding: 1rem;
+    background: #fef3c7;
+    border-radius: 8px;
+    border: 2px solid #f59e0b;
+    width: 420px;
+    min-width: 420px;
+    max-width: 420px;
+    box-sizing: border-box;
+}
+
+.tile-preview {
+    background: #10b981;
+    border: 2px solid #047857;
+    border-radius: 6px;
+    padding: 0;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    width: 120px;
+    height: 120px;
+    max-width: 120px;
+    max-height: 120px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tile-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 2px;
+    width: 108px;
+    height: 108px;
+    background: #059669;
+    border-radius: 4px;
+    border: 2px solid #047857;
+}
+
+.tile-cell {
+    aspect-ratio: 1;
+    border: 1px solid #047857;
+    border-radius: 2px;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tile-cell.island {
+    /* Background color will be set by JavaScript for unique tile colors */
+}
+
+.tile-cell.not-island {
+    background: #7c4a03 !important;
+}
+
+.house {
+    width: 80%;
+    height: 80%;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8em;
+    font-weight: bold;
+    color: white;
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
+}
+
+.house.red {
+    background: #dc2626;
+}
+
+.house.blue {
+    background: #2563eb;
+}
+
+.player-houses {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.player-section {
+    padding: 1rem;
+    border-radius: 8px;
+    border: 2px solid;
+}
+
+.player-section.red {
+    background: #fef2f2;
+    border-color: #dc2626;
+}
+
+.player-section.blue {
+    background: #eff6ff;
+    border-color: #2563eb;
+}
+
+.status-bar {
+    grid-column: 1 / -1;
+    background: #1f2937;
+    color: white;
+    padding: 1rem;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.hotkeys {
+    background: #f3f4f6;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+.hotkey {
+    display: inline-block;
+    background: #e5e7eb;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-family: monospace;
+    font-size: 0.8em;
+    margin: 0 2px;
+}
+
+.highlight-house-cell {
+    border: 2px solid #facc15 !important;
+    z-index: 2;
+}
+
+.place-house-active {
+    background: #fde68a !important;
+    color: #92400e !important;
+    border: 2px solid #f59e0b !important;
+}
+
+.tile-preview.hovered {
+    border: 3px solid #22d3ee;
+    box-shadow: 0 0 0 2px #38bdf8;
+}
+
+.tile-preview.selected {
+    border: 3px solid #f59e0b;
+    background: #34d399;
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.3);
+}
+
+.lake-cell.preview {
+    background: #28e638 !important;
+    opacity: 0.7;
+    position: relative;
+}
+
+.house.preview {
+    opacity: 0.7;
+    filter: brightness(1.2);
+}
