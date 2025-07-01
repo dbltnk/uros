@@ -117,11 +117,21 @@ class UrosGame {
         const rows = grid.length;
         const cols = grid[0].length;
 
-        for (let i = 0; i < direction; i++) {
+        // Handle negative directions by converting to positive
+        const absDirection = Math.abs(direction);
+        const isClockwise = direction > 0;
+
+        for (let i = 0; i < absDirection; i++) {
             const newGrid = Array(cols).fill(null).map(() => Array(rows).fill(0));
             for (let r = 0; r < rows; r++) {
                 for (let c = 0; c < cols; c++) {
-                    newGrid[c][rows - 1 - r] = grid[r][c];
+                    if (isClockwise) {
+                        // Clockwise rotation
+                        newGrid[c][rows - 1 - r] = grid[r][c];
+                    } else {
+                        // Counter-clockwise rotation
+                        newGrid[cols - 1 - c][r] = grid[r][c];
+                    }
                 }
             }
             rotated.shape_grid = newGrid;
@@ -1083,9 +1093,11 @@ class UrosGame {
 
         this.keyboardHandler = (e) => {
             if (e.key === 'q' || e.key === 'Q') {
-                this.rotateSelectedTile(1);
+                // Flip: Q = clockwise (-1)
+                this.rotateSelectedTile(-1);
             } else if (e.key === 'e' || e.key === 'E') {
-                this.rotateSelectedTile(3);
+                // Flip: E = counterclockwise (+1)
+                this.rotateSelectedTile(1);
             } else if (e.key === 'Escape') {
                 this.cancelInteraction();
             }
@@ -1100,8 +1112,39 @@ class UrosGame {
     rotateSelectedTile(direction) {
         if (!this.interactionState.selectedTile) return;
 
-        this.interactionState.selectedTile = this.rotateTile(this.interactionState.selectedTile, direction);
-        this.interactionState.preview = null;
+        // Store current preview position to maintain it after rotation
+        const currentPreview = this.interactionState.preview;
+
+        // Rotate the selected tile
+        const rotated = this.rotateTile(this.interactionState.selectedTile, direction);
+        this.interactionState.selectedTile = rotated;
+
+        // Also rotate the corresponding tile in the reedbed (if it exists)
+        const reedbedTile = this.gameState.reedbed.find(t => t.id === rotated.id);
+        if (reedbedTile) {
+            // Defensive: assert shape_grid and rotation are in sync
+            if (!reedbedTile.shape_grid || typeof reedbedTile.rotation !== 'number') {
+                throw new Error('Reedbed tile must have shape_grid and rotation');
+            }
+            reedbedTile.shape_grid = rotated.shape_grid.map(row => [...row]);
+            reedbedTile.rotation = rotated.rotation;
+        }
+
+        // Recalculate preview at the same position if it existed
+        if (currentPreview) {
+            const bestPosition = this.findBestTilePlacement(currentPreview.row, currentPreview.col);
+            if (bestPosition) {
+                this.interactionState.preview = {
+                    row: bestPosition.row,
+                    col: bestPosition.col,
+                    anchor: bestPosition.anchor,
+                    tile: this.interactionState.selectedTile
+                };
+            } else {
+                this.interactionState.preview = null;
+            }
+        }
+
         this.render();
     }
 
