@@ -4,7 +4,7 @@ const path = require('path');
 
 // Configuration
 const PORT = 3000;
-const LOGS_DIR = path.join(__dirname, 'logs');
+const LOGS_DIR = path.join(__dirname, '..', 'logs');
 
 // Track active connections
 const connections = new Set();
