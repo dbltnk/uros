@@ -130,33 +130,72 @@ class UrosGame {
         return rotated;
     }
 
-    canPlaceTile(tile, row, col) {
-        if (!tile) return false;
-
+    /**
+     * Returns all valid placements of the tile where any green cell is anchored at (boardRow, boardCol)
+     * Each result is {row, col, anchor: {tileRow, tileCol}}
+     * Only green (island) cells matter for placement; brown cells can hang off the board.
+     */
+    getAllValidTilePlacements(tile, boardRow, boardCol) {
+        if (!tile) return [];
         const grid = tile.shape_grid;
         const rows = grid.length;
         const cols = grid[0].length;
-
-        // Check if tile fits within board bounds
-        if (row < 0 || col < 0 || row + rows > this.boardSize || col + cols > this.boardSize) {
-            return false;
-        }
-
-        // Check if all squares are unoccupied
-        for (let r = 0; r < rows; r++) {
-            for (let c = 0; c < cols; c++) {
-                if (grid[r][c] === 1) {
-                    if (this.gameState.board[row + r][col + c] !== null) {
-                        return false;
+        const results = [];
+        for (let tr = 0; tr < rows; tr++) {
+            for (let tc = 0; tc < cols; tc++) {
+                if (grid[tr][tc] !== 1) continue;
+                // Try to anchor tile[tr][tc] at (boardRow, boardCol)
+                let valid = true;
+                for (let r = 0; r < rows; r++) {
+                    for (let c = 0; c < cols; c++) {
+                        if (grid[r][c] !== 1) continue;
+                        const br = boardRow + (r - tr);
+                        const bc = boardCol + (c - tc);
+                        // Only green cells must be on the board and on empty water
+                        if (br < 0 || br >= this.boardSize || bc < 0 || bc >= this.boardSize) {
+                            valid = false;
+                            break;
+                        }
+                        if (this.gameState.board[br][bc]) {
+                            valid = false;
+                            break;
+                        }
                     }
+                    if (!valid) break;
+                }
+                if (valid) {
+                    results.push({ row: boardRow - tr, col: boardCol - tc, anchor: { tileRow: tr, tileCol: tc } });
                 }
             }
         }
+        return results;
+    }
 
+    /**
+     * Checks if a tile can be placed at (row, col) with anchor (anchorTileRow, anchorTileCol)
+     * Only green (island) cells matter for placement; brown cells can hang off the board.
+     */
+    canPlaceTile(tile, row, col, anchorTileRow = 0, anchorTileCol = 0) {
+        if (!tile) return false;
+        const grid = tile.shape_grid;
+        const rows = grid.length;
+        const cols = grid[0].length;
+        for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+                if (grid[r][c] !== 1) continue;
+                const br = row + (r - anchorTileRow);
+                const bc = col + (c - anchorTileCol);
+                if (br < 0 || br >= this.boardSize || bc < 0 || bc >= this.boardSize) return false;
+                if (this.gameState.board[br][bc]) return false;
+            }
+        }
         return true;
     }
 
-    placeTile(tile, row, col) {
+    /**
+     * Place the tile using the anchor logic
+     */
+    placeTile(tile, row, col, anchorTileRow = 0, anchorTileCol = 0) {
         if (!tile) {
             console.error('placeTile: tile must not be null');
             return false;
@@ -165,8 +204,8 @@ class UrosGame {
             console.error('placeTile: row and col must be numbers');
             return false;
         }
-        if (!this.canPlaceTile(tile, row, col)) {
-            console.warn('Cannot place tile at', row, col);
+        if (!this.canPlaceTile(tile, row, col, anchorTileRow, anchorTileCol)) {
+            console.warn('Cannot place tile at', row, col, 'with anchor', anchorTileRow, anchorTileCol);
             return false;
         }
         const grid = tile.shape_grid;
@@ -177,14 +216,17 @@ class UrosGame {
             ...tile,
             row,
             col,
+            anchor: { tileRow: anchorTileRow, tileCol: anchorTileCol },
             houses: tile.houses ? [...tile.houses.map(row => [...row])] : Array(rows).fill(null).map(() => Array(cols).fill(null))
         };
         this.gameState.placedTiles.push(placedTile);
         // Mark board squares as occupied
-        for (let r = 0; r < rows; r++) {
-            for (let c = 0; c < cols; c++) {
-                if (grid[r][c] === 1) {
-                    this.gameState.board[row + r][col + c] = placedTile;
+        for (let tr = 0; tr < rows; tr++) {
+            for (let tc = 0; tc < cols; tc++) {
+                if (grid[tr][tc] === 1) {
+                    const boardR = row + (tr - anchorTileRow);
+                    const boardC = col + (tc - anchorTileCol);
+                    this.gameState.board[boardR][boardC] = placedTile;
                 }
             }
         }
@@ -193,15 +235,15 @@ class UrosGame {
         if (reedbedIndex !== -1) {
             this.gameState.reedbed.splice(reedbedIndex, 1);
         }
-        console.log(`Placed tile ${tile.name} at (${row}, ${col})`);
+        console.log(`Placed tile ${tile.name} at (${row}, ${col}) with anchor (${anchorTileRow},${anchorTileCol})`);
         return true;
     }
 
     canPlaceHouse(tile, tileRow, tileCol, player) {
         if (!tile || this.gameState.players[player].houses <= 0) return false;
 
-        // Check if the tile square is empty
-        return tile.houses[tileRow][tileCol] === null;
+        // Check if this is an island cell (green) and the square is empty
+        return tile.shape_grid[tileRow][tileCol] === 1 && tile.houses[tileRow][tileCol] === null;
     }
 
     placeHouse(tile, tileRow, tileCol, player) {
@@ -226,7 +268,8 @@ class UrosGame {
             for (let r = 0; r < tile.houses.length; r++) {
                 for (let c = 0; c < tile.houses[r].length; c++) {
                     const player = tile.houses[r][c];
-                    if (player && !visited.has(`placed-${tile.id}-${r}-${c}`)) {
+                    // Only consider houses on island cells (green cells)
+                    if (player && tile.shape_grid[r][c] === 1 && !visited.has(`placed-${tile.id}-${r}-${c}`)) {
                         const village = this.floodFill(tile, r, c, player, visited, true);
                         if (village.length > 0) {
                             villages[player].push(village);
@@ -241,7 +284,8 @@ class UrosGame {
             for (let r = 0; r < tile.houses.length; r++) {
                 for (let c = 0; c < tile.houses[r].length; c++) {
                     const player = tile.houses[r][c];
-                    if (player && !visited.has(`reedbed-${tile.id}-${r}-${c}`)) {
+                    // Only consider houses on island cells (green cells)
+                    if (player && tile.shape_grid[r][c] === 1 && !visited.has(`reedbed-${tile.id}-${r}-${c}`)) {
                         const village = this.floodFill(tile, r, c, player, visited, false);
                         if (village.length > 0) {
                             villages[player].push(village);
@@ -266,7 +310,7 @@ class UrosGame {
             if (visited.has(key)) continue;
             visited.add(key);
 
-            if (tile.houses[row][col] === player) {
+            if (tile.houses[row][col] === player && tile.shape_grid[row][col] === 1) {
                 village.push({ tile, row, col });
 
                 // Check orthogonal neighbors within the same tile
@@ -280,6 +324,7 @@ class UrosGame {
                 for (const neighbor of neighbors) {
                     if (neighbor.row >= 0 && neighbor.row < tile.houses.length &&
                         neighbor.col >= 0 && neighbor.col < tile.houses[0].length &&
+                        tile.shape_grid[neighbor.row][neighbor.col] === 1 &&
                         tile.houses[neighbor.row][neighbor.col] === player) {
                         queue.push({ tile, row: neighbor.row, col: neighbor.col });
                     }
@@ -308,6 +353,7 @@ class UrosGame {
 
                                 if (adjTileRow >= 0 && adjTileRow < adjacentTile.houses.length &&
                                     adjTileCol >= 0 && adjTileCol < adjacentTile.houses[0].length &&
+                                    adjacentTile.shape_grid[adjTileRow][adjTileCol] === 1 &&
                                     adjacentTile.houses[adjTileRow][adjTileCol] === player) {
                                     const adjKey = `placed-${adjacentTile.id}-${adjTileRow}-${adjTileCol}`;
                                     if (!visited.has(adjKey)) {
@@ -478,21 +524,29 @@ class UrosGame {
                 cell.className = 'lake-cell';
                 cell.dataset.row = row;
                 cell.dataset.col = col;
-
                 // Preview overlay
                 if (this.interactionState.preview && this.interactionState.mode === 'tile-placement') {
-                    const { row: prow, col: pcol, tile } = this.interactionState.preview;
+                    const { row: prow, col: pcol, anchor, tile } = this.interactionState.preview;
                     const grid = tile.shape_grid;
                     for (let tr = 0; tr < grid.length; tr++) {
                         for (let tc = 0; tc < grid[tr].length; tc++) {
                             if (grid[tr][tc] === 1) {
-                                if (row === prow + tr && col === pcol + tc) {
+                                const boardR = prow + (tr - anchor.tileRow);
+                                const boardC = pcol + (tc - anchor.tileCol);
+                                if (row === boardR && col === boardC) {
                                     cell.classList.add('preview');
                                     // Preview house overlay
                                     if (tile.houses && tile.houses[tr][tc]) {
                                         const houseElement = document.createElement('div');
                                         houseElement.className = `house ${tile.houses[tr][tc]} preview`;
                                         houseElement.textContent = tile.houses[tr][tc] === 'red' ? '🏠' : '🏘️';
+                                        houseElement.style.position = 'absolute';
+                                        houseElement.style.top = '50%';
+                                        houseElement.style.left = '50%';
+                                        houseElement.style.transform = 'translate(-50%, -50%)';
+                                        houseElement.style.fontSize = '1.5em';
+                                        houseElement.style.zIndex = '10';
+                                        cell.style.position = 'relative';
                                         cell.appendChild(houseElement);
                                     }
                                 }
@@ -500,28 +554,38 @@ class UrosGame {
                         }
                     }
                 }
-
                 // Normal rendering
                 const tile = this.gameState.board[row][col];
                 if (tile) {
-                    const tileRow = row - tile.row;
-                    const tileCol = col - tile.col;
-                    const house = tile.houses[tileRow][tileCol];
-                    if (house) {
-                        const houseElement = document.createElement('div');
-                        houseElement.className = `house ${house}`;
-                        houseElement.textContent = house === 'red' ? '🏠' : '🏘️';
-                        cell.appendChild(houseElement);
-                    } else {
-                        // Make clickable for house placement
+                    // Use anchor if present, else fallback to old logic
+                    const anchor = tile.anchor || { tileRow: 0, tileCol: 0 };
+                    const tileRow = anchor.tileRow + (row - tile.row);
+                    const tileCol = anchor.tileCol + (col - tile.col);
+                    if (tile.shape_grid[tileRow] && tile.shape_grid[tileRow][tileCol] === 1) {
+                        cell.classList.add('island');
+                        cell.style.backgroundColor = '#22c55e';
                         cell.style.cursor = 'pointer';
-                        cell.style.border = '2px dashed #ffffff';
+                        const house = tile.houses[tileRow][tileCol];
+                        if (house) {
+                            const houseElement = document.createElement('div');
+                            houseElement.className = `house ${house}`;
+                            houseElement.textContent = house === 'red' ? '🏠' : '🏘️';
+                            houseElement.style.position = 'absolute';
+                            houseElement.style.top = '50%';
+                            houseElement.style.left = '50%';
+                            houseElement.style.transform = 'translate(-50%, -50%)';
+                            houseElement.style.fontSize = '1.5em';
+                            houseElement.style.zIndex = '10';
+                            cell.style.position = 'relative';
+                            cell.appendChild(houseElement);
+                        }
+                    } else {
+                        cell.style.backgroundColor = '#0ea5e9';
                     }
                 } else {
-                    // Make clickable for tile placement
+                    cell.style.backgroundColor = '#0ea5e9';
                     cell.style.cursor = 'pointer';
                 }
-
                 board.appendChild(cell);
             }
         }
@@ -612,13 +676,11 @@ class UrosGame {
         }
     }
 
-
-
     placeHouseOnReedbed(tile, tileRow, tileCol, player) {
         if (!tile || this.gameState.players[player].houses <= 0) return false;
 
-        // Check if the tile square is empty
-        if (tile.houses[tileRow][tileCol] !== null) return false;
+        // Check if this is an island cell (green) and the square is empty
+        if (tile.shape_grid[tileRow][tileCol] !== 1 || tile.houses[tileRow][tileCol] !== null) return false;
 
         tile.houses[tileRow][tileCol] = player;
         this.gameState.players[player].houses--;
@@ -655,8 +717,6 @@ class UrosGame {
             this.startNewGame();
         });
     }
-
-
 
     /**
      * Centralized click handling system using event delegation
@@ -843,7 +903,7 @@ class UrosGame {
     }
 
     /**
-     * Handle tile placement on the main board
+     * Handle tile placement on the main board with snapping
      */
     handleBoardTilePlacement(row, col) {
         if (!this.interactionState.selectedTile) {
@@ -854,9 +914,10 @@ class UrosGame {
             console.error('Must be in tile placement mode');
             return;
         }
-
-        if (this.canPlaceTile(this.interactionState.selectedTile, row, col)) {
-            const placed = this.placeTile(this.interactionState.selectedTile, row, col);
+        // Use the same snapping logic as preview to find the best placement position
+        const bestPosition = this.findBestTilePlacement(row, col);
+        if (bestPosition) {
+            const placed = this.placeTile(this.interactionState.selectedTile, bestPosition.row, bestPosition.col, bestPosition.anchor.tileRow, bestPosition.anchor.tileCol);
             if (placed) {
                 this.completeInteraction();
                 this.nextTurn();
@@ -864,7 +925,7 @@ class UrosGame {
                 console.error('Failed to place tile despite validation');
             }
         } else {
-            console.warn('Cannot place tile at', row, col);
+            console.warn('No valid placement found near', row, col);
         }
     }
 
@@ -916,7 +977,7 @@ class UrosGame {
     }
 
     /**
-     * Set up tile preview handling for the board
+     * Set up tile preview handling for the board with snapping
      */
     setupTilePreviewHandling() {
         const board = document.getElementById('lake-board');
@@ -924,34 +985,35 @@ class UrosGame {
             console.error('Lake board must exist');
             return;
         }
-
         // Remove existing preview handlers
         if (this.tilePreviewHandler) {
             board.removeEventListener('mousemove', this.tilePreviewHandler);
             board.removeEventListener('mouseleave', this.tilePreviewHandler);
             this.tilePreviewHandler = null;
         }
-
         this.tilePreviewHandler = (e) => {
             if (this.interactionState.mode !== 'tile-placement') return;
-
             const rect = board.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
             const cellSize = rect.width / this.boardSize;
             const col = Math.floor(x / cellSize);
             const row = Math.floor(y / cellSize);
-
             if (row < 0 || row >= this.boardSize || col < 0 || col >= this.boardSize) {
                 this.interactionState.preview = null;
                 this.renderBoard();
                 return;
             }
-
             if (e.type === 'mousemove') {
-                const canPlace = this.canPlaceTile(this.interactionState.selectedTile, row, col);
-                if (canPlace) {
-                    this.interactionState.preview = { row, col, tile: this.interactionState.selectedTile };
+                // Try to find the best placement position near the mouse
+                const bestPosition = this.findBestTilePlacement(row, col);
+                if (bestPosition) {
+                    this.interactionState.preview = {
+                        row: bestPosition.row,
+                        col: bestPosition.col,
+                        anchor: bestPosition.anchor,
+                        tile: this.interactionState.selectedTile
+                    };
                 } else {
                     this.interactionState.preview = null;
                 }
@@ -961,9 +1023,53 @@ class UrosGame {
                 this.renderBoard();
             }
         };
-
         board.addEventListener('mousemove', this.tilePreviewHandler);
         board.addEventListener('mouseleave', this.tilePreviewHandler);
+    }
+
+    /**
+     * Find the best placement position for a tile near the given coordinates
+     * Clamp anchor cell to the board edge, never offset up/left. Only green cells matter.
+     */
+    findBestTilePlacement(centerRow, centerCol) {
+        if (!this.interactionState.selectedTile) return null;
+        const tile = this.interactionState.selectedTile;
+        const grid = tile.shape_grid;
+        const rows = grid.length;
+        const cols = grid[0].length;
+
+        // Try to anchor any green cell at the mouse position, clamped to the board
+        let best = null;
+        let bestDist = Infinity;
+        for (let tr = 0; tr < rows; tr++) {
+            for (let tc = 0; tc < cols; tc++) {
+                if (grid[tr][tc] !== 1) continue;
+                // Clamp anchor so all green cells stay on the board
+                let minRow = centerRow, minCol = centerCol;
+                for (let r = 0; r < rows; r++) {
+                    for (let c = 0; c < cols; c++) {
+                        if (grid[r][c] !== 1) continue;
+                        const br = centerRow + (r - tr);
+                        const bc = centerCol + (c - tc);
+                        if (br < 0) minRow = Math.max(minRow, tr - r);
+                        if (br >= this.boardSize) minRow = Math.min(minRow, this.boardSize - 1 - (r - tr));
+                        if (bc < 0) minCol = Math.max(minCol, tc - c);
+                        if (bc >= this.boardSize) minCol = Math.min(minCol, this.boardSize - 1 - (c - tc));
+                    }
+                }
+                // Now try this clamped anchor
+                const anchorRow = minRow;
+                const anchorCol = minCol;
+                if (this.canPlaceTile(tile, anchorRow, anchorCol, tr, tc)) {
+                    const dist = Math.abs(anchorRow - centerRow) + Math.abs(anchorCol - centerCol);
+                    if (dist < bestDist) {
+                        best = { row: anchorRow, col: anchorCol, anchor: { tileRow: tr, tileCol: tc }, tile };
+                        bestDist = dist;
+                    }
+                }
+            }
+        }
+        return best;
     }
 
     /**
