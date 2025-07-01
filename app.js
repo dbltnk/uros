@@ -112,8 +112,9 @@ class UrosGame {
         const rotated = { ...tile };
         rotated.rotation = (rotated.rotation + direction) % 4;
 
-        // Rotate the shape grid
+        // Rotate both the shape grid and houses array
         const grid = rotated.shape_grid;
+        const houses = rotated.houses;
         const rows = grid.length;
         const cols = grid[0].length;
 
@@ -122,19 +123,26 @@ class UrosGame {
         const isClockwise = direction > 0;
 
         for (let i = 0; i < absDirection; i++) {
+            // Rotate shape grid
             const newGrid = Array(cols).fill(null).map(() => Array(rows).fill(0));
+            // Rotate houses array
+            const newHouses = Array(cols).fill(null).map(() => Array(rows).fill(null));
+
             for (let r = 0; r < rows; r++) {
                 for (let c = 0; c < cols; c++) {
                     if (isClockwise) {
                         // Clockwise rotation
                         newGrid[c][rows - 1 - r] = grid[r][c];
+                        newHouses[c][rows - 1 - r] = houses[r][c];
                     } else {
                         // Counter-clockwise rotation
                         newGrid[cols - 1 - c][r] = grid[r][c];
+                        newHouses[cols - 1 - c][r] = houses[r][c];
                     }
                 }
             }
             rotated.shape_grid = newGrid;
+            rotated.houses = newHouses;
         }
 
         return rotated;
@@ -883,8 +891,8 @@ class UrosGame {
     }
 
     /**
-     * Handle house placement on the main board
-     */
+ * Handle house placement on the main board
+ */
     handleBoardHousePlacement(row, col) {
         if (!this.interactionState.selectedPlayer) {
             console.error('Player must be selected for house placement');
@@ -901,8 +909,10 @@ class UrosGame {
             return;
         }
 
-        const tileRow = row - tile.row;
-        const tileCol = col - tile.col;
+        // Use anchor system to convert board coordinates to tile coordinates
+        const anchor = tile.anchor || { tileRow: 0, tileCol: 0 };
+        const tileRow = anchor.tileRow + (row - tile.row);
+        const tileCol = anchor.tileCol + (col - tile.col);
 
         if (this.placeHouse(tile, tileRow, tileCol, this.interactionState.selectedPlayer)) {
             this.completeInteraction();
@@ -1127,6 +1137,7 @@ class UrosGame {
                 throw new Error('Reedbed tile must have shape_grid and rotation');
             }
             reedbedTile.shape_grid = rotated.shape_grid.map(row => [...row]);
+            reedbedTile.houses = rotated.houses.map(row => [...row]);
             reedbedTile.rotation = rotated.rotation;
         }
 
@@ -1188,9 +1199,16 @@ class UrosGame {
             for (let col = 0; col < this.boardSize; col++) {
                 const tile = this.gameState.board[row][col];
                 if (tile) {
-                    const tileRow = row - tile.row;
-                    const tileCol = col - tile.col;
-                    if (tile.shape_grid[tileRow][tileCol] === 1 && tile.houses[tileRow][tileCol] === null) {
+                    // Use anchor system to convert board coordinates to tile coordinates
+                    const anchor = tile.anchor || { tileRow: 0, tileCol: 0 };
+                    const tileRow = anchor.tileRow + (row - tile.row);
+                    const tileCol = anchor.tileCol + (col - tile.col);
+
+                    // Check bounds and validity
+                    if (tileRow >= 0 && tileRow < tile.shape_grid.length &&
+                        tileCol >= 0 && tileCol < tile.shape_grid[0].length &&
+                        tile.shape_grid[tileRow][tileCol] === 1 &&
+                        tile.houses[tileRow][tileCol] === null) {
                         const idx = row * this.boardSize + col;
                         const cell = document.getElementsByClassName('lake-cell')[idx];
                         if (cell) cell.classList.add('highlight-house-cell');

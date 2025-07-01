@@ -1,735 +1,445 @@
-=== SESSION START: session-1751372337818 ===
-[13:18:57] WARN: cdn.tailwindcss.com should not be used in production. To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: https://tailwindcss.com/docs/installation
+=== SESSION START: session-1751372550716 ===
+[13:22:30] WARN: cdn.tailwindcss.com should not be used in production. To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: https://tailwindcss.com/docs/installation
   @62:index.html → @64:https://cdn.tailwindcss.com/ → @64:https://cdn.tailwindcss.com/
-[13:18:57] LOG: Browser logging system initialized
-  @1342:app.js → @1285:app.js → @1262:app.js → @1573:app.js
-[13:18:57] LOG: Initializing Uros game
-  @1342:app.js → @31:app.js → @27:app.js → @1576:app.js
-[13:18:57] LOG: Uros game and logging system initialized
-  @1342:app.js → @36:app.js → @27:app.js → @1576:app.js
-[13:18:57] LOG: Uros game and logging system initialized
-  @1342:app.js → @1579:app.js
-[13:18:57] LOG: Loaded 9 tiles
-  @1342:app.js → @49:app.js
-[13:18:57] LOG: Starting new game
-  @1342:app.js → @76:app.js → @50:app.js
-[13:18:57] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @522:app.js → @106:app.js → @50:app.js
-[13:18:58] LOG: Looking for tile with ID: 0 Available tiles: [0,1,2,3,4,5,6,7,8]
-  @1342:app.js → @774:app.js
-[13:18:58] LOG: Tile selected: T-tetromino
-  @1342:app.js → @980:app.js → @780:app.js
-[13:18:58] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @522:app.js → @985:app.js → @780:app.js
-[13:18:58] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:18:58] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:18:58] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:18:58] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:18:58] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:18:58] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:18:58] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:18:58] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:18:58] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:18:58] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:18:58] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:18:58] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:18:58] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @522:app.js → @1148:app.js → @1097:app.js
-[13:18:59] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @522:app.js → @1148:app.js → @1097:app.js
-[13:18:59] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @522:app.js → @1148:app.js → @1097:app.js
-[13:19:00] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @522:app.js → @1148:app.js → @1097:app.js
-[13:19:00] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @522:app.js → @1148:app.js → @1097:app.js
-[13:19:00] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @522:app.js → @1148:app.js → @1097:app.js
-[13:19:00] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @522:app.js → @1148:app.js → @1097:app.js
-[13:19:00] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:00] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:00] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:00] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:00] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:00] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:00] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:00] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:00] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:00] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:00] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:00] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:00] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:00] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:00] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:00] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:00] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:00] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:00] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:01] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:01] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:01] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:01] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:01] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:01] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:01] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:01] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:01] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:01] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @522:app.js → @1148:app.js → @1097:app.js
-[13:19:01] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @522:app.js → @1148:app.js → @1097:app.js
-[13:19:02] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:02] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:02] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:02] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:02] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:02] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:02] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:02] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:02] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:02] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @522:app.js → @1148:app.js → @1097:app.js
-[13:19:02] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:02] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:02] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:02] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:02] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:02] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:02] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:02] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:02] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:02] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:02] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:02] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:02] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:02] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:02] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:02] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:02] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:02] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:02] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:02] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:02] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:02] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:02] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:02] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:02] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:03] LOG: Board cell clicked: {"row":4,"col":4,"mode":"tile-placement"}
-  @1342:app.js → @874:app.js → @757:app.js
-[13:19:03] LOG: Placed tile T-tetromino at (4, 4) with anchor (1,1)
-  @1342:app.js → @248:app.js → @930:app.js → @879:app.js → @757:app.js
-[13:19:03] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @522:app.js → @1240:app.js → @932:app.js → @879:app.js → @757:app.js
-[13:19:03] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @522:app.js → @493:app.js → @933:app.js → @879:app.js → @757:app.js
-[13:19:03] LOG: Looking for tile with ID: 7 Available tiles: [1,2,3,4,5,6,7,8]
-  @1342:app.js → @774:app.js
-[13:19:03] LOG: Tile selected: F-pentomino-variant
-  @1342:app.js → @980:app.js → @780:app.js
-[13:19:03] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @522:app.js → @985:app.js → @780:app.js
-[13:19:03] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:03] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:03] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:03] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:03] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:03] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:03] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:03] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:03] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:03] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:03] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:03] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:04] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:04] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:04] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:04] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:04] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:04] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:04] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:04] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:04] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:04] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:04] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:04] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:04] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:04] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:04] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:04] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:04] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:04] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:04] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:04] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:04] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:04] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:04] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:04] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:04] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:04] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:04] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:04] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:04] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:04] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:05] LOG: Board cell clicked: {"row":5,"col":2,"mode":"tile-placement"}
-  @1342:app.js → @874:app.js → @757:app.js
-[13:19:05] LOG: Placed tile F-pentomino-variant at (5, 2) with anchor (2,1)
-  @1342:app.js → @248:app.js → @930:app.js → @879:app.js → @757:app.js
-[13:19:05] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @522:app.js → @1240:app.js → @932:app.js → @879:app.js → @757:app.js
-[13:19:05] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @522:app.js → @493:app.js → @933:app.js → @879:app.js → @757:app.js
-[13:19:05] LOG: Looking for tile with ID: 8 Available tiles: [1,2,3,4,5,6,8]
-  @1342:app.js → @774:app.js
-[13:19:05] LOG: Tile selected: C-pentomino
-  @1342:app.js → @980:app.js → @780:app.js
-[13:19:05] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @522:app.js → @985:app.js → @780:app.js
-[13:19:05] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:05] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:05] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:05] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:05] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:06] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:06] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:06] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:06] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:06] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:06] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:06] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:06] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:06] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:06] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:06] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:06] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:06] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:06] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:06] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:06] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:06] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:06] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:06] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:06] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:06] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:06] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:06] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:06] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:06] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:06] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:06] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:06] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:06] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:06] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:06] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:06] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:06] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:06] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:06] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:06] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:06] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:06] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:06] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:06] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:06] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:06] LOG: Board cell clicked: {"row":5,"col":0,"mode":"tile-placement"}
-  @1342:app.js → @874:app.js → @757:app.js
-[13:19:06] LOG: Placed tile C-pentomino at (5, 0) with anchor (2,0)
-  @1342:app.js → @248:app.js → @930:app.js → @879:app.js → @757:app.js
-[13:19:06] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @522:app.js → @1240:app.js → @932:app.js → @879:app.js → @757:app.js
-[13:19:06] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @522:app.js → @493:app.js → @933:app.js → @879:app.js → @757:app.js
-[13:19:07] LOG: Looking for tile with ID: 4 Available tiles: [1,2,3,4,5,6]
-  @1342:app.js → @774:app.js
-[13:19:07] LOG: Tile selected: P-pentomino
-  @1342:app.js → @980:app.js → @780:app.js
-[13:19:07] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @522:app.js → @985:app.js → @780:app.js
-[13:19:07] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:07] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:07] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:07] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:07] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:07] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:07] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:07] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:07] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:07] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:07] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:07] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:07] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:07] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:07] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:07] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:08] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:08] LOG: Board cell clicked: {"row":1,"col":0,"mode":"tile-placement"}
-  @1342:app.js → @874:app.js → @757:app.js
-[13:19:08] LOG: Placed tile P-pentomino at (1, 0) with anchor (1,0)
-  @1342:app.js → @248:app.js → @930:app.js → @879:app.js → @757:app.js
-[13:19:08] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @522:app.js → @1240:app.js → @932:app.js → @879:app.js → @757:app.js
-[13:19:08] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @522:app.js → @493:app.js → @933:app.js → @879:app.js → @757:app.js
-[13:19:08] LOG: Looking for tile with ID: 1 Available tiles: [1,2,3,5,6]
-  @1342:app.js → @774:app.js
-[13:19:08] LOG: Tile selected: S-tetromino
-  @1342:app.js → @980:app.js → @780:app.js
-[13:19:08] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @522:app.js → @985:app.js → @780:app.js
-[13:19:08] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:08] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:08] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:08] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:08] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:08] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:08] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:08] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:08] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:09] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:09] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:09] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:09] LOG: Board cell clicked: {"row":2,"col":1,"mode":"tile-placement"}
-  @1342:app.js → @874:app.js → @757:app.js
-[13:19:09] LOG: Placed tile S-tetromino at (2, 1) with anchor (1,0)
-  @1342:app.js → @248:app.js → @930:app.js → @879:app.js → @757:app.js
-[13:19:09] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @522:app.js → @1240:app.js → @932:app.js → @879:app.js → @757:app.js
-[13:19:09] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @522:app.js → @493:app.js → @933:app.js → @879:app.js → @757:app.js
-[13:19:09] LOG: Looking for tile with ID: 2 Available tiles: [2,3,5,6]
-  @1342:app.js → @774:app.js
-[13:19:09] LOG: Tile selected: Domino
-  @1342:app.js → @980:app.js → @780:app.js
-[13:19:09] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @522:app.js → @985:app.js → @780:app.js
-[13:19:09] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:09] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:09] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:09] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:10] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:11] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:11] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:11] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:11] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:11] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:11] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:11] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:11] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:11] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:11] LOG: Board cell clicked: {"row":3,"col":5,"mode":"tile-placement"}
-  @1342:app.js → @874:app.js → @757:app.js
-[13:19:11] LOG: Placed tile Domino at (3, 5) with anchor (0,1)
-  @1342:app.js → @248:app.js → @930:app.js → @879:app.js → @757:app.js
-[13:19:11] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @522:app.js → @1240:app.js → @932:app.js → @879:app.js → @757:app.js
-[13:19:11] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @522:app.js → @493:app.js → @933:app.js → @879:app.js → @757:app.js
-[13:19:12] LOG: Looking for tile with ID: 3 Available tiles: [3,5,6]
-  @1342:app.js → @774:app.js
-[13:19:12] LOG: Tile selected: L-tetromino
-  @1342:app.js → @980:app.js → @780:app.js
-[13:19:12] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @522:app.js → @985:app.js → @780:app.js
-[13:19:12] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:12] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:12] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:12] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:12] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:13] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:13] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:13] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @522:app.js → @1148:app.js → @1097:app.js
-[13:19:13] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:13] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:13] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:13] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:13] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:13] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:13] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:13] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:13] LOG: Board cell clicked: {"row":2,"col":4,"mode":"tile-placement"}
-  @1342:app.js → @874:app.js → @757:app.js
-[13:19:13] LOG: Placed tile L-tetromino at (2, 4) with anchor (2,1)
-  @1342:app.js → @248:app.js → @930:app.js → @879:app.js → @757:app.js
-[13:19:13] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @522:app.js → @1240:app.js → @932:app.js → @879:app.js → @757:app.js
-[13:19:13] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @522:app.js → @493:app.js → @933:app.js → @879:app.js → @757:app.js
-[13:19:14] LOG: Looking for tile with ID: 5 Available tiles: [5,6]
-  @1342:app.js → @774:app.js
-[13:19:14] LOG: Tile selected: L-tromino
-  @1342:app.js → @980:app.js → @780:app.js
-[13:19:14] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @522:app.js → @985:app.js → @780:app.js
-[13:19:14] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:14] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:14] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:14] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:14] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:14] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:14] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:14] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:14] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:14] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:14] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:14] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:14] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @1030:app.js
-[13:19:14] LOG: Board cell clicked: {"row":1,"col":4,"mode":"tile-placement"}
-  @1342:app.js → @874:app.js → @757:app.js
-[13:19:14] LOG: Placed tile L-tromino at (1, 4) with anchor (1,0)
-  @1342:app.js → @248:app.js → @930:app.js → @879:app.js → @757:app.js
-[13:19:14] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @522:app.js → @1240:app.js → @932:app.js → @879:app.js → @757:app.js
-[13:19:14] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @522:app.js → @493:app.js → @933:app.js → @879:app.js → @757:app.js
-[13:19:16] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @522:app.js → @1173:app.js → @709:app.js
-[13:19:16] ERROR: Uncaught error: Uncaught TypeError: Cannot read properties of undefined (reading '0') at http://localhost:52330/app.js:1193
-  @1323:app.js
-[13:19:17] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @522:app.js → @1240:app.js → @1247:app.js → @831:app.js
-[13:19:18] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @522:app.js → @1173:app.js → @709:app.js
-[13:19:18] ERROR: Uncaught error: Uncaught TypeError: Cannot read properties of undefined (reading '0') at http://localhost:52330/app.js:1193
-  @1323:app.js
-[13:19:18] LOG: Rendering board with size: 6
-  @1342:app.js → @530:app.js → @522:app.js → @1240:app.js → @1247:app.js → @831:app.js
+[13:22:30] LOG: Browser logging system initialized
+  @1360:app.js → @1303:app.js → @1280:app.js → @1591:app.js
+[13:22:30] LOG: Initializing Uros game
+  @1360:app.js → @31:app.js → @27:app.js → @1594:app.js
+[13:22:30] LOG: Uros game and logging system initialized
+  @1360:app.js → @36:app.js → @27:app.js → @1594:app.js
+[13:22:30] LOG: Uros game and logging system initialized
+  @1360:app.js → @1597:app.js
+[13:22:30] LOG: Loaded 9 tiles
+  @1360:app.js → @49:app.js
+[13:22:30] LOG: Starting new game
+  @1360:app.js → @76:app.js → @50:app.js
+[13:22:30] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @106:app.js → @50:app.js
+[13:22:31] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @1184:app.js → @717:app.js
+[13:22:32] LOG: red placed house on reedbed tile at (2, 0)
+  @1360:app.js → @706:app.js → @969:app.js → @808:app.js
+[13:22:32] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @1258:app.js → @970:app.js → @808:app.js
+[13:22:32] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @501:app.js → @971:app.js → @808:app.js
+[13:22:33] LOG: Looking for tile with ID: 4 Available tiles: [0,1,2,3,4,5,6,7,8]
+  @1360:app.js → @782:app.js
+[13:22:33] LOG: Tile selected: P-pentomino
+  @1360:app.js → @990:app.js → @788:app.js
+[13:22:33] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @995:app.js → @788:app.js
+[13:22:33] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:33] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:33] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:33] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:33] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:33] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1024:app.js
+[13:22:34] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:34] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:34] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:34] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:34] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1024:app.js
+[13:22:34] LOG: Looking for tile with ID: 4 Available tiles: [0,1,2,3,4,5,6,7,8]
+  @1360:app.js → @782:app.js
+[13:22:34] LOG: Tile selected: P-pentomino
+  @1360:app.js → @990:app.js → @788:app.js
+[13:22:34] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @995:app.js → @788:app.js
+[13:22:35] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:35] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:35] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:35] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:35] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:35] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:35] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1024:app.js
+[13:22:35] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @1184:app.js → @723:app.js
+[13:22:36] LOG: blue placed house on reedbed tile at (0, 0)
+  @1360:app.js → @706:app.js → @969:app.js → @808:app.js
+[13:22:36] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @1258:app.js → @970:app.js → @808:app.js
+[13:22:36] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @501:app.js → @971:app.js → @808:app.js
+[13:22:37] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @1184:app.js → @723:app.js
+[13:22:38] LOG: blue placed house on reedbed tile at (1, 1)
+  @1360:app.js → @706:app.js → @969:app.js → @808:app.js
+[13:22:38] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @1258:app.js → @970:app.js → @808:app.js
+[13:22:38] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @501:app.js → @971:app.js → @808:app.js
+[13:22:38] LOG: Looking for tile with ID: 4 Available tiles: [0,1,2,3,4,5,6,7,8]
+  @1360:app.js → @782:app.js
+[13:22:38] LOG: Tile selected: P-pentomino
+  @1360:app.js → @990:app.js → @788:app.js
+[13:22:38] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @995:app.js → @788:app.js
+[13:22:39] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:39] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:39] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:39] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:39] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:39] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:39] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:39] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:39] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:39] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:39] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:39] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:39] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:39] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:39] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @1159:app.js → @1107:app.js
+[13:22:40] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @1159:app.js → @1107:app.js
+[13:22:40] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @1159:app.js → @1107:app.js
+[13:22:41] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @1159:app.js → @1107:app.js
+[13:22:41] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @1159:app.js → @1107:app.js
+[13:22:42] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @1159:app.js → @1107:app.js
+[13:22:43] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @1159:app.js → @1107:app.js
+[13:22:44] LOG: Board cell clicked: {"row":2,"col":1,"mode":"tile-placement"}
+  @1360:app.js → @882:app.js → @765:app.js
+[13:22:44] LOG: Placed tile P-pentomino at (2, 1) with anchor (0,0)
+  @1360:app.js → @256:app.js → @940:app.js → @887:app.js → @765:app.js
+[13:22:44] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @1258:app.js → @942:app.js → @887:app.js → @765:app.js
+[13:22:44] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @501:app.js → @943:app.js → @887:app.js → @765:app.js
+[13:22:45] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @1184:app.js → @717:app.js
+[13:22:46] LOG: Board cell clicked: {"row":3,"col":3,"mode":"house-placement"}
+  @1360:app.js → @882:app.js → @765:app.js
+[13:22:46] LOG: red placed house at tile (1, 2)
+  @1360:app.js → @276:app.js → @917:app.js → @885:app.js → @765:app.js
+[13:22:46] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @1258:app.js → @918:app.js → @885:app.js → @765:app.js
+[13:22:46] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @501:app.js → @919:app.js → @885:app.js → @765:app.js
+[13:22:46] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @1184:app.js → @723:app.js
+[13:22:47] LOG: Board cell clicked: {"row":2,"col":2,"mode":"house-placement"}
+  @1360:app.js → @882:app.js → @765:app.js
+[13:22:47] LOG: blue placed house at tile (0, 1)
+  @1360:app.js → @276:app.js → @917:app.js → @885:app.js → @765:app.js
+[13:22:47] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @1258:app.js → @918:app.js → @885:app.js → @765:app.js
+[13:22:47] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @501:app.js → @919:app.js → @885:app.js → @765:app.js
+[13:22:48] LOG: Looking for tile with ID: 6 Available tiles: [0,1,2,3,5,6,7,8]
+  @1360:app.js → @782:app.js
+[13:22:48] LOG: Tile selected: I-tromino
+  @1360:app.js → @990:app.js → @788:app.js
+[13:22:48] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @995:app.js → @788:app.js
+[13:22:48] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:48] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:48] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:48] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:48] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:48] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:48] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:48] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:48] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:48] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:48] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:48] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:48] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:48] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:48] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:48] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:48] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:48] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:48] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:48] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:48] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:48] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:48] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:48] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:48] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:48] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:48] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:48] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:48] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:48] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:48] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:48] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:48] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:48] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:48] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:49] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @1159:app.js → @1107:app.js
+[13:22:49] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:49] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:49] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:49] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:49] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:49] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:49] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:49] LOG: Board cell clicked: {"row":4,"col":0,"mode":"tile-placement"}
+  @1360:app.js → @882:app.js → @765:app.js
+[13:22:49] LOG: Placed tile I-tromino at (4, 0) with anchor (1,0)
+  @1360:app.js → @256:app.js → @940:app.js → @887:app.js → @765:app.js
+[13:22:49] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @1258:app.js → @942:app.js → @887:app.js → @765:app.js
+[13:22:49] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @501:app.js → @943:app.js → @887:app.js → @765:app.js
+[13:22:50] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @1184:app.js → @717:app.js
+[13:22:50] LOG: Board cell clicked: {"row":3,"col":0,"mode":"house-placement"}
+  @1360:app.js → @882:app.js → @765:app.js
+[13:22:50] LOG: red placed house at tile (0, 0)
+  @1360:app.js → @276:app.js → @917:app.js → @885:app.js → @765:app.js
+[13:22:50] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @1258:app.js → @918:app.js → @885:app.js → @765:app.js
+[13:22:50] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @501:app.js → @919:app.js → @885:app.js → @765:app.js
+[13:22:51] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @1184:app.js → @717:app.js
+[13:22:51] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @1258:app.js → @1265:app.js → @839:app.js
+[13:22:52] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @1184:app.js → @717:app.js
+[13:22:52] LOG: Board cell clicked: {"row":4,"col":0,"mode":"house-placement"}
+  @1360:app.js → @882:app.js → @765:app.js
+[13:22:52] LOG: red placed house at tile (1, 0)
+  @1360:app.js → @276:app.js → @917:app.js → @885:app.js → @765:app.js
+[13:22:52] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @1258:app.js → @918:app.js → @885:app.js → @765:app.js
+[13:22:52] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @501:app.js → @919:app.js → @885:app.js → @765:app.js
+[13:22:53] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @1184:app.js → @723:app.js
+[13:22:53] LOG: Board cell clicked: {"row":5,"col":0,"mode":"house-placement"}
+  @1360:app.js → @882:app.js → @765:app.js
+[13:22:53] LOG: blue placed house at tile (2, 0)
+  @1360:app.js → @276:app.js → @917:app.js → @885:app.js → @765:app.js
+[13:22:53] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @1258:app.js → @918:app.js → @885:app.js → @765:app.js
+[13:22:53] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @501:app.js → @919:app.js → @885:app.js → @765:app.js
+[13:22:54] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @1184:app.js → @723:app.js
+[13:22:55] LOG: blue placed house on reedbed tile at (2, 1)
+  @1360:app.js → @706:app.js → @969:app.js → @808:app.js
+[13:22:55] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @1258:app.js → @970:app.js → @808:app.js
+[13:22:55] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @501:app.js → @971:app.js → @808:app.js
+[13:22:55] LOG: Looking for tile with ID: 3 Available tiles: [0,1,2,3,5,7,8]
+  @1360:app.js → @782:app.js
+[13:22:55] LOG: Tile selected: L-tetromino
+  @1360:app.js → @990:app.js → @788:app.js
+[13:22:55] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @995:app.js → @788:app.js
+[13:22:55] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:55] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:55] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:55] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:55] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:55] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:55] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:55] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:55] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:55] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:55] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:55] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:55] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:55] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:55] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:55] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:55] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:55] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:55] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:55] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:55] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:55] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:55] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:55] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:56] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:56] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:56] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:56] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:56] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:56] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:56] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:56] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:56] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:56] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:56] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:56] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:56] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:56] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:56] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:56] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:56] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:56] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:56] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @1159:app.js → @1107:app.js
+[13:22:56] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:56] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:56] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:56] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:56] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:56] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:56] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:56] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:57] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:57] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:57] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:57] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:57] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:57] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:57] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:57] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:57] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:57] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:57] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:57] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @1040:app.js
+[13:22:58] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @1258:app.js → @1265:app.js → @1112:app.js
+[13:22:59] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @1184:app.js → @717:app.js
+[13:23:00] LOG: Rendering board with size: 6
+  @1360:app.js → @538:app.js → @530:app.js → @1258:app.js → @1265:app.js → @1112:app.js
