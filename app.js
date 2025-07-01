@@ -284,7 +284,7 @@ class UrosGame {
         const visited = new Set();
         const villages = { red: [], blue: [] };
 
-        // Find all villages for each player on placed tiles
+        // Only consider villages for houses on placed tiles (lake board), per rules
         for (const tile of this.gameState.placedTiles) {
             for (let r = 0; r < tile.houses.length; r++) {
                 for (let c = 0; c < tile.houses[r].length; c++) {
@@ -292,22 +292,6 @@ class UrosGame {
                     // Only consider houses on island cells (green cells)
                     if (player && tile.shape_grid[r][c] === 1 && !visited.has(`placed-${tile.id}-${r}-${c}`)) {
                         const village = this.floodFill(tile, r, c, player, visited, true);
-                        if (village.length > 0) {
-                            villages[player].push(village);
-                        }
-                    }
-                }
-            }
-        }
-
-        // Find all villages for each player on reedbed tiles
-        for (const tile of this.gameState.reedbed) {
-            for (let r = 0; r < tile.houses.length; r++) {
-                for (let c = 0; c < tile.houses[r].length; c++) {
-                    const player = tile.houses[r][c];
-                    // Only consider houses on island cells (green cells)
-                    if (player && tile.shape_grid[r][c] === 1 && !visited.has(`reedbed-${tile.id}-${r}-${c}`)) {
-                        const village = this.floodFill(tile, r, c, player, visited, false);
                         if (village.length > 0) {
                             villages[player].push(village);
                         }
@@ -659,6 +643,47 @@ class UrosGame {
                 }
 
                 board.appendChild(cell);
+            }
+        }
+
+        // === ISLAND OUTLINES (PER-CELL CONTOUR) ===
+        // For each placed tile, add a high-contrast outline around its green cells
+        // Remove any previous .island-outline elements
+        document.querySelectorAll('.island-outline').forEach(el => el.remove());
+        for (const tile of this.gameState.placedTiles) {
+            const anchor = tile.anchor || { tileRow: 0, tileCol: 0 };
+            const grid = tile.shape_grid;
+            const rows = grid.length;
+            const cols = grid[0].length;
+            for (let tr = 0; tr < rows; tr++) {
+                for (let tc = 0; tc < cols; tc++) {
+                    if (grid[tr][tc] !== 1) continue;
+                    const boardRow = tile.row + (tr - anchor.tileRow);
+                    const boardCol = tile.col + (tc - anchor.tileCol);
+                    if (boardRow < 0 || boardRow >= this.boardSize || boardCol < 0 || boardCol >= this.boardSize) continue;
+                    // Find the corresponding cell
+                    const idx = boardRow * this.boardSize + boardCol;
+                    const cell = document.getElementsByClassName('lake-cell')[idx];
+                    if (!cell) continue;
+                    // For each side, if neighbor is not a green cell of the same tile, add a thick border
+                    const directions = [
+                        { dr: -1, dc: 0, style: 'borderTop' },
+                        { dr: 1, dc: 0, style: 'borderBottom' },
+                        { dr: 0, dc: -1, style: 'borderLeft' },
+                        { dr: 0, dc: 1, style: 'borderRight' }
+                    ];
+                    for (const dir of directions) {
+                        const ntr = tr + dir.dr;
+                        const ntc = tc + dir.dc;
+                        let isSameIslandNeighbor = false;
+                        if (ntr >= 0 && ntr < rows && ntc >= 0 && ntc < cols) {
+                            if (grid[ntr][ntc] === 1) isSameIslandNeighbor = true;
+                        }
+                        if (!isSameIslandNeighbor) {
+                            cell.style[dir.style] = '4px solid #000'; // High-contrast black
+                        }
+                    }
+                }
             }
         }
     }
