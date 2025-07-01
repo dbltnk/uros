@@ -365,10 +365,12 @@ class UrosGame {
                             pos.col >= 0 && pos.col < this.boardSize) {
                             const adjacentTile = this.gameState.board[pos.row][pos.col];
                             if (adjacentTile && adjacentTile !== tile) {
-                                // Find the relative position in the adjacent tile
-                                const adjTileRow = pos.row - adjacentTile.row;
-                                const adjTileCol = pos.col - adjacentTile.col;
-
+                                // Use anchor to convert board coordinates to tile-local coordinates
+                                const anchor = adjacentTile.anchor || { tileRow: 0, tileCol: 0 };
+                                const adjTileRow = anchor.tileRow + (pos.row - adjacentTile.row);
+                                const adjTileCol = anchor.tileCol + (pos.col - adjacentTile.col);
+                                // Defensive: assert bounds
+                                console.assert(adjTileRow >= 0 && adjTileRow < adjacentTile.houses.length && adjTileCol >= 0 && adjTileCol < adjacentTile.houses[0].length, 'adjTileRow/Col out of bounds');
                                 if (adjTileRow >= 0 && adjTileRow < adjacentTile.houses.length &&
                                     adjTileCol >= 0 && adjTileCol < adjacentTile.houses[0].length &&
                                     adjacentTile.shape_grid[adjTileRow][adjTileCol] === 1 &&
@@ -869,6 +871,88 @@ class UrosGame {
             }
         });
 
+        // House preview hover handling for lake board
+        board.addEventListener('mouseover', (e) => {
+            if (this.interactionState.mode === 'house-placement') {
+                const cell = e.target.closest('.lake-cell');
+                if (cell) {
+                    const row = parseInt(cell.dataset.row);
+                    const col = parseInt(cell.dataset.col);
+                    this.showHousePreviewOnBoard(row, col);
+                }
+            }
+        });
+
+        board.addEventListener('mouseout', (e) => {
+            if (this.interactionState.mode === 'house-placement') {
+                // Only clear if we're actually leaving the board area
+                const relatedTarget = e.relatedTarget;
+                if (!relatedTarget || !board.contains(relatedTarget)) {
+                    this.clearHousePreviewOnBoard();
+                }
+            }
+        });
+
+        // Use mousemove for more reliable preview updates
+        board.addEventListener('mousemove', (e) => {
+            if (this.interactionState.mode === 'house-placement') {
+                const cell = e.target.closest('.lake-cell');
+                if (cell) {
+                    const row = parseInt(cell.dataset.row);
+                    const col = parseInt(cell.dataset.col);
+                    this.showHousePreviewOnBoard(row, col);
+                }
+            }
+        });
+
+        // House preview hover handling for reedbed
+        reedbed.addEventListener('mouseover', (e) => {
+            if (this.interactionState.mode === 'house-placement') {
+                const cell = e.target.closest('.tile-cell');
+                if (cell) {
+                    const tileElement = cell.closest('.tile-preview');
+                    const tileId = parseInt(tileElement.dataset.tileId);
+                    const tile = this.gameState.reedbed.find(t => t.id === tileId);
+                    if (tile) {
+                        const tileGrid = cell.closest('.tile-grid');
+                        const cellIndex = Array.from(tileGrid.children).indexOf(cell);
+                        const row = Math.floor(cellIndex / 3);
+                        const col = cellIndex % 3;
+                        this.showHousePreviewOnReedbed(tile, row, col);
+                    }
+                }
+            }
+        });
+
+        reedbed.addEventListener('mouseout', (e) => {
+            if (this.interactionState.mode === 'house-placement') {
+                // Only clear if we're actually leaving the reedbed area
+                const relatedTarget = e.relatedTarget;
+                if (!relatedTarget || !reedbed.contains(relatedTarget)) {
+                    this.clearHousePreviewOnReedbed();
+                }
+            }
+        });
+
+        // Use mousemove for more reliable preview updates
+        reedbed.addEventListener('mousemove', (e) => {
+            if (this.interactionState.mode === 'house-placement') {
+                const cell = e.target.closest('.tile-cell');
+                if (cell) {
+                    const tileElement = cell.closest('.tile-preview');
+                    const tileId = parseInt(tileElement.dataset.tileId);
+                    const tile = this.gameState.reedbed.find(t => t.id === tileId);
+                    if (tile) {
+                        const tileGrid = cell.closest('.tile-grid');
+                        const cellIndex = Array.from(tileGrid.children).indexOf(cell);
+                        const row = Math.floor(cellIndex / 3);
+                        const col = cellIndex % 3;
+                        this.showHousePreviewOnReedbed(tile, row, col);
+                    }
+                }
+            }
+        });
+
         // Global keyboard handling
         this.setupKeyboardHandling();
 
@@ -1328,7 +1412,119 @@ class UrosGame {
             el.classList.remove('highlight-house-cell')
         );
 
+        // Clear house previews
+        this.clearHousePreviewOnBoard();
+        this.clearHousePreviewOnReedbed();
+
         this.render();
+    }
+
+    /**
+     * Show house preview on lake board cell
+     */
+    showHousePreviewOnBoard(row, col) {
+        if (this.interactionState.mode !== 'house-placement' || !this.interactionState.selectedPlayer) {
+            return;
+        }
+
+        const tile = this.gameState.board[row][col];
+        if (!tile) return;
+
+        // Use anchor system to convert board coordinates to tile coordinates
+        const anchor = tile.anchor || { tileRow: 0, tileCol: 0 };
+        const tileRow = anchor.tileRow + (row - tile.row);
+        const tileCol = anchor.tileCol + (col - tile.col);
+
+        // Check if this is a valid house placement location
+        if (tileRow >= 0 && tileRow < tile.shape_grid.length &&
+            tileCol >= 0 && tileCol < tile.shape_grid[0].length &&
+            tile.shape_grid[tileRow][tileCol] === 1 &&
+            tile.houses[tileRow][tileCol] === null) {
+
+            const idx = row * this.boardSize + col;
+            const cell = document.getElementsByClassName('lake-cell')[idx];
+            if (cell) {
+                // Clear any existing preview
+                this.clearHousePreviewOnBoard();
+
+                // Create preview house element
+                const previewHouse = document.createElement('div');
+                previewHouse.className = `house ${this.interactionState.selectedPlayer} preview`;
+                previewHouse.textContent = this.interactionState.selectedPlayer === 'red' ? '🏠' : '🏘️';
+                previewHouse.style.position = 'absolute';
+                previewHouse.style.top = '50%';
+                previewHouse.style.left = '50%';
+                previewHouse.style.transform = 'translate(-50%, -50%)';
+                previewHouse.style.fontSize = '1.5em';
+                previewHouse.style.zIndex = '10';
+                previewHouse.style.opacity = '0.7';
+                previewHouse.style.filter = 'brightness(1.2)';
+                previewHouse.style.pointerEvents = 'none';
+
+                cell.style.position = 'relative';
+                cell.appendChild(previewHouse);
+            }
+        }
+    }
+
+    /**
+     * Clear house preview on lake board
+     */
+    clearHousePreviewOnBoard() {
+        document.querySelectorAll('.lake-cell .house.preview').forEach(preview => {
+            preview.remove();
+        });
+    }
+
+    /**
+     * Show house preview on reedbed cell
+     */
+    showHousePreviewOnReedbed(tile, tileRow, tileCol) {
+        if (this.interactionState.mode !== 'house-placement' || !this.interactionState.selectedPlayer) {
+            return;
+        }
+
+        // Check if this is a valid house placement location
+        if (tileRow >= 0 && tileRow < tile.shape_grid.length &&
+            tileCol >= 0 && tileCol < tile.shape_grid[0].length &&
+            tile.shape_grid[tileRow][tileCol] === 1 &&
+            tile.houses[tileRow][tileCol] === null) {
+
+            const reedbed = document.getElementById('reedbed');
+            const tileElement = reedbed.querySelector(`[data-tile-id="${tile.id}"]`);
+            if (tileElement) {
+                const tileGrid = tileElement.querySelector('.tile-grid');
+                const cellIdx = tileRow * 3 + tileCol;
+                const cell = tileGrid.children[cellIdx];
+
+                if (cell) {
+                    // Clear any existing preview
+                    this.clearHousePreviewOnReedbed();
+
+                    // Create preview house element
+                    const previewHouse = document.createElement('div');
+                    previewHouse.className = `house ${this.interactionState.selectedPlayer} preview`;
+                    previewHouse.textContent = this.interactionState.selectedPlayer === 'red' ? '🏠' : '🏘️';
+                    previewHouse.style.width = '60%';
+                    previewHouse.style.height = '60%';
+                    previewHouse.style.fontSize = '0.6em';
+                    previewHouse.style.opacity = '0.7';
+                    previewHouse.style.filter = 'brightness(1.2)';
+                    previewHouse.style.pointerEvents = 'none';
+
+                    cell.appendChild(previewHouse);
+                }
+            }
+        }
+    }
+
+    /**
+     * Clear house preview on reedbed
+     */
+    clearHousePreviewOnReedbed() {
+        document.querySelectorAll('.tile-cell .house.preview').forEach(preview => {
+            preview.remove();
+        });
     }
 
     /**
