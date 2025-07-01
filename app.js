@@ -331,6 +331,9 @@ class UrosGame {
             if (visited.has(key)) continue;
             visited.add(key);
 
+            // Defensive: assert bounds
+            console.assert(row >= 0 && row < tile.houses.length && col >= 0 && col < tile.houses[0].length, 'floodFill: row/col out of bounds');
+
             if (tile.houses[row][col] === player && tile.shape_grid[row][col] === 1) {
                 village.push({ tile, row, col });
 
@@ -353,9 +356,11 @@ class UrosGame {
 
                 // Only check adjacent tiles if this is a placed tile
                 if (isPlacedTile) {
+                    // Compute the board coordinates of this house
+                    const boardRow = tile.row + (row - (tile.anchor ? tile.anchor.tileRow : 0));
+                    const boardCol = tile.col + (col - (tile.anchor ? tile.anchor.tileCol : 0));
+
                     // Check orthogonal neighbors on adjacent tiles
-                    const boardRow = tile.row + row;
-                    const boardCol = tile.col + col;
                     const adjacentPositions = [
                         { row: boardRow - 1, col: boardCol },
                         { row: boardRow + 1, col: boardCol },
@@ -368,19 +373,19 @@ class UrosGame {
                             pos.col >= 0 && pos.col < this.boardSize) {
                             const adjacentTile = this.gameState.board[pos.row][pos.col];
                             if (adjacentTile && adjacentTile !== tile) {
-                                // Use anchor to convert board coordinates to tile-local coordinates
+                                // For the adjacent tile, recompute tile-local coordinates
                                 const anchor = adjacentTile.anchor || { tileRow: 0, tileCol: 0 };
-                                const adjTileRow = anchor.tileRow + (pos.row - adjacentTile.row);
-                                const adjTileCol = anchor.tileCol + (pos.col - adjacentTile.col);
+                                const tileRow = anchor.tileRow + (pos.row - adjacentTile.row);
+                                const tileCol = anchor.tileCol + (pos.col - adjacentTile.col);
                                 // Defensive: assert bounds
-                                console.assert(adjTileRow >= 0 && adjTileRow < adjacentTile.houses.length && adjTileCol >= 0 && adjTileCol < adjacentTile.houses[0].length, 'adjTileRow/Col out of bounds');
-                                if (adjTileRow >= 0 && adjTileRow < adjacentTile.houses.length &&
-                                    adjTileCol >= 0 && adjTileCol < adjacentTile.houses[0].length &&
-                                    adjacentTile.shape_grid[adjTileRow][adjTileCol] === 1 &&
-                                    adjacentTile.houses[adjTileRow][adjTileCol] === player) {
-                                    const adjKey = `placed-${adjacentTile.id}-${adjTileRow}-${adjTileCol}`;
+                                console.assert(tileRow >= 0 && tileRow < adjacentTile.houses.length && tileCol >= 0 && tileCol < adjacentTile.houses[0].length, 'adjacentTile tileRow/tileCol out of bounds');
+                                if (tileRow >= 0 && tileRow < adjacentTile.houses.length &&
+                                    tileCol >= 0 && tileCol < adjacentTile.houses[0].length &&
+                                    adjacentTile.shape_grid[tileRow][tileCol] === 1 &&
+                                    adjacentTile.houses[tileRow][tileCol] === player) {
+                                    const adjKey = `placed-${adjacentTile.id}-${tileRow}-${tileCol}`;
                                     if (!visited.has(adjKey)) {
-                                        queue.push({ tile: adjacentTile, row: adjTileRow, col: adjTileCol });
+                                        queue.push({ tile: adjacentTile, row: tileRow, col: tileCol });
                                     }
                                 }
                             }
@@ -568,7 +573,7 @@ class UrosGame {
             { bg: '#22c55e', border: '#15803d' }, // Standard green
             { bg: '#16a34a', border: '#166534' }, // Darker green
             { bg: '#4ade80', border: '#22c55e' }, // Lighter green
-            { bg: '#22d3aa', border: '#0891b2' }, // Teal
+            { bg: '#aad3bb', border: '#0891b2' }, // Teal
             { bg: '#34d399', border: '#059669' }, // Emerald
             { bg: '#10b981', border: '#047857' }, // Green
             { bg: '#84cc16', border: '#65a30d' }, // Lime
@@ -672,7 +677,7 @@ class UrosGame {
             { bg: '#22c55e', border: '#15803d' }, // Standard green
             { bg: '#16a34a', border: '#166534' }, // Darker green
             { bg: '#4ade80', border: '#22c55e' }, // Lighter green
-            { bg: '#22d3aa', border: '#0891b2' }, // Teal
+            { bg: '#aad3bb', border: '#0891b2' }, // Teal
             { bg: '#34d399', border: '#059669' }, // Emerald
             { bg: '#10b981', border: '#047857' }, // Green
             { bg: '#84cc16', border: '#65a30d' }, // Lime
