@@ -1,7 +1,7 @@
 {
-  "session": "session-1751360617729",
-  "sessionStart": "2025-07-01T09:03:37.729Z",
-  "timestamp": "10:04:17 AM",
+  "session": "session-1751370648213",
+  "sessionStart": "2025-07-01T11:50:48.213Z",
+  "timestamp": "12:51:24 PM",
   "url": "http://localhost:52330/index.html",
   "summary": {
     "totalElements": 4,
@@ -37,7 +37,7 @@
         "height": 420
       },
       "cssConflicts": [],
-      "textContent": "🏘️🏠🏘️🏠"
+      "textContent": "🏠🏘️🏘️"
     },
     {
       "tag": "div",
@@ -51,7 +51,7 @@
         "display": "grid",
         "position": "static",
         "width": "420px",
-        "height": "428px",
+        "height": "292px",
         "border": "2px solid rgb(245, 158, 11)",
         "border-radius": "8px",
         "opacity": "1",
@@ -63,10 +63,10 @@
       },
       "dimensions": {
         "width": 420,
-        "height": 428
+        "height": 292
       },
       "cssConflicts": [],
-      "textContent": "🏘️🏘️🏠🏠🏠🏘️🏘️"
+      "textContent": ""
     },
     {
       "tag": "div",
@@ -79,7 +79,7 @@
         "color": "rgb(255, 255, 255)",
         "display": "block",
         "position": "static",
-        "width": "256.312px",
+        "width": "266.188px",
         "height": "28px",
         "border": "0px solid rgb(229, 231, 235)",
         "border-radius": "0px",
@@ -91,11 +91,11 @@
         "y": 38
       },
       "dimensions": {
-        "width": 256,
+        "width": 266,
         "height": 28
       },
       "cssConflicts": [],
-      "textContent": "🔴 Red's turn (1 placement left)"
+      "textContent": "🔴 Red's turn (2 placements left)"
     },
     {
       "tag": "div",
@@ -108,7 +108,7 @@
         "color": "rgb(255, 255, 255)",
         "display": "block",
         "position": "static",
-        "width": "93.7969px",
+        "width": "92.875px",
         "height": "20px",
         "border": "0px solid rgb(229, 231, 235)",
         "border-radius": "0px",
@@ -116,15 +116,15 @@
         "visibility": "visible"
       },
       "position": {
-        "x": 1009.359375,
+        "x": 1010.28125,
         "y": 42
       },
       "dimensions": {
-        "width": 94,
+        "width": 93,
         "height": 20
       },
       "cssConflicts": [],
-      "textContent": "\n            Red: 3 | \n            Blue: 2\n        "
+      "textContent": "\n            Red: 1 | \n            Blue: 2\n        "
     }
   ]
 }

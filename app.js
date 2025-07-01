@@ -7,9 +7,22 @@ class UrosGame {
         this.housesPerPlayer = 15;
         this.tiles = [];
         this.gameState = null;
-        this.selectedTile = null;
-        this.selectedHouse = null;
-        this.placementMode = null; // 'tile' or 'house'
+
+        // Centralized state management for all interactions
+        this.interactionState = {
+            mode: null, // 'tile-selection', 'tile-placement', 'house-placement', null
+            selectedTile: null,
+            selectedPlayer: null, // for house placement
+            preview: null,
+            hoveredTileId: null
+        };
+
+        // Event handler references for cleanup
+        this.eventHandlers = {
+            board: null,
+            reedbed: null,
+            global: null
+        };
 
         this.init();
     }
@@ -17,7 +30,10 @@ class UrosGame {
     init() {
         console.log('Initializing Uros game');
         this.loadTiles();
-        this.setupEventListeners();
+        this.setupClickHandling();
+        this.setupButtonHandlers();
+
+        console.log('Uros game and logging system initialized');
     }
 
     loadTiles() {
@@ -77,9 +93,14 @@ class UrosGame {
             gameOver: false
         };
 
-        this.selectedTile = null;
-        this.selectedHouse = null;
-        this.placementMode = null;
+        // Reset interaction state
+        this.interactionState = {
+            mode: null,
+            selectedTile: null,
+            selectedPlayer: null,
+            preview: null,
+            hoveredTileId: null
+        };
 
         this.updateStatus();
         this.render();
@@ -136,15 +157,21 @@ class UrosGame {
     }
 
     placeTile(tile, row, col) {
+        if (!tile) {
+            console.error('placeTile: tile must not be null');
+            return false;
+        }
+        if (typeof row !== 'number' || typeof col !== 'number') {
+            console.error('placeTile: row and col must be numbers');
+            return false;
+        }
         if (!this.canPlaceTile(tile, row, col)) {
             console.warn('Cannot place tile at', row, col);
             return false;
         }
-
         const grid = tile.shape_grid;
         const rows = grid.length;
         const cols = grid[0].length;
-
         // Place the tile, preserving any houses that were already on it
         const placedTile = {
             ...tile,
@@ -152,9 +179,7 @@ class UrosGame {
             col,
             houses: tile.houses ? [...tile.houses.map(row => [...row])] : Array(rows).fill(null).map(() => Array(cols).fill(null))
         };
-
         this.gameState.placedTiles.push(placedTile);
-
         // Mark board squares as occupied
         for (let r = 0; r < rows; r++) {
             for (let c = 0; c < cols; c++) {
@@ -163,13 +188,11 @@ class UrosGame {
                 }
             }
         }
-
         // Remove from reedbed
         const reedbedIndex = this.gameState.reedbed.findIndex(t => t.id === tile.id);
         if (reedbedIndex !== -1) {
             this.gameState.reedbed.splice(reedbedIndex, 1);
         }
-
         console.log(`Placed tile ${tile.name} at (${row}, ${col})`);
         return true;
     }
@@ -448,7 +471,7 @@ class UrosGame {
     renderBoard() {
         const board = document.getElementById('lake-board');
         board.innerHTML = '';
-
+        console.log('Rendering board with size:', this.boardSize);
         for (let row = 0; row < this.boardSize; row++) {
             for (let col = 0; col < this.boardSize; col++) {
                 const cell = document.createElement('div');
@@ -456,27 +479,46 @@ class UrosGame {
                 cell.dataset.row = row;
                 cell.dataset.col = col;
 
+                // Preview overlay
+                if (this.interactionState.preview && this.interactionState.mode === 'tile-placement') {
+                    const { row: prow, col: pcol, tile } = this.interactionState.preview;
+                    const grid = tile.shape_grid;
+                    for (let tr = 0; tr < grid.length; tr++) {
+                        for (let tc = 0; tc < grid[tr].length; tc++) {
+                            if (grid[tr][tc] === 1) {
+                                if (row === prow + tr && col === pcol + tc) {
+                                    cell.classList.add('preview');
+                                    // Preview house overlay
+                                    if (tile.houses && tile.houses[tr][tc]) {
+                                        const houseElement = document.createElement('div');
+                                        houseElement.className = `house ${tile.houses[tr][tc]} preview`;
+                                        houseElement.textContent = tile.houses[tr][tc] === 'red' ? '🏠' : '🏘️';
+                                        cell.appendChild(houseElement);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Normal rendering
                 const tile = this.gameState.board[row][col];
                 if (tile) {
-                    // Find the relative position within the tile
                     const tileRow = row - tile.row;
                     const tileCol = col - tile.col;
                     const house = tile.houses[tileRow][tileCol];
-
                     if (house) {
                         const houseElement = document.createElement('div');
                         houseElement.className = `house ${house}`;
                         houseElement.textContent = house === 'red' ? '🏠' : '🏘️';
                         cell.appendChild(houseElement);
                     } else {
-                        // Empty tile cell - can be clicked to place houses
-                        cell.addEventListener('click', () => this.handleTileClick(tile, tileRow, tileCol));
+                        // Make clickable for house placement
                         cell.style.cursor = 'pointer';
                         cell.style.border = '2px dashed #ffffff';
                     }
                 } else {
-                    // Empty cell - can be clicked to place tiles
-                    cell.addEventListener('click', () => this.handleBoardClick(row, col));
+                    // Make clickable for tile placement
                     cell.style.cursor = 'pointer';
                 }
 
@@ -487,6 +529,11 @@ class UrosGame {
 
     renderReedbed() {
         const reedbed = document.getElementById('reedbed');
+        if (!reedbed) {
+            console.error('Reedbed element not found!');
+            return;
+        }
+
         reedbed.innerHTML = '';
 
         for (const tile of this.gameState.reedbed) {
@@ -494,28 +541,30 @@ class UrosGame {
             tileElement.className = 'tile-preview';
             tileElement.dataset.tileId = tile.id;
 
-            if (this.selectedTile && this.selectedTile.id === tile.id) {
+            // Apply hover and selection states
+            if (this.interactionState.hoveredTileId === tile.id) {
+                tileElement.classList.add('hovered');
+            }
+            if (this.interactionState.selectedTile && this.interactionState.selectedTile.id === tile.id &&
+                this.interactionState.mode === 'tile-placement') {
                 tileElement.classList.add('selected');
             }
 
             // Create tile grid
             const tileGrid = document.createElement('div');
             tileGrid.className = 'tile-grid';
-
             const grid = tile.shape_grid;
+
             for (let row = 0; row < grid.length; row++) {
                 for (let col = 0; col < grid[row].length; col++) {
                     const cell = document.createElement('div');
                     cell.className = 'tile-cell';
+
                     if (grid[row][col] === 1) {
                         cell.classList.add('island');
-                        // Make tile cells clickable for house placement
                         cell.style.cursor = 'pointer';
-                        cell.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            this.handleReedbedTileClick(tile, row, col);
-                        });
-                        // Show houses if any
+
+                        // Render house if present
                         const house = tile.houses[row][col];
                         if (house) {
                             const houseElement = document.createElement('div');
@@ -529,12 +578,12 @@ class UrosGame {
                     } else {
                         cell.classList.add('not-island');
                     }
+
                     tileGrid.appendChild(cell);
                 }
             }
 
             tileElement.appendChild(tileGrid);
-            tileElement.addEventListener('click', () => this.selectTile(tile));
             reedbed.appendChild(tileElement);
         }
     }
@@ -555,84 +604,15 @@ class UrosGame {
 
         if (current === 'red' && redHouses > 0) {
             redBtn.classList.remove('hidden');
-            if (this.placementMode === 'house') redBtn.classList.add('place-house-active');
+            if (this.interactionState.mode === 'house-placement') redBtn.classList.add('place-house-active');
         }
         if (current === 'blue' && blueHouses > 0) {
             blueBtn.classList.remove('hidden');
-            if (this.placementMode === 'house') blueBtn.classList.add('place-house-active');
+            if (this.interactionState.mode === 'house-placement') blueBtn.classList.add('place-house-active');
         }
     }
 
-    selectTile(tile) {
-        console.log('Selected tile:', tile.name);
-        this.selectedTile = { ...tile };
-        this.selectedHouse = null;
-        this.placementMode = 'tile';
 
-        // Update visual selection
-        document.querySelectorAll('.tile-preview').forEach(el => el.classList.remove('selected'));
-        document.querySelector(`[data-tile-id="${tile.id}"]`).classList.add('selected');
-
-        this.render();
-    }
-
-    selectHouse(player, index) {
-        if (this.gameState.currentPlayer !== player) {
-            console.warn('Not your turn');
-            return;
-        }
-
-        console.log('Selected house for', player);
-        this.selectedHouse = { player, index };
-        this.selectedTile = null;
-        this.placementMode = 'house';
-
-        this.render();
-    }
-
-    handleBoardClick(row, col) {
-        if (this.placementMode === 'house' && this.selectedHouse) {
-            const tile = this.gameState.board[row][col];
-            if (tile) {
-                const tileRow = row - tile.row;
-                const tileCol = col - tile.col;
-                if (this.placeHouse(tile, tileRow, tileCol, this.selectedHouse.player)) {
-                    this.selectedHouse = null;
-                    this.placementMode = null;
-                    this.clearHouseHighlights();
-                    this.nextTurn();
-                }
-            }
-        } else if (this.placementMode === 'tile' && this.selectedTile) {
-            if (this.placeTile(this.selectedTile, row, col)) {
-                this.selectedTile = null;
-                this.placementMode = null;
-                this.nextTurn();
-            }
-        }
-    }
-
-    handleTileClick(tile, tileRow, tileCol) {
-        if (this.placementMode === 'house' && this.selectedHouse) {
-            if (this.placeHouse(tile, tileRow, tileCol, this.selectedHouse.player)) {
-                this.selectedHouse = null;
-                this.placementMode = null;
-                this.clearHouseHighlights();
-                this.nextTurn();
-            }
-        }
-    }
-
-    handleReedbedTileClick(tile, tileRow, tileCol) {
-        if (this.placementMode === 'house' && this.selectedHouse) {
-            if (this.placeHouseOnReedbed(tile, tileRow, tileCol, this.selectedHouse.player)) {
-                this.selectedHouse = null;
-                this.placementMode = null;
-                this.clearHouseHighlights();
-                this.nextTurn();
-            }
-        }
-    }
 
     placeHouseOnReedbed(tile, tileRow, tileCol, player) {
         if (!tile || this.gameState.players[player].houses <= 0) return false;
@@ -647,34 +627,17 @@ class UrosGame {
         return true;
     }
 
-    setupEventListeners() {
-        // Keyboard shortcuts
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'q' || e.key === 'Q') {
-                if (this.selectedTile) {
-                    this.selectedTile = this.rotateTile(this.selectedTile, 1);
-                    this.render();
-                }
-            } else if (e.key === 'e' || e.key === 'E') {
-                if (this.selectedTile) {
-                    this.selectedTile = this.rotateTile(this.selectedTile, 3);
-                    this.render();
-                }
-            } else if (e.key === 'Escape') {
-                this.selectedTile = null;
-                this.selectedHouse = null;
-                this.placementMode = null;
-                this.clearHouseHighlights();
-                this.render();
-            }
-        });
-
+    /**
+     * Set up button event handlers (separate from click handling for clarity)
+     */
+    setupButtonHandlers() {
         // Place House button listeners
         document.getElementById('red-place-house-btn').addEventListener('click', () => {
             if (this.gameState.currentPlayer === 'red' && this.gameState.players.red.houses > 0) {
                 this.enterHousePlacementMode('red');
             }
         });
+
         document.getElementById('blue-place-house-btn').addEventListener('click', () => {
             if (this.gameState.currentPlayer === 'blue' && this.gameState.players.blue.houses > 0) {
                 this.enterHousePlacementMode('blue');
@@ -685,6 +648,7 @@ class UrosGame {
         document.getElementById('new-game-btn').addEventListener('click', () => {
             this.startNewGame();
         });
+
         // Play again button
         document.getElementById('play-again-btn').addEventListener('click', () => {
             document.getElementById('game-over-modal').classList.add('hidden');
@@ -692,28 +656,385 @@ class UrosGame {
         });
     }
 
-    enterHousePlacementMode(player) {
-        this.selectedHouse = { player };
-        this.selectedTile = null;
-        this.placementMode = 'house';
-        this.render();
-        this.highlightAllValidHouseCells(player);
-        // Add global click listener
-        this.housePlacementGlobalClick = (e) => {
-            if (!e.target.classList.contains('highlight-house-cell')) {
-                this.selectedHouse = null;
-                this.placementMode = null;
-                this.clearHouseHighlights();
-                this.render();
+
+
+    /**
+     * Centralized click handling system using event delegation
+     * All clicks go through this single entry point for consistent behavior
+     */
+    setupClickHandling() {
+        // Remove any existing handlers to prevent duplicates
+        this.cleanupEventHandlers();
+
+        // Board click handling (event delegation)
+        const board = document.getElementById('lake-board');
+        if (!board) {
+            console.error('Lake board element must exist');
+            return;
+        }
+
+        this.eventHandlers.board = (e) => {
+            const cell = e.target.closest('.lake-cell');
+            if (!cell) return;
+
+            const row = parseInt(cell.dataset.row);
+            const col = parseInt(cell.dataset.col);
+            if (isNaN(row) || isNaN(col)) {
+                console.error('Cell must have valid row/col data attributes');
+                return;
+            }
+
+            this.handleBoardCellClick(row, col, e);
+        };
+
+        board.addEventListener('click', this.eventHandlers.board);
+
+        // Reedbed click handling (event delegation)
+        const reedbed = document.getElementById('reedbed');
+        if (!reedbed) {
+            console.error('Reedbed element must exist');
+            return;
+        }
+
+        this.eventHandlers.reedbed = (e) => {
+            // Handle tile selection clicks
+            const tileElement = e.target.closest('.tile-preview');
+            if (tileElement && this.interactionState.mode !== 'house-placement') {
+                const tileId = parseInt(tileElement.dataset.tileId);
+                console.log('Looking for tile with ID:', tileId, 'Available tiles:', this.gameState.reedbed.map(t => t.id));
+                const tile = this.gameState.reedbed.find(t => t.id === tileId);
+                if (!tile) {
+                    console.error('Tile must exist in reedbed');
+                    return;
+                }
+                this.handleTileSelection(tile);
+                return;
+            }
+
+            // Handle reedbed cell clicks (for house placement)
+            const cell = e.target.closest('.tile-cell');
+            if (cell && this.interactionState.mode === 'house-placement') {
+                const tileElement = cell.closest('.tile-preview');
+                const tileId = parseInt(tileElement.dataset.tileId);
+                const tile = this.gameState.reedbed.find(t => t.id === tileId);
+                if (!tile) {
+                    console.error('Tile must exist in reedbed');
+                    return;
+                }
+
+                const tileGrid = cell.closest('.tile-grid');
+                const cellIndex = Array.from(tileGrid.children).indexOf(cell);
+                const row = Math.floor(cellIndex / 3);
+                const col = cellIndex % 3;
+
+                this.handleReedbedHousePlacement(tile, row, col);
+                return;
             }
         };
-        setTimeout(() => {
-            document.addEventListener('mousedown', this.housePlacementGlobalClick);
-        }, 0);
+
+        reedbed.addEventListener('click', this.eventHandlers.reedbed);
+
+        // Hover handling for reedbed
+        reedbed.addEventListener('mouseenter', (e) => {
+            const tileElement = e.target.closest('.tile-preview');
+            if (tileElement && this.interactionState.mode !== 'house-placement') {
+                this.interactionState.hoveredTileId = parseInt(tileElement.dataset.tileId);
+                this.renderReedbed();
+            }
+        });
+
+        reedbed.addEventListener('mouseleave', (e) => {
+            if (this.interactionState.mode !== 'house-placement') {
+                this.interactionState.hoveredTileId = null;
+                this.renderReedbed();
+            }
+        });
+
+        // Global keyboard handling
+        this.setupKeyboardHandling();
+
+        // Global click handling for canceling interactions
+        this.eventHandlers.global = (e) => {
+            // Cancel house placement if clicking outside valid cells
+            if (this.interactionState.mode === 'house-placement' &&
+                !e.target.classList.contains('highlight-house-cell')) {
+                this.cancelInteraction();
+            }
+        };
+
+        document.addEventListener('mousedown', this.eventHandlers.global);
     }
 
-    highlightAllValidHouseCells(player) {
-        // Lake board
+    /**
+     * Clean up all event handlers to prevent memory leaks
+     */
+    cleanupEventHandlers() {
+        const board = document.getElementById('lake-board');
+        const reedbed = document.getElementById('reedbed');
+
+        if (board && this.eventHandlers.board) {
+            board.removeEventListener('click', this.eventHandlers.board);
+        }
+
+        if (reedbed && this.eventHandlers.reedbed) {
+            reedbed.removeEventListener('click', this.eventHandlers.reedbed);
+        }
+
+        if (this.eventHandlers.global) {
+            document.removeEventListener('mousedown', this.eventHandlers.global);
+        }
+
+        // Clear handler references
+        this.eventHandlers = {
+            board: null,
+            reedbed: null,
+            global: null
+        };
+    }
+
+    /**
+     * Handle clicks on board cells (lake board)
+     */
+    handleBoardCellClick(row, col, event) {
+        if (row < 0 || row >= this.boardSize || col < 0 || col >= this.boardSize) {
+            console.error('Row and col must be within board bounds');
+            return;
+        }
+
+        console.log('Board cell clicked:', { row, col, mode: this.interactionState.mode });
+
+        if (this.interactionState.mode === 'house-placement') {
+            this.handleBoardHousePlacement(row, col);
+        } else if (this.interactionState.mode === 'tile-placement') {
+            this.handleBoardTilePlacement(row, col);
+        } else {
+            console.warn('Board cell clicked but no active placement mode');
+        }
+    }
+
+    /**
+     * Handle house placement on the main board
+     */
+    handleBoardHousePlacement(row, col) {
+        if (!this.interactionState.selectedPlayer) {
+            console.error('Player must be selected for house placement');
+            return;
+        }
+        if (this.interactionState.mode !== 'house-placement') {
+            console.error('Must be in house placement mode');
+            return;
+        }
+
+        const tile = this.gameState.board[row][col];
+        if (!tile) {
+            console.warn('No tile at board position', row, col);
+            return;
+        }
+
+        const tileRow = row - tile.row;
+        const tileCol = col - tile.col;
+
+        if (this.placeHouse(tile, tileRow, tileCol, this.interactionState.selectedPlayer)) {
+            this.completeInteraction();
+            this.nextTurn();
+        } else {
+            console.warn('Cannot place house at', row, col);
+        }
+    }
+
+    /**
+     * Handle tile placement on the main board
+     */
+    handleBoardTilePlacement(row, col) {
+        if (!this.interactionState.selectedTile) {
+            console.error('Tile must be selected for placement');
+            return;
+        }
+        if (this.interactionState.mode !== 'tile-placement') {
+            console.error('Must be in tile placement mode');
+            return;
+        }
+
+        if (this.canPlaceTile(this.interactionState.selectedTile, row, col)) {
+            const placed = this.placeTile(this.interactionState.selectedTile, row, col);
+            if (placed) {
+                this.completeInteraction();
+                this.nextTurn();
+            } else {
+                console.error('Failed to place tile despite validation');
+            }
+        } else {
+            console.warn('Cannot place tile at', row, col);
+        }
+    }
+
+    /**
+     * Handle house placement on reedbed tiles
+     */
+    handleReedbedHousePlacement(tile, tileRow, tileCol) {
+        if (!this.interactionState.selectedPlayer) {
+            console.error('Player must be selected for house placement');
+            return;
+        }
+        if (this.interactionState.mode !== 'house-placement') {
+            console.error('Must be in house placement mode');
+            return;
+        }
+        if (!tile) {
+            console.error('Tile must exist');
+            return;
+        }
+
+        if (this.placeHouseOnReedbed(tile, tileRow, tileCol, this.interactionState.selectedPlayer)) {
+            this.completeInteraction();
+            this.nextTurn();
+        } else {
+            console.warn('Cannot place house on reedbed tile');
+        }
+    }
+
+    /**
+     * Handle tile selection from reedbed
+     */
+    handleTileSelection(tile) {
+        if (!tile) {
+            console.error('Tile must exist');
+            return;
+        }
+        if (this.interactionState.mode === 'house-placement') {
+            console.error('Cannot select tile during house placement');
+            return;
+        }
+
+        console.log('Tile selected:', tile.name);
+        this.interactionState.selectedTile = { ...tile };
+        this.interactionState.mode = 'tile-placement';
+        this.interactionState.preview = null;
+
+        this.render();
+        this.setupTilePreviewHandling();
+    }
+
+    /**
+     * Set up tile preview handling for the board
+     */
+    setupTilePreviewHandling() {
+        const board = document.getElementById('lake-board');
+        if (!board) {
+            console.error('Lake board must exist');
+            return;
+        }
+
+        // Remove existing preview handlers
+        if (this.tilePreviewHandler) {
+            board.removeEventListener('mousemove', this.tilePreviewHandler);
+            board.removeEventListener('mouseleave', this.tilePreviewHandler);
+            this.tilePreviewHandler = null;
+        }
+
+        this.tilePreviewHandler = (e) => {
+            if (this.interactionState.mode !== 'tile-placement') return;
+
+            const rect = board.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const cellSize = rect.width / this.boardSize;
+            const col = Math.floor(x / cellSize);
+            const row = Math.floor(y / cellSize);
+
+            if (row < 0 || row >= this.boardSize || col < 0 || col >= this.boardSize) {
+                this.interactionState.preview = null;
+                this.renderBoard();
+                return;
+            }
+
+            if (e.type === 'mousemove') {
+                const canPlace = this.canPlaceTile(this.interactionState.selectedTile, row, col);
+                if (canPlace) {
+                    this.interactionState.preview = { row, col, tile: this.interactionState.selectedTile };
+                } else {
+                    this.interactionState.preview = null;
+                }
+                this.renderBoard();
+            } else if (e.type === 'mouseleave') {
+                this.interactionState.preview = null;
+                this.renderBoard();
+            }
+        };
+
+        board.addEventListener('mousemove', this.tilePreviewHandler);
+        board.addEventListener('mouseleave', this.tilePreviewHandler);
+    }
+
+    /**
+     * Set up keyboard handling for tile rotation and cancellation
+     */
+    setupKeyboardHandling() {
+        // Remove existing keyboard handler
+        if (this.keyboardHandler) {
+            document.removeEventListener('keydown', this.keyboardHandler);
+        }
+
+        this.keyboardHandler = (e) => {
+            if (e.key === 'q' || e.key === 'Q') {
+                this.rotateSelectedTile(1);
+            } else if (e.key === 'e' || e.key === 'E') {
+                this.rotateSelectedTile(3);
+            } else if (e.key === 'Escape') {
+                this.cancelInteraction();
+            }
+        };
+
+        document.addEventListener('keydown', this.keyboardHandler);
+    }
+
+    /**
+     * Rotate the currently selected tile
+     */
+    rotateSelectedTile(direction) {
+        if (!this.interactionState.selectedTile) return;
+
+        this.interactionState.selectedTile = this.rotateTile(this.interactionState.selectedTile, direction);
+        this.interactionState.preview = null;
+        this.render();
+    }
+
+    /**
+     * Start house placement mode for a player
+     */
+    enterHousePlacementMode(player) {
+        if (player !== 'red' && player !== 'blue') {
+            console.error('Player must be red or blue');
+            return;
+        }
+        if (this.gameState.players[player].houses <= 0) {
+            console.error('Player must have houses available');
+            return;
+        }
+        if (this.gameState.currentPlayer !== player) {
+            console.error('Must be player\'s turn');
+            return;
+        }
+
+        this.interactionState.mode = 'house-placement';
+        this.interactionState.selectedPlayer = player;
+        this.interactionState.selectedTile = null;
+        this.interactionState.preview = null;
+
+        this.render();
+        this.highlightValidHouseCells(player);
+    }
+
+    /**
+     * Highlight all valid cells for house placement
+     */
+    highlightValidHouseCells(player) {
+        // Clear existing highlights
+        document.querySelectorAll('.highlight-house-cell').forEach(el =>
+            el.classList.remove('highlight-house-cell')
+        );
+
+        // Highlight board cells
         for (let row = 0; row < this.boardSize; row++) {
             for (let col = 0; col < this.boardSize; col++) {
                 const tile = this.gameState.board[row][col];
@@ -728,7 +1049,8 @@ class UrosGame {
                 }
             }
         }
-        // Reedbed
+
+        // Highlight reedbed cells
         const reedbed = document.getElementById('reedbed');
         if (reedbed) {
             const tilePreviews = reedbed.getElementsByClassName('tile-preview');
@@ -738,7 +1060,6 @@ class UrosGame {
                 for (let r = 0; r < grid.length; r++) {
                     for (let c = 0; c < grid[r].length; c++) {
                         if (grid[r][c] === 1 && tile.houses[r][c] === null) {
-                            // Find the tile-grid and cell
                             const tileGrid = tilePreviews[t].getElementsByClassName('tile-grid')[0];
                             const cellIdx = r * 3 + c;
                             const cell = tileGrid.children[cellIdx];
@@ -750,13 +1071,31 @@ class UrosGame {
         }
     }
 
-    clearHouseHighlights() {
-        document.querySelectorAll('.highlight-house-cell').forEach(el => el.classList.remove('highlight-house-cell'));
-        // Remove global click listener if present
-        if (this.housePlacementGlobalClick) {
-            document.removeEventListener('mousedown', this.housePlacementGlobalClick);
-            this.housePlacementGlobalClick = null;
-        }
+    /**
+     * Complete the current interaction and reset state
+     */
+    completeInteraction() {
+        this.interactionState = {
+            mode: null,
+            selectedTile: null,
+            selectedPlayer: null,
+            preview: null,
+            hoveredTileId: null
+        };
+
+        // Clear highlights
+        document.querySelectorAll('.highlight-house-cell').forEach(el =>
+            el.classList.remove('highlight-house-cell')
+        );
+
+        this.render();
+    }
+
+    /**
+     * Cancel the current interaction and reset state
+     */
+    cancelInteraction() {
+        this.completeInteraction();
     }
 }
 
