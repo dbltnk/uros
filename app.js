@@ -71,8 +71,9 @@ class UrosGame {
                 blue: { houses: this.housesPerPlayer, color: 'blue' }
             },
             currentPlayer: 'red',
-            turnPhase: 1, // 1 for first player, 2 for others
             isFirstTurn: true,
+            placementsThisTurn: 0,
+            placementsRequired: 1, // 1 for first turn, 2 for all others
             gameOver: false
         };
 
@@ -388,20 +389,28 @@ class UrosGame {
     }
 
     nextTurn() {
+        // Increment placements this turn
+        this.gameState.placementsThisTurn = (this.gameState.placementsThisTurn || 0) + 1;
         if (this.gameState.isFirstTurn) {
-            this.gameState.isFirstTurn = false;
-            this.gameState.turnPhase = 2;
+            // First turn: only 1 placement
+            if (this.gameState.placementsThisTurn >= 1) {
+                this.gameState.isFirstTurn = false;
+                this.gameState.currentPlayer = 'blue';
+                this.gameState.placementsThisTurn = 0;
+                this.gameState.placementsRequired = 2;
+            }
         } else {
-            this.gameState.currentPlayer = this.gameState.currentPlayer === 'red' ? 'blue' : 'red';
-            this.gameState.turnPhase = 1;
+            // All subsequent turns: 2 placements per turn
+            if (this.gameState.placementsThisTurn >= 2) {
+                this.gameState.currentPlayer = this.gameState.currentPlayer === 'red' ? 'blue' : 'red';
+                this.gameState.placementsThisTurn = 0;
+                this.gameState.placementsRequired = 2;
+            }
         }
-
         this.updateStatus();
-
         if (this.checkGameOver()) {
             return;
         }
-
         this.render();
     }
 
@@ -412,10 +421,10 @@ class UrosGame {
         const scores = document.getElementById('village-scores');
 
         const currentPlayer = this.gameState.currentPlayer;
-        const phase = this.gameState.turnPhase;
+        const placementsLeft = (this.gameState.placementsRequired || 2) - (this.gameState.placementsThisTurn || 0);
         const playerName = currentPlayer === 'red' ? '🔴 Red' : '🔵 Blue';
 
-        status.textContent = `${playerName}'s turn (${phase} placement${phase > 1 ? 's' : ''})`;
+        status.textContent = `${playerName}'s turn (${placementsLeft} placement${placementsLeft > 1 ? 's' : ''} left)`;
         redHouses.textContent = this.gameState.players.red.houses;
         blueHouses.textContent = this.gameState.players.blue.houses;
 
@@ -498,16 +507,14 @@ class UrosGame {
                 for (let col = 0; col < grid[row].length; col++) {
                     const cell = document.createElement('div');
                     cell.className = 'tile-cell';
-
                     if (grid[row][col] === 1) {
-                        cell.style.backgroundColor = '#059669';
+                        cell.classList.add('island');
                         // Make tile cells clickable for house placement
                         cell.style.cursor = 'pointer';
                         cell.addEventListener('click', (e) => {
                             e.stopPropagation();
                             this.handleReedbedTileClick(tile, row, col);
                         });
-
                         // Show houses if any
                         const house = tile.houses[row][col];
                         if (house) {
@@ -519,8 +526,9 @@ class UrosGame {
                             houseElement.style.fontSize = '0.6em';
                             cell.appendChild(houseElement);
                         }
+                    } else {
+                        cell.classList.add('not-island');
                     }
-
                     tileGrid.appendChild(cell);
                 }
             }
@@ -532,38 +540,26 @@ class UrosGame {
     }
 
     renderHousePools() {
-        const redPool = document.getElementById('red-house-pool');
-        const bluePool = document.getElementById('blue-house-pool');
+        // Show/hide and style the Place House buttons
+        const redBtn = document.getElementById('red-place-house-btn');
+        const blueBtn = document.getElementById('blue-place-house-btn');
+        const current = this.gameState.currentPlayer;
+        const redHouses = this.gameState.players.red.houses;
+        const blueHouses = this.gameState.players.blue.houses;
 
-        redPool.innerHTML = '';
-        bluePool.innerHTML = '';
+        // Hide both by default
+        redBtn.classList.add('hidden');
+        blueBtn.classList.add('hidden');
+        redBtn.classList.remove('place-house-active');
+        blueBtn.classList.remove('place-house-active');
 
-        // Render red houses
-        for (let i = 0; i < this.housesPerPlayer; i++) {
-            const house = document.createElement('div');
-            house.className = `house-token red ${i >= this.gameState.players.red.houses ? 'used' : ''}`;
-            house.textContent = '🏠';
-            house.dataset.houseIndex = i;
-
-            if (i < this.gameState.players.red.houses) {
-                house.addEventListener('click', () => this.selectHouse('red', i));
-            }
-
-            redPool.appendChild(house);
+        if (current === 'red' && redHouses > 0) {
+            redBtn.classList.remove('hidden');
+            if (this.placementMode === 'house') redBtn.classList.add('place-house-active');
         }
-
-        // Render blue houses
-        for (let i = 0; i < this.housesPerPlayer; i++) {
-            const house = document.createElement('div');
-            house.className = `house-token blue ${i >= this.gameState.players.blue.houses ? 'used' : ''}`;
-            house.textContent = '🏘️';
-            house.dataset.houseIndex = i;
-
-            if (i < this.gameState.players.blue.houses) {
-                house.addEventListener('click', () => this.selectHouse('blue', i));
-            }
-
-            bluePool.appendChild(house);
+        if (current === 'blue' && blueHouses > 0) {
+            blueBtn.classList.remove('hidden');
+            if (this.placementMode === 'house') blueBtn.classList.add('place-house-active');
         }
     }
 
@@ -595,7 +591,19 @@ class UrosGame {
     }
 
     handleBoardClick(row, col) {
-        if (this.placementMode === 'tile' && this.selectedTile) {
+        if (this.placementMode === 'house' && this.selectedHouse) {
+            const tile = this.gameState.board[row][col];
+            if (tile) {
+                const tileRow = row - tile.row;
+                const tileCol = col - tile.col;
+                if (this.placeHouse(tile, tileRow, tileCol, this.selectedHouse.player)) {
+                    this.selectedHouse = null;
+                    this.placementMode = null;
+                    this.clearHouseHighlights();
+                    this.nextTurn();
+                }
+            }
+        } else if (this.placementMode === 'tile' && this.selectedTile) {
             if (this.placeTile(this.selectedTile, row, col)) {
                 this.selectedTile = null;
                 this.placementMode = null;
@@ -606,10 +614,10 @@ class UrosGame {
 
     handleTileClick(tile, tileRow, tileCol) {
         if (this.placementMode === 'house' && this.selectedHouse) {
-            const player = this.selectedHouse.player;
-            if (this.placeHouse(tile, tileRow, tileCol, player)) {
+            if (this.placeHouse(tile, tileRow, tileCol, this.selectedHouse.player)) {
                 this.selectedHouse = null;
                 this.placementMode = null;
+                this.clearHouseHighlights();
                 this.nextTurn();
             }
         }
@@ -617,10 +625,10 @@ class UrosGame {
 
     handleReedbedTileClick(tile, tileRow, tileCol) {
         if (this.placementMode === 'house' && this.selectedHouse) {
-            const player = this.selectedHouse.player;
-            if (this.placeHouseOnReedbed(tile, tileRow, tileCol, player)) {
+            if (this.placeHouseOnReedbed(tile, tileRow, tileCol, this.selectedHouse.player)) {
                 this.selectedHouse = null;
                 this.placementMode = null;
+                this.clearHouseHighlights();
                 this.nextTurn();
             }
         }
@@ -656,7 +664,20 @@ class UrosGame {
                 this.selectedTile = null;
                 this.selectedHouse = null;
                 this.placementMode = null;
+                this.clearHouseHighlights();
                 this.render();
+            }
+        });
+
+        // Place House button listeners
+        document.getElementById('red-place-house-btn').addEventListener('click', () => {
+            if (this.gameState.currentPlayer === 'red' && this.gameState.players.red.houses > 0) {
+                this.enterHousePlacementMode('red');
+            }
+        });
+        document.getElementById('blue-place-house-btn').addEventListener('click', () => {
+            if (this.gameState.currentPlayer === 'blue' && this.gameState.players.blue.houses > 0) {
+                this.enterHousePlacementMode('blue');
             }
         });
 
@@ -664,12 +685,78 @@ class UrosGame {
         document.getElementById('new-game-btn').addEventListener('click', () => {
             this.startNewGame();
         });
-
         // Play again button
         document.getElementById('play-again-btn').addEventListener('click', () => {
             document.getElementById('game-over-modal').classList.add('hidden');
             this.startNewGame();
         });
+    }
+
+    enterHousePlacementMode(player) {
+        this.selectedHouse = { player };
+        this.selectedTile = null;
+        this.placementMode = 'house';
+        this.render();
+        this.highlightAllValidHouseCells(player);
+        // Add global click listener
+        this.housePlacementGlobalClick = (e) => {
+            if (!e.target.classList.contains('highlight-house-cell')) {
+                this.selectedHouse = null;
+                this.placementMode = null;
+                this.clearHouseHighlights();
+                this.render();
+            }
+        };
+        setTimeout(() => {
+            document.addEventListener('mousedown', this.housePlacementGlobalClick);
+        }, 0);
+    }
+
+    highlightAllValidHouseCells(player) {
+        // Lake board
+        for (let row = 0; row < this.boardSize; row++) {
+            for (let col = 0; col < this.boardSize; col++) {
+                const tile = this.gameState.board[row][col];
+                if (tile) {
+                    const tileRow = row - tile.row;
+                    const tileCol = col - tile.col;
+                    if (tile.shape_grid[tileRow][tileCol] === 1 && tile.houses[tileRow][tileCol] === null) {
+                        const idx = row * this.boardSize + col;
+                        const cell = document.getElementsByClassName('lake-cell')[idx];
+                        if (cell) cell.classList.add('highlight-house-cell');
+                    }
+                }
+            }
+        }
+        // Reedbed
+        const reedbed = document.getElementById('reedbed');
+        if (reedbed) {
+            const tilePreviews = reedbed.getElementsByClassName('tile-preview');
+            for (let t = 0; t < this.gameState.reedbed.length; t++) {
+                const tile = this.gameState.reedbed[t];
+                const grid = tile.shape_grid;
+                for (let r = 0; r < grid.length; r++) {
+                    for (let c = 0; c < grid[r].length; c++) {
+                        if (grid[r][c] === 1 && tile.houses[r][c] === null) {
+                            // Find the tile-grid and cell
+                            const tileGrid = tilePreviews[t].getElementsByClassName('tile-grid')[0];
+                            const cellIdx = r * 3 + c;
+                            const cell = tileGrid.children[cellIdx];
+                            if (cell) cell.classList.add('highlight-house-cell');
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    clearHouseHighlights() {
+        document.querySelectorAll('.highlight-house-cell').forEach(el => el.classList.remove('highlight-house-cell'));
+        // Remove global click listener if present
+        if (this.housePlacementGlobalClick) {
+            document.removeEventListener('mousedown', this.housePlacementGlobalClick);
+            this.housePlacementGlobalClick = null;
+        }
     }
 }
 

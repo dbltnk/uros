@@ -161,21 +161,28 @@
 
         .tile-cell {
             aspect-ratio: 1;
-            background: #10b981;
             border: 1px solid #047857;
             border-radius: 2px;
             position: relative;
             width: 100%;
             height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tile-cell.island {
+            background: #28e638 !important;
+        }
+
+        .tile-cell.not-island {
+            background: #7c4a03 !important;
         }
 
         .house {
             width: 80%;
             height: 80%;
             border-radius: 50%;
-            position: absolute;
-            top: 10%;
-            left: 10%;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -297,6 +304,17 @@
             background: rgba(0, 0, 0, 0.5);
             z-index: 999;
         }
+
+        .highlight-house-cell {
+            border: 2px solid #facc15 !important;
+            z-index: 2;
+        }
+
+        .place-house-active {
+            background: #fde68a !important;
+            color: #92400e !important;
+            border: 2px solid #f59e0b !important;
+        }
     </style>
 </head>
 
@@ -338,17 +356,17 @@
                 <div class="player-section red">
                     <h3 class="font-semibold text-red-700">🔴 Red Player</h3>
                     <div class="text-sm text-red-600">Houses remaining: <span id="red-houses-left">15</span></div>
-                    <div class="house-pool" id="red-house-pool">
-                        <!-- Houses will be generated here -->
-                    </div>
+                    <button id="red-place-house-btn"
+                        class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded mt-2 w-full font-bold hidden">🏠
+                        Place House</button>
                 </div>
 
                 <div class="player-section blue">
                     <h3 class="font-semibold text-blue-700">🔵 Blue Player</h3>
                     <div class="text-sm text-blue-600">Houses remaining: <span id="blue-houses-left">15</span></div>
-                    <div class="house-pool" id="blue-house-pool">
-                        <!-- Houses will be generated here -->
-                    </div>
+                    <button id="blue-place-house-btn"
+                        class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded mt-2 w-full font-bold hidden">🏘️
+                        Place House</button>
                 </div>
             </div>
         </div>
@@ -365,7 +383,7 @@
 
             <!-- Reedbed -->
             <div class="bg-white rounded-lg shadow-md p-4 flex flex-col items-center">
-                <h2 class="text-lg font-semibold mb-3">🌾 Reedbed (Available Islands)</h2>
+                <h2 class="text-lg font-semibold mb-3">🌾 Reedbed</h2>
                 <div class="reedbed" id="reedbed">
                     <!-- Tiles will be generated here -->
                 </div>

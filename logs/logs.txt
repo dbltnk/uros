@@ -1,27 +1,45 @@
-=== SESSION START: session-1751359528850 ===
-[09:45:28] WARN: cdn.tailwindcss.com should not be used in production. To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: https://tailwindcss.com/docs/installation
+=== SESSION START: session-1751360617729 ===
+[10:03:37] WARN: cdn.tailwindcss.com should not be used in production. To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: https://tailwindcss.com/docs/installation
   @62:index.html → @64:https://cdn.tailwindcss.com/ → @64:https://cdn.tailwindcss.com/
-[09:45:28] LOG: Browser logging system initialized
-  @767:app.js → @710:app.js → @687:app.js → @998:app.js
-[09:45:28] LOG: Initializing Uros game
-  @767:app.js → @18:app.js → @14:app.js → @1001:app.js
-[09:45:28] LOG: Uros game and logging system initialized
-  @767:app.js → @1004:app.js
-[09:45:28] LOG: Loaded 9 tiles
-  @767:app.js → @33:app.js
-[09:45:28] LOG: Starting new game
-  @767:app.js → @60:app.js → @34:app.js
-[09:45:31] LOG: Selected tile: S-tetromino
-  @767:app.js → @571:app.js → @529:app.js
-[09:45:31] LOG: Selected tile: Domino
-  @767:app.js → @571:app.js → @529:app.js
-[09:45:31] LOG: Selected tile: P-pentomino
-  @767:app.js → @571:app.js → @529:app.js
-[09:45:32] LOG: Selected tile: I-tromino
-  @767:app.js → @571:app.js → @529:app.js
-[09:45:32] WARN: Cannot place tile at 4 5
-  @772:app.js → @139:app.js → @599:app.js → @470:app.js
-[09:45:33] LOG: Selected house for red
-  @767:app.js → @589:app.js → @549:app.js
-[09:45:34] WARN: Not your turn
-  @772:app.js → @585:app.js → @563:app.js
+[10:03:37] LOG: Browser logging system initialized
+  @854:app.js → @797:app.js → @774:app.js → @1085:app.js
+[10:03:37] LOG: Initializing Uros game
+  @854:app.js → @18:app.js → @14:app.js → @1088:app.js
+[10:03:37] LOG: Uros game and logging system initialized
+  @854:app.js → @1091:app.js
+[10:03:37] LOG: Loaded 9 tiles
+  @854:app.js → @33:app.js
+[10:03:37] LOG: Starting new game
+  @854:app.js → @60:app.js → @34:app.js
+[10:03:44] LOG: red placed house on reedbed tile at (1, 0)
+  @854:app.js → @646:app.js → @628:app.js → @516:app.js
+[10:03:45] LOG: blue placed house on reedbed tile at (1, 1)
+  @854:app.js → @646:app.js → @628:app.js → @516:app.js
+[10:03:47] LOG: blue placed house on reedbed tile at (2, 0)
+  @854:app.js → @646:app.js → @628:app.js → @516:app.js
+[10:03:48] LOG: red placed house on reedbed tile at (0, 1)
+  @854:app.js → @646:app.js → @628:app.js → @516:app.js
+[10:03:50] LOG: red placed house on reedbed tile at (0, 0)
+  @854:app.js → @646:app.js → @628:app.js → @516:app.js
+[10:03:52] LOG: blue placed house on reedbed tile at (2, 1)
+  @854:app.js → @646:app.js → @628:app.js → @516:app.js
+[10:03:54] LOG: blue placed house on reedbed tile at (2, 0)
+  @854:app.js → @646:app.js → @628:app.js → @516:app.js
+[10:03:55] LOG: Selected tile: I-tromino
+  @854:app.js → @567:app.js → @537:app.js
+[10:03:57] LOG: red placed house on reedbed tile at (1, 1)
+  @854:app.js → @646:app.js → @628:app.js → @516:app.js
+[10:03:59] LOG: red placed house on reedbed tile at (0, 1)
+  @854:app.js → @646:app.js → @628:app.js → @516:app.js
+[10:04:01] LOG: blue placed house on reedbed tile at (0, 0)
+  @854:app.js → @646:app.js → @628:app.js → @516:app.js
+[10:04:03] LOG: blue placed house on reedbed tile at (0, 2)
+  @854:app.js → @646:app.js → @628:app.js → @516:app.js
+[10:04:05] LOG: Selected tile: T-tetromino
+  @854:app.js → @567:app.js → @537:app.js
+[10:04:06] LOG: Placed tile T-tetromino at (2, 2)
+  @854:app.js → @173:app.js → @607:app.js → @479:app.js
+[10:04:08] LOG: Selected tile: Domino
+  @854:app.js → @567:app.js → @537:app.js
+[10:04:09] WARN: Cannot place tile at 4 4
+  @859:app.js → @140:app.js → @607:app.js → @479:app.js
