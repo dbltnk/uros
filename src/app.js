@@ -78,13 +78,13 @@ class UrosGame {
                     rotation: 0
                 }));
                 console.log(`Loaded ${this.tiles.length} tiles`);
-                this.startNewGame(); // Only start game after tiles are loaded
+                // this.startNewGame(); // Removed: don't auto-start game on load
             })
             .catch(error => {
                 console.error('Failed to load tiles:', error);
                 // Fallback to hardcoded tiles if JSON fails
                 this.createFallbackTiles();
-                this.startNewGame();
+                // this.startNewGame(); // Removed: don't auto-start game on fallback
             });
     }
 
@@ -101,6 +101,7 @@ class UrosGame {
             { id: 7, name: "F-pentomino", shape_grid: [[0, 1, 1], [1, 1, 0], [0, 1, 0]], rotation: 0 },
             { id: 8, name: "C-pentomino", shape_grid: [[1, 1, 0], [1, 0, 0], [1, 1, 0]], rotation: 0 }
         ];
+        // this.startNewGame(); // Removed: don't auto-start game on fallback
     }
 
 
@@ -1719,26 +1720,31 @@ class UrosGame {
             return moves;
         }
 
-        // Get valid tile placements
+        // Get valid tile placements (including all rotations)
         for (const tile of this.gameState.reedbed) {
-            for (let row = 0; row < this.boardSize; row++) {
-                for (let col = 0; col < this.boardSize; col++) {
-                    // Try different anchor positions
-                    const grid = tile.shape_grid;
-                    const rows = grid.length;
-                    const cols = grid[0].length;
+            // Try all 4 rotations of the tile
+            for (let rotation = 0; rotation < 4; rotation++) {
+                const rotatedTile = this.rotateTile(tile, rotation);
 
-                    for (let anchorRow = 0; anchorRow < rows; anchorRow++) {
-                        for (let anchorCol = 0; anchorCol < cols; anchorCol++) {
-                            if (grid[anchorRow][anchorCol] === 1 && this.canPlaceTile(tile, row, col, anchorRow, anchorCol)) {
-                                moves.push({
-                                    type: 'tile-placement',
-                                    tile: { ...tile },
-                                    row: row,
-                                    col: col,
-                                    anchorTileRow: anchorRow,
-                                    anchorTileCol: anchorCol
-                                });
+                for (let row = 0; row < this.boardSize; row++) {
+                    for (let col = 0; col < this.boardSize; col++) {
+                        // Try different anchor positions
+                        const grid = rotatedTile.shape_grid;
+                        const rows = grid.length;
+                        const cols = grid[0].length;
+
+                        for (let anchorRow = 0; anchorRow < rows; anchorRow++) {
+                            for (let anchorCol = 0; anchorCol < cols; anchorCol++) {
+                                if (grid[anchorRow][anchorCol] === 1 && this.canPlaceTile(rotatedTile, row, col, anchorRow, anchorCol)) {
+                                    moves.push({
+                                        type: 'tile-placement',
+                                        tile: { ...rotatedTile },
+                                        row: row,
+                                        col: col,
+                                        anchorTileRow: anchorRow,
+                                        anchorTileCol: anchorCol
+                                    });
+                                }
                             }
                         }
                     }
@@ -1746,10 +1752,27 @@ class UrosGame {
             }
         }
 
-        // Get valid house placements
+        // Get valid house placements on placed tiles (lake board)
         if (this.gameState.players[currentPlayer].houses > 0) {
-            // Check placed tiles on board only (houses can only be placed on tiles that are on the board)
+            // Check placed tiles on board
             for (const tile of this.gameState.placedTiles) {
+                for (let r = 0; r < tile.houses.length; r++) {
+                    for (let c = 0; c < tile.houses[r].length; c++) {
+                        if (tile.shape_grid[r][c] === 1 && tile.houses[r][c] === null) {
+                            moves.push({
+                                type: 'house-placement',
+                                tile: tile,
+                                tileRow: r,
+                                tileCol: c,
+                                player: currentPlayer
+                            });
+                        }
+                    }
+                }
+            }
+
+            // Also check reedbed tiles for house placement
+            for (const tile of this.gameState.reedbed) {
                 for (let r = 0; r < tile.houses.length; r++) {
                     for (let c = 0; c < tile.houses[r].length; c++) {
                         if (tile.shape_grid[r][c] === 1 && tile.houses[r][c] === null) {
