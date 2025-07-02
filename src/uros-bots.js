@@ -697,17 +697,6 @@ export const UROS_AI_PLAYERS = {
             thinkingTime: 10
         }
     },
-    'minimax-some-rng': {
-        id: 'minimax-some-rng',
-        name: 'Minimax with Randomization',
-        description: 'Uses minimax algorithm with some randomization.',
-        class: UrosMinimaxPlayer,
-        config: {
-            randomize: true,
-            randomThreshold: 0.1,
-            thinkingTime: 10
-        }
-    },
     'mcts': {
         id: 'mcts',
         name: 'Monte Carlo Tree Search',
