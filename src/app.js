@@ -737,22 +737,24 @@ class UrosGame {
         const totalHouses = this.housesPerPlayer;
         const remainingHouses = this.gameState.players[player].houses;
         const usedHouses = totalHouses - remainingHouses;
+        const isCurrentHuman = this.gameState.currentPlayer === player && !this.botPlayers[player];
 
         displayElement.innerHTML = '';
 
-        // Add remaining houses (bright, clickable)
+        // Add remaining houses (bright, clickable only if human's turn)
         for (let i = 0; i < remainingHouses; i++) {
             const houseEmoji = document.createElement('span');
-            houseEmoji.className = 'house-emoji clickable';
+            houseEmoji.className = 'house-emoji' + (isCurrentHuman ? ' clickable' : '');
             houseEmoji.textContent = player === 'red' ? '🏠' : '🏘️';
             houseEmoji.title = `Place a house for ${player === 'red' ? 'Red' : 'Blue'} Player`;
-            houseEmoji.tabIndex = 0;
-            houseEmoji.addEventListener('click', (e) => {
-                // Only allow if it's this player's turn
-                if (this.gameState.currentPlayer === player && this.gameState.players[player].houses > 0) {
-                    this.enterHousePlacementMode(player);
-                }
-            });
+            houseEmoji.tabIndex = isCurrentHuman ? 0 : -1;
+            if (isCurrentHuman) {
+                houseEmoji.addEventListener('click', (e) => {
+                    if (this.gameState.currentPlayer === player && this.gameState.players[player].houses > 0) {
+                        this.enterHousePlacementMode(player);
+                    }
+                });
+            }
             displayElement.appendChild(houseEmoji);
         }
 
@@ -889,19 +891,18 @@ class UrosGame {
         }
 
         this.eventHandlers.board = (e) => {
+            // Only allow if current player is human
+            if (this.botPlayers[this.gameState.currentPlayer]) return;
             const cell = e.target.closest('.lake-cell');
             if (!cell) return;
-
             const row = parseInt(cell.dataset.row);
             const col = parseInt(cell.dataset.col);
             if (isNaN(row) || isNaN(col)) {
                 console.error('Cell must have valid row/col data attributes');
                 return;
             }
-
             this.handleBoardCellClick(row, col, e);
         };
-
         board.addEventListener('click', this.eventHandlers.board);
 
         // Reedbed click handling (event delegation)
@@ -910,8 +911,9 @@ class UrosGame {
             console.error('Reedbed element must exist');
             return;
         }
-
         this.eventHandlers.reedbed = (e) => {
+            // Only allow if current player is human
+            if (this.botPlayers[this.gameState.currentPlayer]) return;
             // Handle tile selection clicks
             const tileElement = e.target.closest('.tile-preview');
             if (tileElement && this.interactionState.mode !== 'house-placement') {
@@ -1321,6 +1323,8 @@ class UrosGame {
         }
 
         this.keyboardHandler = (e) => {
+            // Only allow if current player is human
+            if (this.botPlayers[this.gameState.currentPlayer]) return;
             // --- Rotation hotkeys ---
             if (e.key === 'q' || e.key === 'Q') {
                 this.rotateSelectedTile(-1);
@@ -1338,8 +1342,6 @@ class UrosGame {
                 // Only allow if current player has houses left
                 const player = this.gameState.currentPlayer;
                 const housesLeft = this.gameState.players[player].houses;
-                // Defensive: assert player is red or blue
-                console.assert(player === 'red' || player === 'blue', 'Current player must be red or blue');
                 if (housesLeft > 0) {
                     this.enterHousePlacementMode(player);
                 }
@@ -1347,17 +1349,13 @@ class UrosGame {
             }
 
             // --- Reedbed tile selection hotkeys (1-9) ---
-            // Only allow if not in house-placement mode
             if (this.interactionState.mode !== 'house-placement') {
-                // 1-9 keys (top row and numpad)
                 const keyNum = parseInt(e.key, 10);
                 if (!isNaN(keyNum) && keyNum >= 1 && keyNum <= 9) {
                     const idx = keyNum - 1;
                     const reedbed = this.gameState.reedbed;
                     if (reedbed && idx < reedbed.length) {
                         const tile = reedbed[idx];
-                        // Defensive: assert tile exists
-                        console.assert(tile, 'Reedbed tile must exist for hotkey selection');
                         this.handleTileSelection(tile);
                     }
                 }
