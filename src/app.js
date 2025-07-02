@@ -789,6 +789,9 @@ class UrosGame {
         const thinkingTimeDisplay = document.getElementById('thinking-time-display');
 
         if (thinkingTimeSlider && thinkingTimeDisplay) {
+            // Sync JS value to slider default on page load
+            this.botThinkingTime = parseInt(thinkingTimeSlider.value);
+            thinkingTimeDisplay.textContent = `${thinkingTimeSlider.value}ms`;
             thinkingTimeSlider.addEventListener('input', (e) => {
                 const value = e.target.value;
                 thinkingTimeDisplay.textContent = `${value}ms`;
@@ -1861,27 +1864,20 @@ class UrosGame {
         // Show thinking indicator
         this.showBotThinking(currentPlayer);
 
-        // Execute bot move after the bot's thinking time
+        // Always delay for thinkingTime ms BEFORE making the move
         const thinkingTime = bot.thinkingTime || this.botThinkingTime;
+        console.assert(typeof thinkingTime === 'number' && thinkingTime >= 0, 'thinkingTime must be a non-negative number');
         setTimeout(() => {
-            try {
-                // Double-check game state before making move
-                if (this.gameState.gameOver) {
-                    console.log('Game is over, stopping bot execution');
-                    return;
-                }
-
-                const move = bot.chooseMove();
+            // After delay, get the move (sync or async)
+            const maybePromise = bot.chooseMove();
+            const processMove = (move) => {
                 if (move) {
                     console.log(`${currentPlayer} bot chose move:`, move);
                     const success = this.makeBotMove(move);
                     if (success) {
                         this.completeInteraction();
-
-                        // Add delay before continuing to next action (use thinkingTime, not hardcoded)
-                        setTimeout(() => {
-                            this.nextTurn();
-                        }, thinkingTime); // Use bot's thinking time for all delays
+                        // Immediately go to next turn (no extra delay)
+                        this.nextTurn();
                     } else {
                         console.error('Bot move failed');
                         this.hideBotThinking();
@@ -1892,9 +1888,29 @@ class UrosGame {
                     // Switch to next player and check if game should end
                     this.nextTurn();
                 }
-            } catch (error) {
-                console.error('Bot move execution failed:', error);
-                this.hideBotThinking();
+            };
+            if (maybePromise && typeof maybePromise.then === 'function') {
+                maybePromise.then(move => {
+                    if (this.gameState.gameOver) {
+                        console.log('Game is over, stopping bot execution (async)');
+                        return;
+                    }
+                    processMove(move);
+                }).catch(error => {
+                    console.error('Bot move execution failed (async):', error);
+                    this.hideBotThinking();
+                });
+            } else {
+                try {
+                    if (this.gameState.gameOver) {
+                        console.log('Game is over, stopping bot execution (sync)');
+                        return;
+                    }
+                    processMove(maybePromise);
+                } catch (error) {
+                    console.error('Bot move execution failed (sync):', error);
+                    this.hideBotThinking();
+                }
             }
         }, thinkingTime);
     }

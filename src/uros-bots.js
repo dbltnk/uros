@@ -403,6 +403,7 @@ class UrosDeterministicPlayer extends UrosPlayer {
             return null;
         }
         // Always pick the first valid move
+        console.assert(typeof this.thinkingTime === 'number' && this.thinkingTime >= 0, 'thinkingTime must be a non-negative number');
         return validMoves[0];
     }
 }
@@ -415,6 +416,7 @@ class UrosRandomPlayer extends UrosPlayer {
             return null;
         }
         const randomIndex = Math.floor(this.getRandom() * validMoves.length);
+        console.assert(typeof this.thinkingTime === 'number' && this.thinkingTime >= 0, 'thinkingTime must be a non-negative number');
         return validMoves[randomIndex];
     }
 }
