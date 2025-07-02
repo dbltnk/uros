@@ -452,8 +452,8 @@ class UrosGame {
 
     updateStatus() {
         const status = document.getElementById('game-status');
-        const redHouses = document.getElementById('red-houses-left');
-        const blueHouses = document.getElementById('blue-houses-left');
+        // const redHouses = document.getElementById('red-houses-left');
+        // const blueHouses = document.getElementById('blue-houses-left');
         const scores = document.getElementById('village-scores');
         const statusBar = document.querySelector('.status-bar');
 
@@ -488,9 +488,7 @@ class UrosGame {
                 <span class="text-blue-300">Blue: ${blueLargest.size} houses on ${blueLargest.islands} islands</span>
             `;
 
-            // Hide house counts since game is over
-            redHouses.textContent = '0';
-            blueHouses.textContent = '0';
+            // No more house counters to update
         } else {
             // Normal game state
             statusBar.style.backgroundColor = '#1f2937';
@@ -506,8 +504,7 @@ class UrosGame {
             const playerType = isBot ? 'Bot' : 'Human';
 
             status.textContent = `${playerName} ${playerType}${botIndicator}'s turn (${placementsLeft} placement${placementsLeft > 1 ? 's' : ''} left)`;
-            redHouses.textContent = this.gameState.players.red.houses;
-            blueHouses.textContent = this.gameState.players.blue.houses;
+            // No more house counters to update
 
             // Calculate current village sizes
             const villages = this.calculateVillages();
@@ -665,9 +662,11 @@ class UrosGame {
             console.error('Reedbed element not found!');
             return;
         }
-
+        if (!this.gameState.reedbed) {
+            reedbed.innerHTML = '';
+            return;
+        }
         reedbed.innerHTML = '';
-
         for (const tile of this.gameState.reedbed) {
             const tileElement = document.createElement('div');
             tileElement.className = 'tile-preview';
@@ -726,26 +725,43 @@ class UrosGame {
     }
 
     renderHousePools() {
-        // Show/hide and style the Place House buttons
-        const redBtn = document.getElementById('red-place-house-btn');
-        const blueBtn = document.getElementById('blue-place-house-btn');
-        const current = this.gameState.currentPlayer;
-        const redHouses = this.gameState.players.red.houses;
-        const blueHouses = this.gameState.players.blue.houses;
+        // Render visual house displays
+        this.renderHouseDisplay('red');
+        this.renderHouseDisplay('blue');
+    }
 
-        // Hide both by default
-        redBtn.classList.add('hidden');
-        blueBtn.classList.add('hidden');
-        redBtn.classList.remove('place-house-active');
-        blueBtn.classList.remove('place-house-active');
+    renderHouseDisplay(player) {
+        const displayElement = document.getElementById(`${player}-houses-display`);
+        if (!displayElement) return;
 
-        if (current === 'red' && redHouses > 0) {
-            redBtn.classList.remove('hidden');
-            if (this.interactionState.mode === 'house-placement') redBtn.classList.add('place-house-active');
+        const totalHouses = this.housesPerPlayer;
+        const remainingHouses = this.gameState.players[player].houses;
+        const usedHouses = totalHouses - remainingHouses;
+
+        displayElement.innerHTML = '';
+
+        // Add remaining houses (bright, clickable)
+        for (let i = 0; i < remainingHouses; i++) {
+            const houseEmoji = document.createElement('span');
+            houseEmoji.className = 'house-emoji clickable';
+            houseEmoji.textContent = player === 'red' ? '🏠' : '🏘️';
+            houseEmoji.title = `Place a house for ${player === 'red' ? 'Red' : 'Blue'} Player`;
+            houseEmoji.tabIndex = 0;
+            houseEmoji.addEventListener('click', (e) => {
+                // Only allow if it's this player's turn
+                if (this.gameState.currentPlayer === player && this.gameState.players[player].houses > 0) {
+                    this.enterHousePlacementMode(player);
+                }
+            });
+            displayElement.appendChild(houseEmoji);
         }
-        if (current === 'blue' && blueHouses > 0) {
-            blueBtn.classList.remove('hidden');
-            if (this.interactionState.mode === 'house-placement') blueBtn.classList.add('place-house-active');
+
+        // Add used houses (dimmed, not clickable)
+        for (let i = 0; i < usedHouses; i++) {
+            const houseEmoji = document.createElement('span');
+            houseEmoji.className = 'house-emoji used';
+            houseEmoji.textContent = player === 'red' ? '🏠' : '🏘️';
+            displayElement.appendChild(houseEmoji);
         }
     }
 
@@ -753,19 +769,6 @@ class UrosGame {
      * Set up button event handlers (separate from click handling for clarity)
      */
     setupButtonHandlers() {
-        // Place House button listeners
-        document.getElementById('red-place-house-btn').addEventListener('click', () => {
-            if (this.gameState.currentPlayer === 'red' && this.gameState.players.red.houses > 0) {
-                this.enterHousePlacementMode('red');
-            }
-        });
-
-        document.getElementById('blue-place-house-btn').addEventListener('click', () => {
-            if (this.gameState.currentPlayer === 'blue' && this.gameState.players.blue.houses > 0) {
-                this.enterHousePlacementMode('blue');
-            }
-        });
-
         // New game button
         document.getElementById('new-game-btn').addEventListener('click', () => {
             this.applyBotConfiguration();
@@ -1721,29 +1724,29 @@ class UrosGame {
         }
 
         // Get valid tile placements (including all rotations)
-        for (const tile of this.gameState.reedbed) {
-            // Try all 4 rotations of the tile
-            for (let rotation = 0; rotation < 4; rotation++) {
-                const rotatedTile = this.rotateTile(tile, rotation);
-
-                for (let row = 0; row < this.boardSize; row++) {
-                    for (let col = 0; col < this.boardSize; col++) {
-                        // Try different anchor positions
-                        const grid = rotatedTile.shape_grid;
-                        const rows = grid.length;
-                        const cols = grid[0].length;
-
-                        for (let anchorRow = 0; anchorRow < rows; anchorRow++) {
-                            for (let anchorCol = 0; anchorCol < cols; anchorCol++) {
-                                if (grid[anchorRow][anchorCol] === 1 && this.canPlaceTile(rotatedTile, row, col, anchorRow, anchorCol)) {
-                                    moves.push({
-                                        type: 'tile-placement',
-                                        tile: { ...rotatedTile },
-                                        row: row,
-                                        col: col,
-                                        anchorTileRow: anchorRow,
-                                        anchorTileCol: anchorCol
-                                    });
+        if (this.gameState.reedbed) {
+            for (const tile of this.gameState.reedbed) {
+                // Try all 4 rotations of the tile
+                for (let rotation = 0; rotation < 4; rotation++) {
+                    const rotatedTile = this.rotateTile(tile, rotation);
+                    for (let row = 0; row < this.boardSize; row++) {
+                        for (let col = 0; col < this.boardSize; col++) {
+                            // Try different anchor positions
+                            const grid = rotatedTile.shape_grid;
+                            const rows = grid.length;
+                            const cols = grid[0].length;
+                            for (let anchorRow = 0; anchorRow < rows; anchorRow++) {
+                                for (let anchorCol = 0; anchorCol < cols; anchorCol++) {
+                                    if (grid[anchorRow][anchorCol] === 1 && this.canPlaceTile(rotatedTile, row, col, anchorRow, anchorCol)) {
+                                        moves.push({
+                                            type: 'tile-placement',
+                                            tile: { ...rotatedTile },
+                                            row: row,
+                                            col: col,
+                                            anchorTileRow: anchorRow,
+                                            anchorTileCol: anchorCol
+                                        });
+                                    }
                                 }
                             }
                         }
@@ -1770,25 +1773,25 @@ class UrosGame {
                     }
                 }
             }
-
             // Also check reedbed tiles for house placement
-            for (const tile of this.gameState.reedbed) {
-                for (let r = 0; r < tile.houses.length; r++) {
-                    for (let c = 0; c < tile.houses[r].length; c++) {
-                        if (tile.shape_grid[r][c] === 1 && tile.houses[r][c] === null) {
-                            moves.push({
-                                type: 'house-placement',
-                                tile: tile,
-                                tileRow: r,
-                                tileCol: c,
-                                player: currentPlayer
-                            });
+            if (this.gameState.reedbed) {
+                for (const tile of this.gameState.reedbed) {
+                    for (let r = 0; r < tile.houses.length; r++) {
+                        for (let c = 0; c < tile.houses[r].length; c++) {
+                            if (tile.shape_grid[r][c] === 1 && tile.houses[r][c] === null) {
+                                moves.push({
+                                    type: 'house-placement',
+                                    tile: tile,
+                                    tileRow: r,
+                                    tileCol: c,
+                                    player: currentPlayer
+                                });
+                            }
                         }
                     }
                 }
             }
         }
-
         return moves;
     }
 
