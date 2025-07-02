@@ -50,6 +50,11 @@ class UrosGame {
         this.botThinkingTime = 1000; // ms
         this.botMoveDelay = 500; // ms delay between bot moves for better UX
 
+        // Random seed management
+        this.useRandomSeed = true;
+        this.randomSeed = null;
+        this.seedGenerator = null;
+
         this.init();
     }
 
@@ -753,7 +758,7 @@ class UrosGame {
 
         // New game button
         document.getElementById('new-game-btn').addEventListener('click', () => {
-            this.startNewGame();
+            this.applyBotConfiguration();
         });
 
         // Bot configuration handlers
@@ -778,19 +783,36 @@ class UrosGame {
 
 
 
-        // Apply configuration button
-        const applyConfigBtn = document.getElementById('apply-bot-config');
-        if (applyConfigBtn) {
-            applyConfigBtn.addEventListener('click', () => {
-                this.applyBotConfiguration();
+        // Random seed controls
+        const useRandomSeedCheckbox = document.getElementById('use-random-seed');
+        const randomSeedInput = document.getElementById('random-seed');
+
+        if (useRandomSeedCheckbox) {
+            useRandomSeedCheckbox.addEventListener('change', (e) => {
+                this.useRandomSeed = e.target.checked;
+                if (!this.useRandomSeed) {
+                    this.randomSeed = null;
+                    if (randomSeedInput) randomSeedInput.value = '';
+                }
+                this.initializeRandomSeed();
             });
         }
+
+        if (randomSeedInput) {
+            randomSeedInput.addEventListener('input', (e) => {
+                const value = e.target.value;
+                this.randomSeed = value ? parseInt(value) : null;
+                this.initializeRandomSeed();
+            });
+        }
+
+
 
 
     }
 
     /**
-     * Apply bot configuration from UI
+     * Apply bot configuration from UI and start new game
      */
     applyBotConfiguration() {
         const redPlayerSelect = document.getElementById('red-player-select');
@@ -808,22 +830,32 @@ class UrosGame {
         this.botPlayers.red = null;
         this.botPlayers.blue = null;
 
+        // Set up pending bot configuration
+        this.pendingBotConfig = {};
+
         // Set up bots based on configuration
         if (redPlayerType !== 'human') {
-            this.setPlayerBot('red', redPlayerType);
+            this.pendingBotConfig.red = { botType: redPlayerType, config: {} };
         }
 
         if (bluePlayerType !== 'human') {
-            this.setPlayerBot('blue', bluePlayerType);
+            this.pendingBotConfig.blue = { botType: bluePlayerType, config: {} };
         }
 
         // Update game mode automatically based on player types
         this.updateGameMode();
 
-        console.log(`Applied bot configuration: Red=${redPlayerType}, Blue=${bluePlayerType}`);
+        // Reinitialize random seed for new game
+        this.initializeRandomSeed();
 
-        // Start new game with new configuration
+        console.log(`Applied bot configuration: Red=${redPlayerType}, Blue=${bluePlayerType}`);
+        console.log('Pending bot config:', this.pendingBotConfig);
+
+        // Start new game first, then initialize bot system
         this.startNewGame();
+
+        // Initialize bot system with new configuration (will start bot turns after initialization)
+        this.initializeBotSystem();
     }
 
 
@@ -1604,7 +1636,7 @@ class UrosGame {
  * Initialize bot system after it's loaded
  */
     initializeBotSystem() {
-        if (!this.pendingBotConfig) return;
+        if (!this.pendingBotConfig || typeof this.pendingBotConfig !== 'object' || Object.keys(this.pendingBotConfig).length === 0) return;
 
         console.log('Initializing bot system with config:', this.pendingBotConfig);
 
@@ -1613,7 +1645,12 @@ class UrosGame {
             console.log('Bot system loaded successfully:', module);
 
             for (const [player, config] of Object.entries(this.pendingBotConfig)) {
-                const finalConfig = { ...config.config, thinkingTime: this.botThinkingTime };
+                const finalConfig = {
+                    ...config.config,
+                    thinkingTime: this.botThinkingTime,
+                    randomSeed: this.randomSeed,
+                    useRandomSeed: this.useRandomSeed
+                };
                 this.botPlayers[player] = module.createUrosPlayer(config.botType, this, player, finalConfig);
                 console.log(`Set ${player} player to ${config.botType} bot`);
             }
@@ -1621,6 +1658,12 @@ class UrosGame {
             this.pendingBotConfig = null;
             this.updateGameMode();
             this.render();
+
+            // Start bot turn if current player is a bot (after initialization is complete)
+            if (this.isCurrentPlayerBot() && !this.gameState.gameOver) {
+                console.log('Starting bot turn after initialization');
+                setTimeout(() => this.executeBotTurn(), this.botMoveDelay);
+            }
         }).catch(error => {
             console.error('Failed to load bot system:', error);
             console.error('Error details:', error.message, error.stack);
@@ -1650,7 +1693,9 @@ class UrosGame {
      */
     isCurrentPlayerBot() {
         const currentPlayer = this.gameState.currentPlayer;
-        return this.botPlayers[currentPlayer] !== null;
+        const isBot = this.botPlayers[currentPlayer] !== null;
+        console.log(`isCurrentPlayerBot: ${currentPlayer} -> ${isBot} (bot: ${this.botPlayers[currentPlayer]})`);
+        return isBot;
     }
 
     /**
@@ -1760,8 +1805,15 @@ class UrosGame {
  * Execute bot turn with delay for better UX
  */
     executeBotTurn() {
+        console.log('executeBotTurn called');
+        console.log('isCurrentPlayerBot():', this.isCurrentPlayerBot());
+        console.log('gameState.gameOver:', this.gameState.gameOver);
+        console.log('currentPlayer:', this.gameState.currentPlayer);
+        console.log('botPlayers:', this.botPlayers);
+
         // Check if game is over or current player is not a bot
         if (!this.isCurrentPlayerBot() || this.gameState.gameOver) {
+            console.log('executeBotTurn: early return - not a bot or game over');
             return;
         }
 
@@ -1823,7 +1875,12 @@ class UrosGame {
         const status = document.getElementById('game-status');
         if (status) {
             const playerName = player === 'red' ? '🔴 Red' : '🔵 Blue';
-            status.textContent = `${playerName} bot is thinking...`;
+            const botType = this.getBotTypeName(this.botPlayers[player]);
+            status.textContent = `${playerName} ${botType} bot is thinking...`;
+
+            // Add visual indicator
+            status.style.fontStyle = 'italic';
+            status.style.opacity = '0.8';
         }
     }
 
@@ -1831,6 +1888,12 @@ class UrosGame {
      * Hide bot thinking indicator
      */
     hideBotThinking() {
+        const status = document.getElementById('game-status');
+        if (status) {
+            // Remove visual indicators
+            status.style.fontStyle = 'normal';
+            status.style.opacity = '1';
+        }
         // Status will be updated by updateStatus() call
     }
 
@@ -1905,19 +1968,56 @@ class UrosGame {
             hoveredTileId: null
         };
 
-        // Set up default bot configuration (deterministic vs deterministic)
-        this.setupDefaultBots();
-
-        // Initialize bot system
-        this.initializeBotSystem();
+        // Only set up default bots if no bots are configured yet AND no pending config
+        if (!this.botPlayers.red && !this.botPlayers.blue && !this.pendingBotConfig) {
+            this.setupDefaultBots();
+            // Initialize bot system only for default bots
+            this.initializeBotSystem();
+        }
 
         this.updateStatus();
         this.render();
 
         // Start bot turn if current player is a bot
         if (this.isCurrentPlayerBot() && !this.gameState.gameOver) {
+            console.log('Starting bot turn for current player');
             setTimeout(() => this.executeBotTurn(), this.botMoveDelay);
         }
+    }
+
+    /**
+     * Initialize random seed system
+     */
+    initializeRandomSeed() {
+        if (this.useRandomSeed && this.randomSeed !== null) {
+            // Use a simple seeded random number generator
+            this.seedGenerator = this.createSeededRandom(this.randomSeed);
+            console.log(`Using seeded random generator with seed: ${this.randomSeed}`);
+        } else {
+            this.seedGenerator = null;
+            console.log('Using system random generator');
+        }
+    }
+
+    /**
+     * Create a seeded random number generator
+     */
+    createSeededRandom(seed) {
+        let state = seed;
+        return function () {
+            state = (state * 9301 + 49297) % 233280;
+            return state / 233280;
+        };
+    }
+
+    /**
+     * Get a random number (either seeded or system)
+     */
+    getRandom() {
+        if (this.seedGenerator) {
+            return this.seedGenerator();
+        }
+        return Math.random();
     }
 
     /**
@@ -1925,8 +2025,10 @@ class UrosGame {
      */
     setupDefaultBots() {
         // Default to deterministic vs deterministic for testing
-        this.setPlayerBot('red', 'deterministic');
-        this.setPlayerBot('blue', 'deterministic');
+        this.pendingBotConfig = {
+            red: { botType: 'deterministic', config: {} },
+            blue: { botType: 'deterministic', config: {} }
+        };
     }
 
     /**
@@ -1938,7 +2040,8 @@ class UrosGame {
         const botTypeMap = {
             'UrosDeterministicPlayer': 'Deterministic',
             'UrosRandomPlayer': 'Random',
-            'UrosMinimaxPlayer': 'Minimax'
+            'UrosMinimaxPlayer': 'Minimax',
+            'UrosMCTSPlayer': 'MCTS'
         };
 
         return botTypeMap[bot.constructor.name] || 'Bot';
