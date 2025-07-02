@@ -423,10 +423,7 @@ class UrosRandomPlayer extends UrosPlayer {
 class UrosMinimaxPlayer extends UrosPlayer {
     constructor(gameEngine, playerColor, config = {}) {
         super(gameEngine, playerColor, config);
-        if (!config.thinkingTime) {
-            throw new Error('UrosMinimaxPlayer requires thinkingTime in config');
-        }
-        this.thinkingTime = config.thinkingTime;
+        this.thinkingTime = config.thinkingTime || 10;
         this.bestMove = null;
         this.startTime = null;
     }
@@ -529,10 +526,7 @@ class UrosMinimaxPlayer extends UrosPlayer {
 class UrosMCTSPlayer extends UrosPlayer {
     constructor(gameEngine, playerColor, config = {}) {
         super(gameEngine, playerColor, config);
-        if (!config.thinkingTime) {
-            throw new Error('UrosMCTSPlayer requires thinkingTime in config');
-        }
-        this.thinkingTime = config.thinkingTime;
+        this.thinkingTime = config.thinkingTime || 10;
         this.minSimulationsPerMove = 20;     // Minimum simulations per move before checking convergence
         this.convergenceWindow = 15;         // Number of recent simulations to check for convergence
         this.convergenceThreshold = 0.02;    // Maximum allowed change in win rates
@@ -680,14 +674,18 @@ export const UROS_AI_PLAYERS = {
         name: 'Deterministic',
         description: 'Always makes the first valid move it finds.',
         class: UrosDeterministicPlayer,
-        config: {}
+        config: {
+            thinkingTime: 10
+        }
     },
     'random': {
         id: 'random',
         name: 'Random',
         description: 'Makes random valid moves.',
         class: UrosRandomPlayer,
-        config: {}
+        config: {
+            thinkingTime: 10
+        }
     },
     'minimax': {
         id: 'minimax',
@@ -696,7 +694,7 @@ export const UROS_AI_PLAYERS = {
         class: UrosMinimaxPlayer,
         config: {
             randomize: false,
-            thinkingTime: 1000
+            thinkingTime: 10
         }
     },
     'minimax-some-rng': {
@@ -707,7 +705,7 @@ export const UROS_AI_PLAYERS = {
         config: {
             randomize: true,
             randomThreshold: 0.1,
-            thinkingTime: 1000
+            thinkingTime: 10
         }
     },
     'mcts': {
@@ -717,7 +715,7 @@ export const UROS_AI_PLAYERS = {
         class: UrosMCTSPlayer,
         config: {
             randomize: true,
-            thinkingTime: 1000
+            thinkingTime: 10
         }
     }
 };
@@ -728,13 +726,13 @@ export function createUrosPlayer(strategyId, gameEngine, playerColor, config = {
         throw new Error(`Unknown player strategy: ${strategyId}`);
     }
 
-    // Ensure thinkingTime is provided either in config or player defaults
-    const finalConfig = { ...playerConfig.config, ...config };
-    if (playerConfig.class.prototype instanceof UrosMinimaxPlayer) {
-        if (!finalConfig.thinkingTime) {
-            throw new Error(`${playerConfig.name} requires thinkingTime in config`);
-        }
-    }
+    // Merge configs: player defaults -> UI config -> explicit config
+    const finalConfig = {
+        ...playerConfig.config,
+        ...config,
+        // Always use the thinking time from the UI slider
+        thinkingTime: config.thinkingTime || playerConfig.config.thinkingTime || 10
+    };
 
     return new playerConfig.class(gameEngine, playerColor, finalConfig);
 } 

@@ -47,8 +47,8 @@ class UrosGame {
             blue: null
         };
         this.gameMode = 'bot-vs-bot'; // 'human-vs-human', 'human-vs-bot', 'bot-vs-bot'
-        this.botThinkingTime = 1000; // ms
-        this.botMoveDelay = 500; // ms delay between bot moves for better UX
+        this.botThinkingTime = 10; // ms - default thinking time for all bots
+        this.botMoveDelay = 10; // ms delay between bot moves for better UX
 
         // Random seed management
         this.useRandomSeed = true;
@@ -415,7 +415,7 @@ class UrosGame {
     }
 
     nextTurn() {
-        // Increment placements this turn
+        // Call original nextTurn logic
         this.gameState.placementsThisTurn = (this.gameState.placementsThisTurn || 0) + 1;
         if (this.gameState.isFirstTurn) {
             // First turn: only 1 placement
@@ -433,11 +433,20 @@ class UrosGame {
                 this.gameState.placementsRequired = 2;
             }
         }
+
         this.updateStatus();
         if (this.checkGameOver()) {
             return;
         }
         this.render();
+
+        // Check if current player is a bot and execute bot turn with delay
+        if (this.isCurrentPlayerBot() && !this.gameState.gameOver) {
+            // Always use the bot's thinking time for delay between turns
+            const currentBot = this.botPlayers[this.gameState.currentPlayer];
+            const thinkingTime = currentBot ? (currentBot.thinkingTime || this.botThinkingTime) : this.botThinkingTime;
+            setTimeout(() => this.executeBotTurn(), thinkingTime);
+        }
     }
 
     updateStatus() {
@@ -1647,12 +1656,12 @@ class UrosGame {
             for (const [player, config] of Object.entries(this.pendingBotConfig)) {
                 const finalConfig = {
                     ...config.config,
-                    thinkingTime: this.botThinkingTime,
+                    thinkingTime: this.botThinkingTime, // Use the UI slider value
                     randomSeed: this.randomSeed,
                     useRandomSeed: this.useRandomSeed
                 };
                 this.botPlayers[player] = module.createUrosPlayer(config.botType, this, player, finalConfig);
-                console.log(`Set ${player} player to ${config.botType} bot`);
+                console.log(`Set ${player} player to ${config.botType} bot with thinking time ${this.botThinkingTime}ms`);
             }
 
             this.pendingBotConfig = null;
@@ -1828,7 +1837,8 @@ class UrosGame {
         // Show thinking indicator
         this.showBotThinking(currentPlayer);
 
-        // Execute bot move after a short delay
+        // Execute bot move after the bot's thinking time
+        const thinkingTime = bot.thinkingTime || this.botThinkingTime;
         setTimeout(() => {
             try {
                 // Double-check game state before making move
@@ -1843,29 +1853,26 @@ class UrosGame {
                     const success = this.makeBotMove(move);
                     if (success) {
                         this.completeInteraction();
-                        this.nextTurn();
 
-                        // Continue with next bot turn if needed
-                        // Add additional check for game over state
-                        if (this.isCurrentPlayerBot() && !this.gameState.gameOver) {
-                            setTimeout(() => this.executeBotTurn(), this.botMoveDelay);
-                        }
+                        // Add delay before continuing to next action (use thinkingTime, not hardcoded)
+                        setTimeout(() => {
+                            this.nextTurn();
+                        }, thinkingTime); // Use bot's thinking time for all delays
                     } else {
                         console.error('Bot move failed');
+                        this.hideBotThinking();
                     }
                 } else {
                     // Bot returned null move - this is normal when no valid moves exist
                     console.log(`${currentPlayer} bot has no valid moves available`);
                     // Switch to next player and check if game should end
                     this.nextTurn();
-                    return;
                 }
             } catch (error) {
                 console.error('Bot move execution failed:', error);
-            } finally {
                 this.hideBotThinking();
             }
-        }, this.botMoveDelay);
+        }, thinkingTime);
     }
 
     /**
@@ -1926,9 +1933,12 @@ class UrosGame {
         }
         this.render();
 
-        // Check if current player is a bot and execute bot turn
+        // Check if current player is a bot and execute bot turn with delay
         if (this.isCurrentPlayerBot() && !this.gameState.gameOver) {
-            setTimeout(() => this.executeBotTurn(), this.botMoveDelay);
+            // Always use the bot's thinking time for delay between turns
+            const currentBot = this.botPlayers[this.gameState.currentPlayer];
+            const thinkingTime = currentBot ? (currentBot.thinkingTime || this.botThinkingTime) : this.botThinkingTime;
+            setTimeout(() => this.executeBotTurn(), thinkingTime);
         }
     }
 
@@ -1981,7 +1991,9 @@ class UrosGame {
         // Start bot turn if current player is a bot
         if (this.isCurrentPlayerBot() && !this.gameState.gameOver) {
             console.log('Starting bot turn for current player');
-            setTimeout(() => this.executeBotTurn(), this.botMoveDelay);
+            const currentBot = this.botPlayers[this.gameState.currentPlayer];
+            const thinkingTime = currentBot ? (currentBot.thinkingTime || this.botThinkingTime) : this.botThinkingTime;
+            setTimeout(() => this.executeBotTurn(), thinkingTime);
         }
     }
 
