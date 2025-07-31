@@ -46,7 +46,6 @@ class UrosGame {
             red: null,
             blue: null
         };
-        this.gameMode = 'bot-vs-bot'; // 'human-vs-human', 'human-vs-bot', 'bot-vs-bot'
         this.botThinkingTime = 10; // ms - default thinking time for all bots
         this.botMoveDelay = 10; // ms delay between bot moves for better UX
 
@@ -860,8 +859,6 @@ class UrosGame {
             this.pendingBotConfig.blue = { botType: bluePlayerType, config: {} };
         }
 
-        // Update game mode automatically based on player types
-        this.updateGameMode();
 
         // Reinitialize random seed for new game
         this.initializeRandomSeed();
@@ -1670,7 +1667,6 @@ class UrosGame {
             }
 
             this.pendingBotConfig = null;
-            this.updateGameMode();
             this.render();
 
             // Start bot turn if current player is a bot (after initialization is complete)
@@ -1682,24 +1678,6 @@ class UrosGame {
             console.error('Failed to load bot system:', error);
             console.error('Error details:', error.message, error.stack);
         });
-    }
-
-    /**
-     * Update game mode based on current bot configuration
-     */
-    updateGameMode() {
-        const redIsBot = this.botPlayers.red !== null;
-        const blueIsBot = this.botPlayers.blue !== null;
-
-        if (redIsBot && blueIsBot) {
-            this.gameMode = 'bot-vs-bot';
-        } else if (redIsBot || blueIsBot) {
-            this.gameMode = 'human-vs-bot';
-        } else {
-            this.gameMode = 'human-vs-human';
-        }
-
-        console.log(`Game mode updated to: ${this.gameMode}`);
     }
 
     /**
@@ -2091,9 +2069,7 @@ class UrosGame {
 
         const botTypeMap = {
             'UrosDeterministicPlayer': 'Deterministic',
-            'UrosRandomPlayer': 'Random',
-            'UrosMinimaxPlayer': 'Minimax',
-            'UrosMCTSPlayer': 'MCTS'
+            'UrosRandomPlayer': 'Random'
         };
 
         return botTypeMap[bot.constructor.name] || 'Bot';
