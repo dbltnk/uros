@@ -100,6 +100,21 @@ class UrosRandomPlayer extends UrosPlayer {
         if (!validMoves || validMoves.length === 0) {
             return null;
         }
+
+        // Separate tile placements and house placements
+        const tilePlacements = validMoves.filter(move => move.type === 'tile-placement');
+        const housePlacements = validMoves.filter(move => move.type === 'house-placement');
+
+        // If we have both types of moves, randomly choose between them
+        if (tilePlacements.length > 0 && housePlacements.length > 0) {
+            const chooseTile = this.getRandom() < 0.5; // 50% chance for each type
+            const movesToChooseFrom = chooseTile ? tilePlacements : housePlacements;
+            const randomIndex = Math.floor(this.getRandom() * movesToChooseFrom.length);
+            console.assert(typeof this.thinkingTime === 'number' && this.thinkingTime >= 0, 'thinkingTime must be a non-negative number');
+            return movesToChooseFrom[randomIndex];
+        }
+
+        // If we only have one type of move, choose randomly from all moves
         const randomIndex = Math.floor(this.getRandom() * validMoves.length);
         console.assert(typeof this.thinkingTime === 'number' && this.thinkingTime >= 0, 'thinkingTime must be a non-negative number');
         return validMoves[randomIndex];
