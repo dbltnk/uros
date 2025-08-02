@@ -156,6 +156,7 @@ class BrowserLogger {
         });
 
         this.logCount++;
+        this.updateDebugPanel();
     }
 
     startPeriodicLogging() {
@@ -192,6 +193,7 @@ class BrowserLogger {
 
             this.lastDomSnapshot = snapshotStr;
             this.domUpdateCount++;
+            this.updateDebugPanel();
 
             await fetch(`${this.serverUrl}/dom-snapshot`, {
                 method: 'POST',
@@ -281,6 +283,10 @@ class BrowserLogger {
         }
 
         return conflicts;
+    }
+
+    updateDebugPanel() {
+        // Debug panel removed - no longer needed
     }
 
     setupEventListeners() {
