@@ -1831,10 +1831,11 @@ class UrosGame {
                         if (tile.shape_grid[r][c] === 1 && tile.houses[r][c] === null) {
                             moves.push({
                                 type: 'house-placement',
-                                tile: tile,
+                                tileId: tile.id,
                                 tileRow: r,
                                 tileCol: c,
-                                player: currentPlayer
+                                player: currentPlayer,
+                                isPlacedTile: true
                             });
                         }
                     }
@@ -1848,10 +1849,11 @@ class UrosGame {
                             if (tile.shape_grid[r][c] === 1 && tile.houses[r][c] === null) {
                                 moves.push({
                                     type: 'house-placement',
-                                    tile: tile,
+                                    tileId: tile.id,
                                     tileRow: r,
                                     tileCol: c,
-                                    player: currentPlayer
+                                    player: currentPlayer,
+                                    isPlacedTile: false
                                 });
                             }
                         }
@@ -1898,7 +1900,20 @@ class UrosGame {
         if (move.type === 'tile-placement') {
             return this.placeTile(move.tile, move.row, move.col, move.anchorTileRow, move.anchorTileCol);
         } else if (move.type === 'house-placement') {
-            return this.placeHouse(move.tile, move.tileRow, move.tileCol, move.player);
+            // Resolve tile reference using tileId
+            let tile = null;
+            if (move.isPlacedTile) {
+                tile = this.gameState.placedTiles.find(t => t.id === move.tileId);
+            } else {
+                tile = this.gameState.reedbed.find(t => t.id === move.tileId);
+            }
+
+            if (!tile) {
+                console.error(`Cannot find tile with ID ${move.tileId} for house placement`);
+                return false;
+            }
+
+            return this.placeHouse(tile, move.tileRow, move.tileCol, move.player);
         }
         return false;
     }

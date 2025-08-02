@@ -319,6 +319,10 @@ class SimulatedUrosGame {
         return this.gameEngine.canPlaceTile(tile, row, col, anchorTileRow, anchorTileCol);
     }
 
+    rotateTile(tile, direction = 1) {
+        return this.gameEngine.rotateTile(tile, direction);
+    }
+
     placeTile(tile, row, col, anchorTileRow = 0, anchorTileCol = 0) {
         if (!tile) {
             console.error('placeTile: tile must not be null');
@@ -402,12 +406,108 @@ class SimulatedUrosGame {
         return this.gameState.gameOver;
     }
 
+    getValidMoves() {
+        const moves = [];
+        const currentPlayer = this.gameState.currentPlayer;
+
+        // Check if game is over
+        if (this.gameState.gameOver) {
+            return moves;
+        }
+
+        // Get valid tile placements (including all rotations)
+        if (this.gameState.reedbed) {
+            for (const tile of this.gameState.reedbed) {
+                // Try all 4 rotations of the tile
+                for (let rotation = 0; rotation < 4; rotation++) {
+                    const rotatedTile = this.rotateTile(tile, rotation);
+                    for (let row = 0; row < this.boardSize; row++) {
+                        for (let col = 0; col < this.boardSize; col++) {
+                            // Try different anchor positions
+                            const grid = rotatedTile.shape_grid;
+                            const rows = grid.length;
+                            const cols = grid[0].length;
+                            for (let anchorRow = 0; anchorRow < rows; anchorRow++) {
+                                for (let anchorCol = 0; anchorCol < cols; anchorCol++) {
+                                    if (grid[anchorRow][anchorCol] === 1 && this.canPlaceTile(rotatedTile, row, col, anchorRow, anchorCol)) {
+                                        moves.push({
+                                            type: 'tile-placement',
+                                            tile: { ...rotatedTile },
+                                            row: row,
+                                            col: col,
+                                            anchorTileRow: anchorRow,
+                                            anchorTileCol: anchorCol
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Get valid house placements on placed tiles (lake board)
+        if (this.gameState.players[currentPlayer].houses > 0) {
+            // Check placed tiles on board
+            for (const tile of this.gameState.placedTiles) {
+                for (let r = 0; r < tile.houses.length; r++) {
+                    for (let c = 0; c < tile.houses[r].length; c++) {
+                        if (tile.shape_grid[r][c] === 1 && tile.houses[r][c] === null) {
+                            moves.push({
+                                type: 'house-placement',
+                                tileId: tile.id,
+                                tileRow: r,
+                                tileCol: c,
+                                player: currentPlayer,
+                                isPlacedTile: true
+                            });
+                        }
+                    }
+                }
+            }
+            // Also check reedbed tiles for house placement
+            if (this.gameState.reedbed) {
+                for (const tile of this.gameState.reedbed) {
+                    for (let r = 0; r < tile.houses.length; r++) {
+                        for (let c = 0; c < tile.houses[r].length; c++) {
+                            if (tile.shape_grid[r][c] === 1 && tile.houses[r][c] === null) {
+                                moves.push({
+                                    type: 'house-placement',
+                                    tileId: tile.id,
+                                    tileRow: r,
+                                    tileCol: c,
+                                    player: currentPlayer,
+                                    isPlacedTile: false
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return moves;
+    }
+
     makeMove(move) {
         // Handle different move types
         if (move.type === 'tile-placement') {
             return this.placeTile(move.tile, move.row, move.col, move.anchorTileRow, move.anchorTileCol);
         } else if (move.type === 'house-placement') {
-            return this.placeHouse(move.tile, move.tileRow, move.tileCol, move.player);
+            // Resolve tile reference using tileId
+            let tile = null;
+            if (move.isPlacedTile) {
+                tile = this.gameState.placedTiles.find(t => t.id === move.tileId);
+            } else {
+                tile = this.gameState.reedbed.find(t => t.id === move.tileId);
+            }
+
+            if (!tile) {
+                console.error(`Cannot find tile with ID ${move.tileId} for house placement`);
+                return false;
+            }
+
+            return this.placeHouse(tile, move.tileRow, move.tileCol, move.player);
         }
         return false;
     }
