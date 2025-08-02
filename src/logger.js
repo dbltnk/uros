@@ -37,7 +37,11 @@ class BrowserLogger {
 
     processEarlyLogs() {
         // Use the global earlyLogs captured from the very beginning
-        const earlyLogs = window.earlyLogs || [];
+        if (!window.earlyLogs) {
+            console.warn('No early logs found, initializing empty array');
+            window.earlyLogs = [];
+        }
+        const earlyLogs = window.earlyLogs;
         earlyLogs.forEach(log => {
             // Convert early log format to our buffer format
             const message = log.args.map(arg => {

@@ -6,10 +6,29 @@ class UrosPlayer {
     constructor(gameEngine, playerColor, config = {}) {
         this.gameEngine = gameEngine;
         this.playerColor = playerColor; // 'red' or 'blue'
-        this.randomize = config.randomize || false;
-        this.randomThreshold = config.randomThreshold || 0.1;
-        this.useRandomSeed = config.useRandomSeed || false;
-        this.randomSeed = config.randomSeed || null;
+
+        // Validate required config values instead of using fallbacks
+        if (typeof config.randomize !== 'boolean') {
+            throw new Error(`UrosPlayer: config.randomize must be a boolean, got ${typeof config.randomize}`);
+        }
+        if (typeof config.randomThreshold !== 'number' || config.randomThreshold < 0 || config.randomThreshold > 1) {
+            throw new Error(`UrosPlayer: config.randomThreshold must be a number between 0 and 1, got ${config.randomThreshold}`);
+        }
+        if (typeof config.useRandomSeed !== 'boolean') {
+            throw new Error(`UrosPlayer: config.useRandomSeed must be a boolean, got ${typeof config.useRandomSeed}`);
+        }
+        if (config.useRandomSeed && (typeof config.randomSeed !== 'number' || config.randomSeed === null)) {
+            throw new Error(`UrosPlayer: config.randomSeed must be a number when useRandomSeed is true, got ${config.randomSeed}`);
+        }
+        if (typeof config.thinkingTime !== 'number' || config.thinkingTime <= 0) {
+            throw new Error(`UrosPlayer: config.thinkingTime must be a positive number, got ${config.thinkingTime}`);
+        }
+
+        this.randomize = config.randomize;
+        this.randomThreshold = config.randomThreshold;
+        this.useRandomSeed = config.useRandomSeed;
+        this.randomSeed = config.randomSeed;
+        this.thinkingTime = config.thinkingTime;
     }
 
     /**
@@ -440,7 +459,7 @@ class UrosRandomPlayer extends UrosPlayer {
 class UrosMinimaxPlayer extends UrosPlayer {
     constructor(gameEngine, playerColor, config = {}) {
         super(gameEngine, playerColor, config);
-        this.thinkingTime = config.thinkingTime || 10;
+
         this.bestMove = null;
         this.startTime = null;
     }
@@ -543,7 +562,7 @@ class UrosMinimaxPlayer extends UrosPlayer {
 class UrosMCTSPlayer extends UrosPlayer {
     constructor(gameEngine, playerColor, config = {}) {
         super(gameEngine, playerColor, config);
-        this.thinkingTime = config.thinkingTime || 10;
+
         this.minSimulationsPerMove = 20;     // Minimum simulations per move before checking convergence
         this.convergenceWindow = 15;         // Number of recent simulations to check for convergence
         this.convergenceThreshold = 0.02;    // Maximum allowed change in win rates
@@ -692,6 +711,10 @@ export const UROS_AI_PLAYERS = {
         description: 'Always makes the first valid move it finds.',
         class: UrosDeterministicPlayer,
         config: {
+            randomize: false,
+            randomThreshold: 0.1,
+            useRandomSeed: false,
+            randomSeed: null,
             thinkingTime: 10
         }
     },
@@ -701,6 +724,10 @@ export const UROS_AI_PLAYERS = {
         description: 'Makes random valid moves.',
         class: UrosRandomPlayer,
         config: {
+            randomize: true,
+            randomThreshold: 0.1,
+            useRandomSeed: false,
+            randomSeed: null,
             thinkingTime: 10
         }
     },
@@ -711,6 +738,9 @@ export const UROS_AI_PLAYERS = {
         class: UrosMinimaxPlayer,
         config: {
             randomize: false,
+            randomThreshold: 0.1,
+            useRandomSeed: false,
+            randomSeed: null,
             thinkingTime: 10
         }
     },
@@ -721,6 +751,9 @@ export const UROS_AI_PLAYERS = {
         class: UrosMCTSPlayer,
         config: {
             randomize: true,
+            randomThreshold: 0.1,
+            useRandomSeed: false,
+            randomSeed: null,
             thinkingTime: 10
         }
     }
@@ -732,13 +765,39 @@ export function createUrosPlayer(strategyId, gameEngine, playerColor, config = {
         throw new Error(`Unknown player strategy: ${strategyId}`);
     }
 
-    // Merge configs: player defaults -> UI config -> explicit config
-    const finalConfig = {
-        ...playerConfig.config,
-        ...config,
-        // Always use the thinking time from the UI slider
-        thinkingTime: config.thinkingTime || playerConfig.config.thinkingTime || 10
+    // Validate that all required config values are provided
+    const requiredConfig = {
+        randomize: typeof config.randomize === 'boolean' ? config.randomize : playerConfig.config.randomize,
+        randomThreshold: typeof config.randomThreshold === 'number' ? config.randomThreshold : playerConfig.config.randomThreshold,
+        useRandomSeed: typeof config.useRandomSeed === 'boolean' ? config.useRandomSeed : playerConfig.config.useRandomSeed,
+        randomSeed: config.randomSeed !== undefined ? config.randomSeed : playerConfig.config.randomSeed,
+        thinkingTime: typeof config.thinkingTime === 'number' ? config.thinkingTime : playerConfig.config.thinkingTime
     };
 
-    return new playerConfig.class(gameEngine, playerColor, finalConfig);
+    // Validate thinking time
+    if (typeof requiredConfig.thinkingTime !== 'number' || requiredConfig.thinkingTime <= 0) {
+        throw new Error(`createUrosPlayer: thinkingTime must be a positive number, got ${requiredConfig.thinkingTime}`);
+    }
+
+    // Validate randomize
+    if (typeof requiredConfig.randomize !== 'boolean') {
+        throw new Error(`createUrosPlayer: randomize must be a boolean, got ${typeof requiredConfig.randomize}`);
+    }
+
+    // Validate randomThreshold
+    if (typeof requiredConfig.randomThreshold !== 'number' || requiredConfig.randomThreshold < 0 || requiredConfig.randomThreshold > 1) {
+        throw new Error(`createUrosPlayer: randomThreshold must be a number between 0 and 1, got ${requiredConfig.randomThreshold}`);
+    }
+
+    // Validate useRandomSeed
+    if (typeof requiredConfig.useRandomSeed !== 'boolean') {
+        throw new Error(`createUrosPlayer: useRandomSeed must be a boolean, got ${typeof requiredConfig.useRandomSeed}`);
+    }
+
+    // Validate randomSeed when useRandomSeed is true
+    if (requiredConfig.useRandomSeed && (typeof requiredConfig.randomSeed !== 'number' || requiredConfig.randomSeed === null)) {
+        throw new Error(`createUrosPlayer: randomSeed must be a number when useRandomSeed is true, got ${requiredConfig.randomSeed}`);
+    }
+
+    return new playerConfig.class(gameEngine, playerColor, requiredConfig);
 } 

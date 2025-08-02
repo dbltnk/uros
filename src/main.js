@@ -16,7 +16,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize game
     window.urosGame = new UrosGame();
-    // (No need to call startNewGame here)
-
     console.log('Uros game and logging system initialized');
 }); 

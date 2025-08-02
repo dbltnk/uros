@@ -6,6 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Uros - Floating Villages</title>
 
+    <!-- Favicon: Red circle inside blue box -->
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%232563eb'/><circle cx='50' cy='50' r='25' fill='%23dc2626'/></svg>">
+
     <!-- Early console capture - must be first! -->
     <script>
         // Capture ALL console output from the very beginning
@@ -107,8 +111,8 @@
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-red-700 mb-2">🔴 Red Player</label>
                     <select id="red-player-select" class="w-full p-2 border border-gray-300 rounded">
-                        <option value="human" selected>Human</option>
-                        <option value="deterministic">Deterministic Bot</option>
+                        <option value="human">Human</option>
+                        <option value="deterministic" selected>Deterministic Bot</option>
                         <option value="random">Random Bot</option>
                         <option value="minimax">Minimax Bot</option>
                         <option value="mcts">MCTS Bot</option>
@@ -130,8 +134,7 @@
                 <!-- Bot Settings -->
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Bot Thinking Time (ms)</label>
-                    <input type="range" id="bot-thinking-time" min="10" max="10000" value="500" step="10"
-                        class="w-full">
+                    <input type="range" id="bot-thinking-time" min="10" max="10000" value="10" step="10" class="w-full">
                     <div class="text-sm text-gray-600 mt-1">
                         <span id="thinking-time-display">500ms</span>
                     </div>
@@ -143,7 +146,7 @@
                         <input type="checkbox" id="use-random-seed" checked class="mr-2">
                         <span class="text-sm font-medium text-gray-700">Use random seed</span>
                     </label>
-                    <input type="number" id="random-seed"
+                    <input type="number" id="random-seed" value="1234"
                         placeholder="Leave empty for random, or enter a number for reproducible games"
                         class="w-full p-2 border border-gray-300 rounded text-sm">
                 </div>

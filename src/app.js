@@ -235,6 +235,11 @@ class UrosGame {
         const visited = new Set();
         const villages = { red: [], blue: [] };
 
+        // Check if game state exists
+        if (!this.gameState || !this.gameState.placedTiles) {
+            return villages;
+        }
+
         // Only consider villages for houses on placed tiles (lake board), per rules
         for (const tile of this.gameState.placedTiles) {
             for (let r = 0; r < tile.houses.length; r++) {
@@ -306,10 +311,13 @@ class UrosGame {
                     for (const pos of adjacentPositions) {
                         if (pos.row >= 0 && pos.row < this.boardSize &&
                             pos.col >= 0 && pos.col < this.boardSize) {
-                            const adjacentTile = this.gameState.board[pos.row][pos.col];
+                            const adjacentTile = this.gameState && this.gameState.board ? this.gameState.board[pos.row][pos.col] : null;
                             if (adjacentTile && adjacentTile !== tile) {
                                 // For the adjacent tile, recompute tile-local coordinates
-                                const anchor = adjacentTile.anchor || { tileRow: 0, tileCol: 0 };
+                                if (!adjacentTile.anchor) {
+                                    throw new Error(`Adjacent tile ${adjacentTile.id} missing anchor data`);
+                                }
+                                const anchor = adjacentTile.anchor;
                                 const tileRow = anchor.tileRow + (pos.row - adjacentTile.row);
                                 const tileCol = anchor.tileCol + (pos.col - adjacentTile.col);
                                 // Defensive: assert bounds
@@ -417,7 +425,10 @@ class UrosGame {
 
     nextTurn() {
         // Call original nextTurn logic
-        this.gameState.placementsThisTurn = (this.gameState.placementsThisTurn || 0) + 1;
+        if (typeof this.gameState.placementsThisTurn !== 'number') {
+            throw new Error('Game state placementsThisTurn must be initialized as a number');
+        }
+        this.gameState.placementsThisTurn = this.gameState.placementsThisTurn + 1;
         if (this.gameState.isFirstTurn) {
             // First turn: only 1 placement
             if (this.gameState.placementsThisTurn >= 1) {
@@ -445,7 +456,13 @@ class UrosGame {
         if (this.isCurrentPlayerBot() && !this.gameState.gameOver) {
             // Always use the bot's thinking time for delay between turns
             const currentBot = this.botPlayers[this.gameState.currentPlayer];
-            const thinkingTime = currentBot ? (currentBot.thinkingTime || this.botThinkingTime) : this.botThinkingTime;
+            if (!currentBot) {
+                throw new Error(`Bot not found for current player ${this.gameState.currentPlayer}`);
+            }
+            if (typeof currentBot.thinkingTime !== 'number' || currentBot.thinkingTime <= 0) {
+                throw new Error(`Bot thinking time must be a positive number, got ${currentBot.thinkingTime}`);
+            }
+            const thinkingTime = currentBot.thinkingTime;
             setTimeout(() => this.executeBotTurn(), thinkingTime);
         }
     }
@@ -456,6 +473,13 @@ class UrosGame {
         // const blueHouses = document.getElementById('blue-houses-left');
         const scores = document.getElementById('village-scores');
         const statusBar = document.querySelector('.status-bar');
+
+        // Check if game state exists
+        if (!this.gameState) {
+            status.textContent = 'Loading...';
+            scores.innerHTML = '<span class="text-gray-500">Loading...</span>';
+            return;
+        }
 
         // Check if game is over
         if (this.gameState.gameOver) {
@@ -495,7 +519,13 @@ class UrosGame {
             statusBar.style.color = 'white';
 
             const currentPlayer = this.gameState.currentPlayer;
-            const placementsLeft = (this.gameState.placementsRequired || 2) - (this.gameState.placementsThisTurn || 0);
+            if (typeof this.gameState.placementsRequired !== 'number' || this.gameState.placementsRequired <= 0) {
+                throw new Error(`Game state placementsRequired must be a positive number, got ${this.gameState.placementsRequired}`);
+            }
+            if (typeof this.gameState.placementsThisTurn !== 'number' || this.gameState.placementsThisTurn < 0) {
+                throw new Error(`Game state placementsThisTurn must be a non-negative number, got ${this.gameState.placementsThisTurn}`);
+            }
+            const placementsLeft = this.gameState.placementsRequired - this.gameState.placementsThisTurn;
             const playerName = currentPlayer === 'red' ? '🔴 Red' : '🔵 Blue';
 
             // Add bot indicator if current player is a bot
@@ -572,10 +602,13 @@ class UrosGame {
                 }
 
                 // Normal rendering
-                const tile = this.gameState.board[row][col];
+                const tile = this.gameState && this.gameState.board ? this.gameState.board[row][col] : null;
                 if (tile) {
                     // Use anchor if present, else fallback to old logic
-                    const anchor = tile.anchor || { tileRow: 0, tileCol: 0 };
+                    if (!tile.anchor) {
+                        throw new Error(`Tile ${tile.id} at position (${row}, ${col}) missing anchor data`);
+                    }
+                    const anchor = tile.anchor;
                     const tileRow = anchor.tileRow + (row - tile.row);
                     const tileCol = anchor.tileCol + (col - tile.col);
 
@@ -618,8 +651,12 @@ class UrosGame {
         // For each placed tile, add a high-contrast outline around its green cells
         // Remove any previous .island-outline elements
         document.querySelectorAll('.island-outline').forEach(el => el.remove());
+        if (!this.gameState || !this.gameState.placedTiles) return;
         for (const tile of this.gameState.placedTiles) {
-            const anchor = tile.anchor || { tileRow: 0, tileCol: 0 };
+            if (!tile.anchor) {
+                throw new Error(`Placed tile ${tile.id} missing anchor data`);
+            }
+            const anchor = tile.anchor;
             const grid = tile.shape_grid;
             const rows = grid.length;
             const cols = grid[0].length;
@@ -662,7 +699,7 @@ class UrosGame {
             console.error('Reedbed element not found!');
             return;
         }
-        if (!this.gameState.reedbed) {
+        if (!this.gameState || !this.gameState.reedbed) {
             reedbed.innerHTML = '';
             return;
         }
@@ -733,6 +770,11 @@ class UrosGame {
     renderHouseDisplay(player) {
         const displayElement = document.getElementById(`${player}-houses-display`);
         if (!displayElement) return;
+
+        if (!this.gameState || !this.gameState.players) {
+            displayElement.innerHTML = '';
+            return;
+        }
 
         const totalHouses = this.housesPerPlayer;
         const remainingHouses = this.gameState.players[player].houses;
@@ -863,7 +905,7 @@ class UrosGame {
         // Update game mode automatically based on player types
         this.updateGameMode();
 
-        // Reinitialize random seed for new game
+        // Initialize random seed BEFORE starting new game
         this.initializeRandomSeed();
 
         console.log(`Applied bot configuration: Red=${redPlayerType}, Blue=${bluePlayerType}`);
@@ -1134,7 +1176,10 @@ class UrosGame {
         }
 
         // Use anchor system to convert board coordinates to tile coordinates
-        const anchor = tile.anchor || { tileRow: 0, tileCol: 0 };
+        if (!tile.anchor) {
+            throw new Error(`Tile at board position (${row}, ${col}) missing anchor data`);
+        }
+        const anchor = tile.anchor;
         const tileRow = anchor.tileRow + (row - tile.row);
         const tileCol = anchor.tileCol + (col - tile.col);
 
@@ -1326,7 +1371,8 @@ class UrosGame {
         }
 
         this.keyboardHandler = (e) => {
-            // Only allow if current player is human
+            // Only allow if game state exists and current player is human
+            if (!this.gameState || !this.gameState.currentPlayer) return;
             if (this.botPlayers[this.gameState.currentPlayer]) return;
             // --- Rotation hotkeys ---
             if (e.key === 'q' || e.key === 'Q') {
@@ -1344,9 +1390,11 @@ class UrosGame {
             if ((e.key === 'w' || e.key === 'W') && this.interactionState.mode !== 'house-placement') {
                 // Only allow if current player has houses left
                 const player = this.gameState.currentPlayer;
-                const housesLeft = this.gameState.players[player].houses;
-                if (housesLeft > 0) {
-                    this.enterHousePlacementMode(player);
+                if (this.gameState.players && this.gameState.players[player]) {
+                    const housesLeft = this.gameState.players[player].houses;
+                    if (housesLeft > 0) {
+                        this.enterHousePlacementMode(player);
+                    }
                 }
                 return;
             }
@@ -1452,7 +1500,10 @@ class UrosGame {
                 const tile = this.gameState.board[row][col];
                 if (tile) {
                     // Use anchor system to convert board coordinates to tile coordinates
-                    const anchor = tile.anchor || { tileRow: 0, tileCol: 0 };
+                    if (!tile.anchor) {
+                        throw new Error(`Tile at board position (${row}, ${col}) missing anchor data`);
+                    }
+                    const anchor = tile.anchor;
                     const tileRow = anchor.tileRow + (row - tile.row);
                     const tileCol = anchor.tileCol + (col - tile.col);
 
@@ -1526,7 +1577,10 @@ class UrosGame {
         if (!tile) return;
 
         // Use anchor system to convert board coordinates to tile coordinates
-        const anchor = tile.anchor || { tileRow: 0, tileCol: 0 };
+        if (!tile.anchor) {
+            throw new Error(`Tile at board position (${row}, ${col}) missing anchor data`);
+        }
+        const anchor = tile.anchor;
         const tileRow = anchor.tileRow + (row - tile.row);
         const tileCol = anchor.tileCol + (col - tile.col);
 
@@ -1641,7 +1695,9 @@ class UrosGame {
         }
 
         // This will be set up after the bot system is loaded
-        this.pendingBotConfig = this.pendingBotConfig || {};
+        if (!this.pendingBotConfig) {
+            this.pendingBotConfig = {};
+        }
         this.pendingBotConfig[player] = { botType, config };
         console.log(`Queued ${player} player to ${botType} bot`);
     }
@@ -1665,6 +1721,13 @@ class UrosGame {
                     randomSeed: this.randomSeed,
                     useRandomSeed: this.useRandomSeed
                 };
+
+                // Ensure random seed is properly set
+                if (this.useRandomSeed && this.randomSeed === null) {
+                    console.warn('useRandomSeed is true but randomSeed is null, using system random');
+                    finalConfig.useRandomSeed = false;
+                }
+
                 this.botPlayers[player] = module.createUrosPlayer(config.botType, this, player, finalConfig);
                 console.log(`Set ${player} player to ${config.botType} bot with thinking time ${this.botThinkingTime}ms`);
             }
@@ -1706,6 +1769,9 @@ class UrosGame {
      * Check if current player is a bot
      */
     isCurrentPlayerBot() {
+        if (!this.gameState || !this.gameState.currentPlayer) {
+            return false;
+        }
         const currentPlayer = this.gameState.currentPlayer;
         const isBot = this.botPlayers[currentPlayer] !== null;
         console.log(`isCurrentPlayerBot: ${currentPlayer} -> ${isBot} (bot: ${this.botPlayers[currentPlayer]})`);
@@ -1865,7 +1931,10 @@ class UrosGame {
         this.showBotThinking(currentPlayer);
 
         // Always delay for thinkingTime ms BEFORE making the move
-        const thinkingTime = bot.thinkingTime || this.botThinkingTime;
+        if (typeof bot.thinkingTime !== 'number' || bot.thinkingTime <= 0) {
+            throw new Error(`Bot thinking time must be a positive number, got ${bot.thinkingTime}`);
+        }
+        const thinkingTime = bot.thinkingTime;
         console.assert(typeof thinkingTime === 'number' && thinkingTime >= 0, 'thinkingTime must be a non-negative number');
         setTimeout(() => {
             // After delay, get the move (sync or async)
@@ -1949,7 +2018,10 @@ class UrosGame {
      */
     nextTurn() {
         // Call original nextTurn logic
-        this.gameState.placementsThisTurn = (this.gameState.placementsThisTurn || 0) + 1;
+        if (typeof this.gameState.placementsThisTurn !== 'number') {
+            throw new Error('Game state placementsThisTurn must be initialized as a number');
+        }
+        this.gameState.placementsThisTurn = this.gameState.placementsThisTurn + 1;
         if (this.gameState.isFirstTurn) {
             // First turn: only 1 placement
             if (this.gameState.placementsThisTurn >= 1) {
@@ -1977,7 +2049,13 @@ class UrosGame {
         if (this.isCurrentPlayerBot() && !this.gameState.gameOver) {
             // Always use the bot's thinking time for delay between turns
             const currentBot = this.botPlayers[this.gameState.currentPlayer];
-            const thinkingTime = currentBot ? (currentBot.thinkingTime || this.botThinkingTime) : this.botThinkingTime;
+            if (!currentBot) {
+                throw new Error(`Bot not found for current player ${this.gameState.currentPlayer}`);
+            }
+            if (typeof currentBot.thinkingTime !== 'number' || currentBot.thinkingTime <= 0) {
+                throw new Error(`Bot thinking time must be a positive number, got ${currentBot.thinkingTime}`);
+            }
+            const thinkingTime = currentBot.thinkingTime;
             setTimeout(() => this.executeBotTurn(), thinkingTime);
         }
     }
@@ -2032,7 +2110,13 @@ class UrosGame {
         if (this.isCurrentPlayerBot() && !this.gameState.gameOver) {
             console.log('Starting bot turn for current player');
             const currentBot = this.botPlayers[this.gameState.currentPlayer];
-            const thinkingTime = currentBot ? (currentBot.thinkingTime || this.botThinkingTime) : this.botThinkingTime;
+            if (!currentBot) {
+                throw new Error(`Bot not found for current player ${this.gameState.currentPlayer}`);
+            }
+            if (typeof currentBot.thinkingTime !== 'number' || currentBot.thinkingTime <= 0) {
+                throw new Error(`Bot thinking time must be a positive number, got ${currentBot.thinkingTime}`);
+            }
+            const thinkingTime = currentBot.thinkingTime;
             setTimeout(() => this.executeBotTurn(), thinkingTime);
         }
     }
@@ -2041,6 +2125,19 @@ class UrosGame {
      * Initialize random seed system
      */
     initializeRandomSeed() {
+        // Read current UI values
+        const useRandomSeedCheckbox = document.getElementById('use-random-seed');
+        const randomSeedInput = document.getElementById('random-seed');
+
+        if (useRandomSeedCheckbox) {
+            this.useRandomSeed = useRandomSeedCheckbox.checked;
+        }
+
+        if (randomSeedInput) {
+            const value = randomSeedInput.value;
+            this.randomSeed = value ? parseInt(value) : null;
+        }
+
         if (this.useRandomSeed && this.randomSeed !== null) {
             // Use a simple seeded random number generator
             this.seedGenerator = this.createSeededRandom(this.randomSeed);

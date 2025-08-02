@@ -53,7 +53,13 @@ function formatCallStack(callStack) {
     if (!callStack || callStack.length === 0) return '';
 
     return callStack.map(frame => {
-        const fileName = frame.file.split('/').pop() || frame.file;
+        if (!frame.file) {
+            throw new Error('Call stack frame missing file property');
+        }
+        const fileName = frame.file.split('/').pop();
+        if (!fileName) {
+            throw new Error(`Invalid file path in call stack: ${frame.file}`);
+        }
         return `@${frame.line}:${fileName}`;
     }).join(' → ');
 }
