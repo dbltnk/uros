@@ -112,10 +112,15 @@
                     <label class="block text-sm font-medium text-red-700 mb-2">🔴 Red Player</label>
                     <select id="red-player-select" class="w-full p-2 border border-gray-300 rounded">
                         <option value="human">Human</option>
-                        <option value="deterministic" selected>Deterministic Bot</option>
+                        <option value="deterministic">Deterministic Bot</option>
                         <option value="random">Random Bot</option>
                         <option value="minimax">Minimax Bot</option>
                         <option value="mcts">MCTS Bot</option>
+                        <option value="heuristic-balanced" selected>Heuristic - Balanced</option>
+                        <option value="heuristic-explore">Heuristic - Explore</option>
+                        <option value="heuristic-expand">Heuristic - Expand</option>
+                        <option value="heuristic-exterminate">Heuristic - Exterminate</option>
+                        <option value="heuristic-exploit">Heuristic - Exploit</option>
                     </select>
                 </div>
 
@@ -125,18 +130,24 @@
                     <select id="blue-player-select" class="w-full p-2 border border-gray-300 rounded">
                         <option value="human">Human</option>
                         <option value="deterministic">Deterministic Bot</option>
-                        <option value="random" selected>Random Bot</option>
+                        <option value="random">Random Bot</option>
                         <option value="minimax">Minimax Bot</option>
                         <option value="mcts">MCTS Bot</option>
+                        <option value="heuristic-balanced">Heuristic - Balanced</option>
+                        <option value="heuristic-explore">Heuristic - Explore</option>
+                        <option value="heuristic-expand">Heuristic - Expand</option>
+                        <option value="heuristic-exterminate">Heuristic - Exterminate</option>
+                        <option value="heuristic-exploit" selected>Heuristic - Exploit</option>
                     </select>
                 </div>
 
                 <!-- Bot Settings -->
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Bot Thinking Time (ms)</label>
-                    <input type="range" id="bot-thinking-time" min="10" max="10000" value="10" step="10" class="w-full">
+                    <input type="range" id="bot-thinking-time" min="10" max="10000" value="1000" step="10"
+                        class="w-full">
                     <div class="text-sm text-gray-600 mt-1">
-                        <span id="thinking-time-display">500ms</span>
+                        <span id="thinking-time-display">1000ms</span>
                     </div>
                 </div>
 
@@ -168,6 +179,37 @@
             </div>
 
 
+        </div>
+
+        <!-- Middle Column: Heuristic Bot Debug Displays -->
+        <div id="heuristic-debug-container" class="flex flex-col gap-4">
+            <!-- Red Heuristic Bot Debug -->
+            <div id="red-heuristic-debug" class="bg-white rounded-lg shadow-md p-4 hidden">
+                <h2 class="text-lg font-semibold mb-3 text-red-700">🔴 Red Bot Analysis</h2>
+                <div class="text-sm space-y-2">
+                    <div><strong>Strategy:</strong> <span id="red-bot-strategy">-</span></div>
+                    <div><strong>Weights:</strong> <span id="red-bot-weights">-</span></div>
+                    <div><strong>Last Move:</strong> <span id="red-bot-move">-</span></div>
+                    <div><strong>Before State:</strong> <span id="red-bot-before">-</span></div>
+                    <div><strong>After State:</strong> <span id="red-bot-after">-</span></div>
+                    <div><strong>Score Calculation:</strong> <span id="red-bot-calculation">-</span></div>
+                    <div><strong>Final Score:</strong> <span id="red-bot-score">-</span></div>
+                </div>
+            </div>
+
+            <!-- Blue Heuristic Bot Debug -->
+            <div id="blue-heuristic-debug" class="bg-white rounded-lg shadow-md p-4 hidden">
+                <h2 class="text-lg font-semibold mb-3 text-blue-700">🔵 Blue Bot Analysis</h2>
+                <div class="text-sm space-y-2">
+                    <div><strong>Strategy:</strong> <span id="blue-bot-strategy">-</span></div>
+                    <div><strong>Weights:</strong> <span id="blue-bot-weights">-</span></div>
+                    <div><strong>Last Move:</strong> <span id="blue-bot-move">-</span></div>
+                    <div><strong>Before State:</strong> <span id="blue-bot-before">-</span></div>
+                    <div><strong>After State:</strong> <span id="blue-bot-after">-</span></div>
+                    <div><strong>Score Calculation:</strong> <span id="blue-bot-calculation">-</span></div>
+                    <div><strong>Final Score:</strong> <span id="blue-bot-score">-</span></div>
+                </div>
+            </div>
         </div>
 
         <!-- Main Board Area: Lake Board and Reedbed side by side -->

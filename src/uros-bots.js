@@ -348,6 +348,7 @@ class SimulatedUrosGame {
             houses: tile.houses ? [...tile.houses.map(row => [...row])] : Array(rows).fill(null).map(() => Array(cols).fill(null))
         };
         this.gameState.placedTiles.push(placedTile);
+
         // Mark board squares as occupied
         for (let tr = 0; tr < rows; tr++) {
             for (let tc = 0; tc < cols; tc++) {
@@ -363,7 +364,6 @@ class SimulatedUrosGame {
         if (reedbedIndex !== -1) {
             this.gameState.reedbed.splice(reedbedIndex, 1);
         }
-        console.log(`Placed tile ${tile.name} at (${row}, ${col}) with anchor (${anchorTileRow},${anchorTileCol})`);
         return true;
     }
 
@@ -378,28 +378,144 @@ class SimulatedUrosGame {
         tile.houses[tileRow][tileCol] = player;
         this.gameState.players[player].houses--;
 
-        console.log(`${player} placed house at tile (${tileRow}, ${tileCol})`);
+
         return true;
     }
 
     calculateVillages() {
-        return this.gameEngine.calculateVillages.call(this);
+        const visited = new Set();
+        const villages = { red: [], blue: [] };
+
+        // Check if game state exists
+        if (!this.gameState || !this.gameState.placedTiles) {
+            return villages;
+        }
+
+        // Only consider villages for houses on placed tiles (lake board), per rules
+        for (const tile of this.gameState.placedTiles) {
+            for (let r = 0; r < tile.houses.length; r++) {
+                for (let c = 0; c < tile.houses[r].length; c++) {
+                    const player = tile.houses[r][c];
+                    // Only consider houses on island cells (green cells)
+                    if (player && tile.shape_grid[r][c] === 1 && !visited.has(`placed-${tile.id}-${r}-${c}`)) {
+                        const village = this.floodFill(tile, r, c, player, visited, true);
+                        if (village.length > 0) {
+                            villages[player].push(village);
+                        }
+                    }
+                }
+            }
+        }
+
+        return villages;
     }
 
     floodFill(startTile, startRow, startCol, player, visited, isPlacedTile) {
-        return this.gameEngine.floodFill.call(this, startTile, startRow, startCol, player, visited, isPlacedTile);
+        const village = [];
+        const stack = [{ tile: startTile, row: startRow, col: startCol }];
+
+        while (stack.length > 0) {
+            const { tile, row, col } = stack.pop();
+            const key = `${isPlacedTile ? 'placed' : 'reedbed'}-${tile.id}-${row}-${col}`;
+
+            if (visited.has(key)) continue;
+            visited.add(key);
+
+            // Check if this position is valid and has the right player's house
+            if (row >= 0 && row < tile.houses.length &&
+                col >= 0 && col < tile.houses[row].length &&
+                tile.houses[row][col] === player &&
+                tile.shape_grid[row][col] === 1) {
+
+                // Add this house to the village
+                village.push({
+                    tile: tile,
+                    tileRow: row,
+                    tileCol: col,
+                    player: player
+                });
+
+                // Check adjacent positions (up, down, left, right)
+                const adjacent = [
+                    { row: row - 1, col: col },
+                    { row: row + 1, col: col },
+                    { row: row, col: col - 1 },
+                    { row: row, col: col + 1 }
+                ];
+
+                for (const pos of adjacent) {
+                    if (pos.row >= 0 && pos.row < tile.houses.length &&
+                        pos.col >= 0 && pos.col < tile.houses[pos.row].length) {
+                        stack.push({ tile: tile, row: pos.row, col: pos.col });
+                    }
+                }
+            }
+        }
+
+        return village;
     }
 
     getLargestVillage(villages) {
-        return this.gameEngine.getLargestVillage.call(this, villages);
+        let largest = { size: 0, islands: 0 };
+
+        for (const village of villages) {
+            const size = village.length;
+            const islands = new Set(village.map(h => h.tile.id)).size;
+
+            if (size > largest.size || (size === largest.size && islands > largest.islands)) {
+                largest = { size, islands };
+            }
+        }
+
+        return largest;
     }
 
     checkGameOver() {
-        return this.gameEngine.checkGameOver.call(this);
+        // Check if all houses are placed
+        const totalHousesPlaced = (15 - this.gameState.players.red.houses) + (15 - this.gameState.players.blue.houses);
+
+        if (totalHousesPlaced >= 30) {
+            this.gameState.gameOver = true;
+
+            // Calculate final village sizes
+            const villages = this.calculateVillages();
+            const redLargest = this.getLargestVillage(villages.red);
+            const blueLargest = this.getLargestVillage(villages.blue);
+
+            // Determine winner
+            if (redLargest.size > blueLargest.size) {
+                this.gameState.gameOverWinner = 'red';
+            } else if (blueLargest.size > redLargest.size) {
+                this.gameState.gameOverWinner = 'blue';
+            } else if (redLargest.islands > blueLargest.islands) {
+                this.gameState.gameOverWinner = 'red';
+            } else if (blueLargest.islands > redLargest.islands) {
+                this.gameState.gameOverWinner = 'blue';
+            } else {
+                this.gameState.gameOverWinner = 'tie';
+            }
+
+            this.gameState.gameOverRedLargest = redLargest;
+            this.gameState.gameOverBlueLargest = blueLargest;
+        }
+
+        return this.gameState.gameOver;
     }
 
     nextTurn() {
-        return this.gameEngine.nextTurn.call(this);
+        // Switch current player
+        this.gameState.currentPlayer = this.gameState.currentPlayer === 'red' ? 'blue' : 'red';
+
+        // Reset placement counters
+        this.gameState.placementsThisTurn = 0;
+        this.gameState.placementsRequired = 1;
+
+        // Check if it's the first turn
+        if (this.gameState.isFirstTurn) {
+            this.gameState.isFirstTurn = false;
+        }
+
+        return this.gameState.currentPlayer;
     }
 
     isGameOver() {
@@ -490,6 +606,8 @@ class SimulatedUrosGame {
     }
 
     makeMove(move) {
+
+
         // Handle different move types
         if (move.type === 'tile-placement') {
             return this.placeTile(move.tile, move.row, move.col, move.anchorTileRow, move.anchorTileCol);
@@ -803,6 +921,317 @@ class UrosMCTSPlayer extends UrosPlayer {
     }
 }
 
+// Heuristic-based player with 5 different strategies
+class UrosHeuristicPlayer extends UrosPlayer {
+    constructor(gameEngine, playerColor, config = {}) {
+        super(gameEngine, playerColor, config);
+
+        // Strategy configurations
+        this.strategies = {
+            'balanced': { A: 5, B: 3, C: 4, D: 0.2, E: 0.1 },
+            'explore': { A: 5, B: 4, C: 3, D: 0.2, E: 0.1 },
+            'expand': { A: 6, B: 3, C: 3.5, D: 0.2, E: 0.1 },
+            'exterminate': { A: 4, B: 3.5, C: 5, D: 0.2, E: 0.1 },
+            'exploit': { A: 5, B: 3, C: 4, D: 1, E: 0.5 }
+        };
+
+
+        if (!config.strategy) {
+            throw new Error('UrosHeuristicPlayer: config.strategy is required');
+        }
+        this.strategy = config.strategy;
+        this.weights = this.strategies[this.strategy];
+
+        if (!this.weights) {
+            throw new Error(`Unknown strategy: ${this.strategy}`);
+        }
+
+        // Store debug data for UI display
+        this.lastDebugData = null;
+    }
+
+    chooseMove() {
+        const validMoves = this.gameEngine.getValidMoves();
+        if (!validMoves || validMoves.length === 0) {
+            return null;
+        }
+
+        // Log strategy weights at the start of each turn
+        // console.log(`[UrosHeuristicPlayer-${this.strategy}] TURN_START: Strategy=${this.strategy}, Weights: A=${this.weights.A}, B=${this.weights.B}, C=${this.weights.C}, D=${this.weights.D}, E=${this.weights.E}`);
+
+        // Filter out pointless house placements on Reedbed
+        const filteredMoves = this.filterPointlessMoves(validMoves);
+        // console.log(`[UrosHeuristicPlayer-${this.strategy}] REAL GAME: Starting with ${validMoves.length} moves, filtered to ${filteredMoves.length}`);
+
+        if (filteredMoves.length === 0) {
+            // Signal that no useful moves remain (this is a valid game state)
+            // console.log(`[UrosHeuristicPlayer-${this.strategy}] No useful moves remain - signaling game end`);
+            return null; // Return null to indicate no useful moves
+        }
+
+        // Calculate current metrics for REAL GAME
+        const currentMetrics = this.calculateMetrics(this.gameEngine, true);
+
+        // Evaluate each move with detailed logging
+        const moveEvaluations = filteredMoves.map((move, index) => {
+            const originalState = this.gameEngine.getGameState();
+            const simGame = this.simulateGame(originalState);
+
+            const beforeMetrics = this.calculateMetrics(simGame, false);
+
+            // Apply move and check return value
+            const moveResult = simGame.makeMove(move);
+
+            const afterMetrics = this.calculateMetrics(simGame, false);
+            const scoreResult = this.calculateHeuristicScore(beforeMetrics, afterMetrics, false);
+
+            // Log detailed move evaluation
+            const moveDesc = move.type === 'tile-placement'
+                ? `tile-placement(ID:${move.tile.id}, pos:${move.row},${move.col})`
+                : `house-placement(ID:${move.tileId}, pos:${move.tileRow},${move.tileCol}, placed:${move.isPlacedTile})`;
+
+            // console.log(`[UrosHeuristicPlayer-${this.strategy}] MOVE ${index + 1}/${filteredMoves.length}: ${moveDesc} | BEFORE: BVL=${beforeMetrics.myBVL}, EFL=${beforeMetrics.myEFL}, OppEFL=${beforeMetrics.opponentEFL}, BVR=${beforeMetrics.myBVR}, EFR=${beforeMetrics.myEFR} | AFTER: BVL=${afterMetrics.myBVL}, EFL=${afterMetrics.myEFL}, OppEFL=${afterMetrics.opponentEFL}, BVR=${afterMetrics.myBVR}, EFR=${afterMetrics.myEFR} | SCORE=${scoreResult.score}`);
+
+            return { move, score: scoreResult.score, beforeMetrics, afterMetrics, calculation: scoreResult.calculation };
+        });
+
+        // Sort by score (highest first)
+        moveEvaluations.sort((a, b) => b.score - a.score);
+
+        // Find all moves with the highest score
+        if (moveEvaluations.length === 0) {
+            throw new Error('UrosHeuristicPlayer: No move evaluations found. This should not happen. Check validMoves and filter logic.');
+        }
+
+        const bestScore = moveEvaluations[0].score;
+        const bestMoves = moveEvaluations.filter(evaluation => evaluation.score === bestScore);
+
+        // Choose randomly among best moves
+        const randomIndex = Math.floor(this.getRandom() * bestMoves.length);
+        const selectedMove = bestMoves[randomIndex].move;
+
+        // Log summary of all move scores for comparison
+        const scoreSummary = moveEvaluations.map((evaluation, i) => {
+            const move = evaluation.move;
+            const moveDesc = move.type === 'tile-placement'
+                ? `tile(ID:${move.tile.id}, pos:${move.row},${move.col})`
+                : `house(ID:${move.tileId}, pos:${move.tileRow},${move.tileCol}, placed:${move.isPlacedTile})`;
+            return `${moveDesc}=${evaluation.score}`;
+        }).join(', ');
+
+        // console.log(`[UrosHeuristicPlayer-${this.strategy}] REAL GAME: Best score=${bestScore}, ${bestMoves.length} tied | Selected: ${selectedMove.type}${selectedMove.type === 'tile-placement' ? ` (ID:${selectedMove.tile.id}, pos:${selectedMove.row},${selectedMove.col})` : ` (ID:${selectedMove.tileId}, pos:${selectedMove.tileRow},${selectedMove.tileCol}, placed:${selectedMove.isPlacedTile})`} | ALL_SCORES: ${scoreSummary}`);
+
+        // Store debug data for UI display
+        const selectedEvaluation = moveEvaluations.find(evaluation => evaluation.move === selectedMove);
+        if (selectedEvaluation) {
+            this.lastDebugData = {
+                strategy: this.strategy,
+                weights: this.weights,
+                move: selectedMove,
+                beforeMetrics: currentMetrics,
+                afterMetrics: selectedEvaluation.afterMetrics,
+                score: selectedEvaluation.score,
+                calculation: selectedEvaluation.calculation
+            };
+        }
+
+        return selectedMove;
+    }
+
+    filterPointlessMoves(moves) {
+        return moves.filter(move => {
+            // Keep all tile placements
+            if (move.type === 'tile-placement') {
+                return true;
+            }
+
+            // For house placements, check if the Reedbed tile can still fit on the lake
+            if (move.type === 'house-placement' && !move.isPlacedTile) {
+                const tile = this.gameEngine.gameState.reedbed.find(t => t.id === move.tileId);
+                if (!tile) return true; // Keep if tile not found
+
+                // Check if this tile can still be placed anywhere on the lake
+                return this.canTileFitOnLake(tile);
+            }
+
+            return true; // Keep all other moves
+        });
+    }
+
+    canTileFitOnLake(tile) {
+        // Try all rotations and positions
+        for (let rotation = 0; rotation < 4; rotation++) {
+            const rotatedTile = this.gameEngine.rotateTile(tile, rotation);
+            for (let row = 0; row < this.gameEngine.boardSize; row++) {
+                for (let col = 0; col < this.gameEngine.boardSize; col++) {
+                    const grid = rotatedTile.shape_grid;
+                    const rows = grid.length;
+                    const cols = grid[0].length;
+                    for (let anchorRow = 0; anchorRow < rows; anchorRow++) {
+                        for (let anchorCol = 0; anchorCol < cols; anchorCol++) {
+                            if (grid[anchorRow][anchorCol] === 1 &&
+                                this.gameEngine.canPlaceTile(rotatedTile, row, col, anchorRow, anchorCol)) {
+                                return true; // Tile can still fit
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return false; // Tile cannot fit anywhere
+    }
+
+    calculateMetrics(game, isRealGame = false) {
+        const villages = game.calculateVillages();
+
+        const myColor = this.playerColor;
+        const opponentColor = myColor === 'red' ? 'blue' : 'red';
+
+        // Calculate Lake villages
+        const myLakeVillages = this.getLakeVillages(villages[myColor], game);
+        const opponentLakeVillages = this.getLakeVillages(villages[opponentColor], game);
+
+        // Calculate Reedbed villages
+        const myReedbedVillages = this.getReedbedVillages(villages[myColor], game);
+
+        // Get biggest villages with expansion fronts
+        const myBiggestLake = this.getBiggestVillageWithExpansion(myLakeVillages);
+        const opponentBiggestLake = this.getBiggestVillageWithExpansion(opponentLakeVillages);
+        const myBiggestReedbed = this.getBiggestVillageWithExpansion(myReedbedVillages);
+
+        const metrics = {
+            myBVL: myBiggestLake.size,
+            myEFL: myBiggestLake.expansionFront,
+            opponentEFL: opponentBiggestLake.expansionFront,
+            myBVR: myBiggestReedbed.size,
+            myEFR: myBiggestReedbed.expansionFront
+        };
+
+        // Log the metrics with clear marking for real vs simulated games
+        const gameType = isRealGame ? 'REAL GAME' : 'SIMULATED';
+        // console.log(`[UrosHeuristicPlayer-${this.strategy}] ${gameType} STATE: BVL=${metrics.myBVL}, EFL=${metrics.myEFL}, OppEFL=${metrics.opponentEFL}, BVR=${metrics.myBVR}, EFR=${metrics.myEFR} | W: A=${this.weights.A}, B=${this.weights.B}, C=${this.weights.C}, D=${this.weights.D}, E=${this.weights.E} | VILLAGES: myLake=${myLakeVillages.length}, oppLake=${opponentLakeVillages.length}, myReedbed=${myReedbedVillages.length}`);
+
+        return metrics;
+    }
+
+    getLakeVillages(villages, game) {
+        return villages.filter(village => {
+            // Check if any house in the village is on a placed tile
+            return village.some(house => {
+                const tile = game.gameState.placedTiles.find(t => t.id === house.tile.id);
+                return tile !== undefined;
+            });
+        });
+    }
+
+    getReedbedVillages(villages, game) {
+        return villages.filter(village => {
+            // Check if all houses in the village are on Reedbed tiles
+            return village.every(house => {
+                const tile = game.gameState.reedbed.find(t => t.id === house.tile.id);
+                return tile !== undefined;
+            });
+        });
+    }
+
+    getBiggestVillageWithExpansion(villages) {
+        if (villages.length === 0) {
+            return { size: 0, expansionFront: 0 };
+        }
+
+        // Calculate expansion front for each village
+        const villagesWithExpansion = villages.map(village => {
+            const expansionFront = this.calculateExpansionFront(village);
+            return { village, size: village.length, expansionFront };
+        });
+
+        // Sort by size first, then by expansion front
+        villagesWithExpansion.sort((a, b) => {
+            if (a.size !== b.size) {
+                return b.size - a.size;
+            }
+            return b.expansionFront - a.expansionFront;
+        });
+
+        // If still tied, choose randomly
+        const bestSize = villagesWithExpansion[0].size;
+        const bestExpansion = villagesWithExpansion[0].expansionFront;
+        const tiedVillages = villagesWithExpansion.filter(v =>
+            v.size === bestSize && v.expansionFront === bestExpansion
+        );
+
+        const randomIndex = Math.floor(this.getRandom() * tiedVillages.length);
+        return tiedVillages[randomIndex];
+    }
+
+    calculateExpansionFront(village) {
+        const emptyAdjacentSquares = new Set();
+
+        for (const house of village) {
+            const tile = house.tile;
+            const tileRow = house.tileRow;
+            const tileCol = house.tileCol;
+
+            // Check all adjacent positions
+            const adjacentPositions = [
+                { row: tileRow - 1, col: tileCol },
+                { row: tileRow + 1, col: tileCol },
+                { row: tileRow, col: tileCol - 1 },
+                { row: tileRow, col: tileCol + 1 }
+            ];
+
+            for (const pos of adjacentPositions) {
+                if (pos.row >= 0 && pos.row < tile.houses.length &&
+                    pos.col >= 0 && pos.col < tile.houses[0].length) {
+
+                    const isIslandSquare = tile.shape_grid[pos.row][pos.col] === 1;
+                    const isEmpty = tile.houses[pos.row][pos.col] === null;
+
+                    if (isIslandSquare && isEmpty) {
+                        // Create unique identifier for this empty square
+                        const squareId = `${tile.id}-${pos.row}-${pos.col}`;
+                        emptyAdjacentSquares.add(squareId);
+                    }
+                }
+            }
+        }
+
+        return emptyAdjacentSquares.size;
+    }
+
+    calculateHeuristicScore(currentMetrics, newMetrics, isRealGame = false) {
+        const deltaBVL = newMetrics.myBVL - currentMetrics.myBVL;
+        const deltaEFL = newMetrics.myEFL - currentMetrics.myEFL;
+        const deltaOpponentEFL = newMetrics.opponentEFL - currentMetrics.opponentEFL;
+        const deltaBVR = newMetrics.myBVR - currentMetrics.myBVR;
+        const deltaEFR = newMetrics.myEFR - currentMetrics.myEFR;
+
+        const weightedBVL = this.weights.A * deltaBVL;
+        const weightedEFL = this.weights.B * deltaEFL;
+        const weightedOpponentEFL = -this.weights.C * deltaOpponentEFL;
+        const weightedBVR = this.weights.D * deltaBVR;
+        const weightedEFR = this.weights.E * deltaEFR;
+
+        const score = weightedBVL + weightedEFL + weightedOpponentEFL + weightedBVR + weightedEFR;
+
+        // Log the score calculation with clear marking and full breakdown
+        const gameType = isRealGame ? 'REAL GAME' : 'SIMULATED';
+        // console.log(`[UrosHeuristicPlayer-${this.strategy}] ${gameType} SCORE_CALC: dBVL=${deltaBVL}*${this.weights.A}=${weightedBVL}, dEFL=${deltaEFL}*${this.weights.B}=${weightedEFL}, dOppEFL=${deltaOpponentEFL}*-${this.weights.C}=${weightedOpponentEFL}, dBVR=${deltaBVR}*${this.weights.D}=${weightedBVR}, dEFR=${deltaEFR}*${this.weights.E}=${weightedEFR} | TOTAL=${score}`);
+
+        return {
+            score,
+            calculation: {
+                deltaBVL, deltaEFL, deltaOpponentEFL, deltaBVR, deltaEFR,
+                weightedBVL, weightedEFL, weightedOpponentEFL, weightedBVR, weightedEFR
+            }
+        };
+    }
+
+    getDebugData() {
+        return this.lastDebugData;
+    }
+}
+
 // Export bot configurations
 export const UROS_AI_PLAYERS = {
     'deterministic': {
@@ -856,10 +1285,81 @@ export const UROS_AI_PLAYERS = {
             randomSeed: null,
             thinkingTime: 10
         }
+    },
+    'heuristic-balanced': {
+        id: 'heuristic-balanced',
+        name: 'Heuristic - Balanced',
+        description: 'All-round approach with balanced priorities.',
+        class: UrosHeuristicPlayer,
+        config: {
+            randomize: false,
+            randomThreshold: 0.1,
+            useRandomSeed: false,
+            randomSeed: null,
+            thinkingTime: 10,
+            strategy: 'balanced'
+        }
+    },
+    'heuristic-explore': {
+        id: 'heuristic-explore',
+        name: 'Heuristic - Explore',
+        description: 'Prioritizes extending potential territory.',
+        class: UrosHeuristicPlayer,
+        config: {
+            randomize: false,
+            randomThreshold: 0.1,
+            useRandomSeed: false,
+            randomSeed: null,
+            thinkingTime: 10,
+            strategy: 'explore'
+        }
+    },
+    'heuristic-expand': {
+        id: 'heuristic-expand',
+        name: 'Heuristic - Expand',
+        description: 'Grabs territory whenever available.',
+        class: UrosHeuristicPlayer,
+        config: {
+            randomize: false,
+            randomThreshold: 0.1,
+            useRandomSeed: false,
+            randomSeed: null,
+            thinkingTime: 10,
+            strategy: 'expand'
+        }
+    },
+    'heuristic-exterminate': {
+        id: 'heuristic-exterminate',
+        name: 'Heuristic - Exterminate',
+        description: 'Denies territory to opponent.',
+        class: UrosHeuristicPlayer,
+        config: {
+            randomize: false,
+            randomThreshold: 0.1,
+            useRandomSeed: false,
+            randomSeed: null,
+            thinkingTime: 10,
+            strategy: 'exterminate'
+        }
+    },
+    'heuristic-exploit': {
+        id: 'heuristic-exploit',
+        name: 'Heuristic - Exploit',
+        description: 'Makes opponent place the islands.',
+        class: UrosHeuristicPlayer,
+        config: {
+            randomize: false,
+            randomThreshold: 0.1,
+            useRandomSeed: false,
+            randomSeed: null,
+            thinkingTime: 10,
+            strategy: 'exploit'
+        }
     }
 };
 
 export function createUrosPlayer(strategyId, gameEngine, playerColor, config = {}) {
+
     const playerConfig = UROS_AI_PLAYERS[strategyId];
     if (!playerConfig) {
         throw new Error(`Unknown player strategy: ${strategyId}`);
@@ -873,6 +1373,13 @@ export function createUrosPlayer(strategyId, gameEngine, playerColor, config = {
         randomSeed: config.randomSeed !== undefined ? config.randomSeed : playerConfig.config.randomSeed,
         thinkingTime: typeof config.thinkingTime === 'number' ? config.thinkingTime : playerConfig.config.thinkingTime
     };
+
+    // Only add strategy for heuristic bots
+    if (playerConfig.class === UrosHeuristicPlayer) {
+        requiredConfig.strategy = config.strategy !== undefined ? config.strategy : playerConfig.config.strategy;
+    }
+
+
 
     // Validate thinking time
     if (typeof requiredConfig.thinkingTime !== 'number' || requiredConfig.thinkingTime <= 0) {

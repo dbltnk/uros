@@ -59,12 +59,9 @@ class UrosGame {
     }
 
     init() {
-        console.log('Initializing Uros game');
         this.loadTiles();
         this.setupClickHandling();
         this.setupButtonHandlers();
-
-        console.log('Uros game and logging system initialized');
     }
 
     loadTiles() {
@@ -77,7 +74,7 @@ class UrosGame {
                     id: index,
                     rotation: 0
                 }));
-                console.log(`Loaded ${this.tiles.length} tiles`);
+
                 // this.startNewGame(); // Removed: don't auto-start game on load
             })
             .catch(error => {
@@ -212,7 +209,7 @@ class UrosGame {
         if (reedbedIndex !== -1) {
             this.gameState.reedbed.splice(reedbedIndex, 1);
         }
-        console.log(`Placed tile ${tile.name} at (${row}, ${col}) with anchor (${anchorTileRow},${anchorTileCol})`);
+
         return true;
     }
 
@@ -227,7 +224,7 @@ class UrosGame {
         tile.houses[tileRow][tileCol] = player;
         this.gameState.players[player].houses--;
 
-        console.log(`${player} placed house at tile (${tileRow}, ${tileCol})`);
+
         return true;
     }
 
@@ -372,18 +369,14 @@ class UrosGame {
         const validMoves = this.getValidMoves();
         const hasValidMoves = validMoves.length > 0;
 
-        console.log(`checkGameOver: ${currentPlayer} has ${validMoves.length} valid moves, ${hasValidMoves ? 'can continue' : 'no moves available'}`);
-
         // Game ends if current player has no valid moves
         if (!hasValidMoves) {
-            console.log(`Game over: ${currentPlayer} has no valid moves available`);
             this.endGame();
             return true;
         }
 
         // Also check the original condition (no houses and no placeable tiles)
         if (!hasHouses && !hasPlaceableTiles) {
-            console.log(`Game over: ${currentPlayer} has no houses and no placeable tiles`);
             this.endGame();
             return true;
         }
@@ -392,7 +385,6 @@ class UrosGame {
     }
 
     endGame() {
-        console.log('Game over!');
         this.gameState.gameOver = true;
 
         const villages = this.calculateVillages();
@@ -486,6 +478,7 @@ class UrosGame {
             const winner = this.gameState.gameOverWinner;
             const redLargest = this.gameState.gameOverRedLargest;
             const blueLargest = this.gameState.gameOverBlueLargest;
+            const isBotAgreement = this.gameState.gameOverReason === 'bot-agreement';
 
             // Change status bar background color based on winner
             if (winner === 'red') {
@@ -500,7 +493,9 @@ class UrosGame {
             }
 
             // Show game over message
-            if (winner) {
+            if (isBotAgreement) {
+                status.textContent = `🤖 BOT AGREEMENT: Both bots agree no useful moves remain - ${winner === 'red' ? '🔴 Red' : '🔵 Blue'} Wins!`;
+            } else if (winner) {
                 status.textContent = `🏆 ${winner === 'red' ? '🔴 Red' : '🔵 Blue'} Wins!`;
             } else {
                 status.textContent = "🤝 It's a Tie!";
@@ -561,7 +556,6 @@ class UrosGame {
     renderBoard() {
         const board = document.getElementById('lake-board');
         board.innerHTML = '';
-        console.log('Rendering board with size:', this.boardSize);
 
         for (let row = 0; row < this.boardSize; row++) {
             for (let col = 0; col < this.boardSize; col++) {
@@ -908,14 +902,14 @@ class UrosGame {
         // Initialize random seed BEFORE starting new game
         this.initializeRandomSeed();
 
-        console.log(`Applied bot configuration: Red=${redPlayerType}, Blue=${bluePlayerType}`);
-        console.log('Pending bot config:', this.pendingBotConfig);
-
         // Start new game first, then initialize bot system
         this.startNewGame();
 
         // Initialize bot system with new configuration (will start bot turns after initialization)
         this.initializeBotSystem();
+
+        // Update heuristic debug displays after bot configuration
+        this.updateHeuristicDebugDisplays();
     }
 
 
@@ -963,7 +957,7 @@ class UrosGame {
             const tileElement = e.target.closest('.tile-preview');
             if (tileElement && this.interactionState.mode !== 'house-placement') {
                 const tileId = parseInt(tileElement.dataset.tileId);
-                console.log('Looking for tile with ID:', tileId, 'Available tiles:', this.gameState.reedbed.map(t => t.id));
+
                 const tile = this.gameState.reedbed.find(t => t.id === tileId);
                 if (!tile) {
                     console.error('Tile must exist in reedbed');
@@ -1145,7 +1139,7 @@ class UrosGame {
             return;
         }
 
-        console.log('Board cell clicked:', { row, col, mode: this.interactionState.mode });
+
 
         if (this.interactionState.mode === 'house-placement') {
             this.handleBoardHousePlacement(row, col);
@@ -1256,7 +1250,7 @@ class UrosGame {
             return;
         }
 
-        console.log('Tile selected:', tile.name);
+
         this.interactionState.selectedTile = { ...tile };
         this.interactionState.mode = 'tile-placement';
         this.interactionState.preview = null;
@@ -1699,7 +1693,7 @@ class UrosGame {
             this.pendingBotConfig = {};
         }
         this.pendingBotConfig[player] = { botType, config };
-        console.log(`Queued ${player} player to ${botType} bot`);
+
     }
 
     /**
@@ -1708,11 +1702,11 @@ class UrosGame {
     initializeBotSystem() {
         if (!this.pendingBotConfig || typeof this.pendingBotConfig !== 'object' || Object.keys(this.pendingBotConfig).length === 0) return;
 
-        console.log('Initializing bot system with config:', this.pendingBotConfig);
+
 
         // Import bot system
         import('./uros-bots.js').then(module => {
-            console.log('Bot system loaded successfully:', module);
+
 
             for (const [player, config] of Object.entries(this.pendingBotConfig)) {
                 const finalConfig = {
@@ -1729,7 +1723,7 @@ class UrosGame {
                 }
 
                 this.botPlayers[player] = module.createUrosPlayer(config.botType, this, player, finalConfig);
-                console.log(`Set ${player} player to ${config.botType} bot with thinking time ${this.botThinkingTime}ms`);
+
             }
 
             this.pendingBotConfig = null;
@@ -1738,7 +1732,7 @@ class UrosGame {
 
             // Start bot turn if current player is a bot (after initialization is complete)
             if (this.isCurrentPlayerBot() && !this.gameState.gameOver) {
-                console.log('Starting bot turn after initialization');
+
                 setTimeout(() => this.executeBotTurn(), this.botMoveDelay);
             }
         }).catch(error => {
@@ -1762,7 +1756,7 @@ class UrosGame {
             this.gameMode = 'human-vs-human';
         }
 
-        console.log(`Game mode updated to: ${this.gameMode}`);
+
     }
 
     /**
@@ -1774,7 +1768,7 @@ class UrosGame {
         }
         const currentPlayer = this.gameState.currentPlayer;
         const isBot = this.botPlayers[currentPlayer] !== null;
-        console.log(`isCurrentPlayerBot: ${currentPlayer} -> ${isBot} (bot: ${this.botPlayers[currentPlayer]})`);
+
         return isBot;
     }
 
@@ -1922,15 +1916,8 @@ class UrosGame {
  * Execute bot turn with delay for better UX
  */
     executeBotTurn() {
-        console.log('executeBotTurn called');
-        console.log('isCurrentPlayerBot():', this.isCurrentPlayerBot());
-        console.log('gameState.gameOver:', this.gameState.gameOver);
-        console.log('currentPlayer:', this.gameState.currentPlayer);
-        console.log('botPlayers:', this.botPlayers);
-
         // Check if game is over or current player is not a bot
         if (!this.isCurrentPlayerBot() || this.gameState.gameOver) {
-            console.log('executeBotTurn: early return - not a bot or game over');
             return;
         }
 
@@ -1956,10 +1943,11 @@ class UrosGame {
             const maybePromise = bot.chooseMove();
             const processMove = (move) => {
                 if (move) {
-                    console.log(`${currentPlayer} bot chose move:`, move);
                     const success = this.makeBotMove(move);
                     if (success) {
                         this.completeInteraction();
+                        // Update debug displays for heuristic bots
+                        this.updateHeuristicDebugDisplays();
                         // Immediately go to next turn (no extra delay)
                         this.nextTurn();
                     } else {
@@ -1967,16 +1955,23 @@ class UrosGame {
                         this.hideBotThinking();
                     }
                 } else {
-                    // Bot returned null move - this is normal when no valid moves exist
-                    console.log(`${currentPlayer} bot has no valid moves available`);
-                    // Switch to next player and check if game should end
-                    this.nextTurn();
+                    // Bot returned null move - check if this is a "no useful moves" situation
+                    const currentBot = this.botPlayers[this.gameState.currentPlayer];
+                    const isHeuristicBot = currentBot && currentBot.constructor.name === 'UrosHeuristicPlayer';
+
+                    if (isHeuristicBot) {
+                        // Check if both bots have no useful moves (agreed ending)
+                        this.handleBotAgreedEnding();
+                    } else {
+                        // Regular null move - switch to next player
+                        this.nextTurn();
+                    }
                 }
             };
             if (maybePromise && typeof maybePromise.then === 'function') {
                 maybePromise.then(move => {
                     if (this.gameState.gameOver) {
-                        console.log('Game is over, stopping bot execution (async)');
+
                         return;
                     }
                     processMove(move);
@@ -1987,7 +1982,7 @@ class UrosGame {
             } else {
                 try {
                     if (this.gameState.gameOver) {
-                        console.log('Game is over, stopping bot execution (sync)');
+
                         return;
                     }
                     processMove(maybePromise);
@@ -2026,6 +2021,169 @@ class UrosGame {
             status.style.opacity = '1';
         }
         // Status will be updated by updateStatus() call
+    }
+
+    /**
+     * Handle bot agreed ending when both bots have no useful moves
+     */
+    handleBotAgreedEnding() {
+        // Check if both players are heuristic bots
+        const redBot = this.botPlayers.red;
+        const blueBot = this.botPlayers.blue;
+        const isRedHeuristic = redBot && redBot.constructor.name === 'UrosHeuristicPlayer';
+        const isBlueHeuristic = blueBot && blueBot.constructor.name === 'UrosHeuristicPlayer';
+
+        if (isRedHeuristic && isBlueHeuristic) {
+            // Both bots are heuristic - check if they both have no useful moves
+            const redMoves = this.getValidMovesForPlayer('red');
+            const blueMoves = this.getValidMovesForPlayer('blue');
+
+            if (redMoves.length === 0 && blueMoves.length === 0) {
+                // Both bots agree no useful moves remain - end game
+                this.endGameWithBotAgreement();
+                return;
+            }
+        }
+
+        // Not a bot agreement situation - continue normally
+        this.nextTurn();
+    }
+
+    /**
+ * Get valid moves for a specific player (for bot agreement checking)
+ */
+    getValidMovesForPlayer(player) {
+        // Temporarily switch to the player to get their moves
+        const originalPlayer = this.gameState.currentPlayer;
+        this.gameState.currentPlayer = player;
+
+        const moves = this.getValidMoves();
+
+        // Restore original player
+        this.gameState.currentPlayer = originalPlayer;
+
+        // If this is a heuristic bot, apply their filtering
+        const bot = this.botPlayers[player];
+        if (bot && bot.constructor.name === 'UrosHeuristicPlayer' && bot.filterPointlessMoves) {
+            return bot.filterPointlessMoves(moves);
+        }
+
+        return moves;
+    }
+
+    /**
+     * End game with bot agreement
+     */
+    endGameWithBotAgreement() {
+        this.gameState.gameOver = true;
+        this.gameState.gameOverReason = 'bot-agreement';
+
+        const villages = this.calculateVillages();
+        const redLargest = this.getLargestVillage(villages.red);
+        const blueLargest = this.getLargestVillage(villages.blue);
+
+        let winner = null;
+        if (redLargest.size > blueLargest.size) {
+            winner = 'red';
+        } else if (blueLargest.size > redLargest.size) {
+            winner = 'blue';
+        } else if (redLargest.islands > blueLargest.islands) {
+            winner = 'red';
+        } else if (blueLargest.islands > redLargest.islands) {
+            winner = 'blue';
+        } else {
+            winner = 'tie';
+        }
+
+        this.gameState.gameOverWinner = winner;
+        this.gameState.gameOverRedLargest = redLargest;
+        this.gameState.gameOverBlueLargest = blueLargest;
+
+        this.showGameOverInStatusBar(winner, redLargest, blueLargest);
+        this.hideBotThinking();
+    }
+
+    /**
+ * Update heuristic bot debug displays
+ */
+    updateHeuristicDebugDisplays() {
+        // Update red bot debug display
+        const redBot = this.botPlayers.red;
+        if (redBot && redBot.getDebugData) {
+            const debugData = redBot.getDebugData();
+            if (debugData) {
+                document.getElementById('red-heuristic-debug').classList.remove('hidden');
+                document.getElementById('red-bot-strategy').textContent = debugData.strategy;
+                document.getElementById('red-bot-strategy').className = '';
+                document.getElementById('red-bot-weights').textContent = `A=${debugData.weights.A}, B=${debugData.weights.B}, C=${debugData.weights.C}, D=${debugData.weights.D}, E=${debugData.weights.E}`;
+
+                const moveDesc = debugData.move.type === 'tile-placement'
+                    ? `tile-placement(ID:${debugData.move.tile.id}, pos:${debugData.move.row},${debugData.move.col})`
+                    : `house-placement(ID:${debugData.move.tileId}, pos:${debugData.move.tileRow},${debugData.move.tileCol}, placed:${debugData.move.isPlacedTile})`;
+                document.getElementById('red-bot-move').textContent = moveDesc;
+                document.getElementById('red-bot-move').className = '';
+
+                document.getElementById('red-bot-before').textContent = `BVL=${debugData.beforeMetrics.myBVL}, EFL=${debugData.beforeMetrics.myEFL}, OppEFL=${debugData.beforeMetrics.opponentEFL}, BVR=${debugData.beforeMetrics.myBVR}, EFR=${debugData.beforeMetrics.myEFR}`;
+                document.getElementById('red-bot-after').textContent = `BVL=${debugData.afterMetrics.myBVL}, EFL=${debugData.afterMetrics.myEFL}, OppEFL=${debugData.afterMetrics.opponentEFL}, BVR=${debugData.afterMetrics.myBVR}, EFR=${debugData.afterMetrics.myEFR}`;
+
+                const calc = debugData.calculation;
+                document.getElementById('red-bot-calculation').textContent = `dBVL=${calc.deltaBVL}*${debugData.weights.A}=${calc.weightedBVL}, dEFL=${calc.deltaEFL}*${debugData.weights.B}=${calc.weightedEFL}, dOppEFL=${calc.deltaOpponentEFL}*-${debugData.weights.C}=${calc.weightedOpponentEFL}, dBVR=${calc.deltaBVR}*${debugData.weights.D}=${calc.weightedBVR}, dEFR=${calc.deltaEFR}*${debugData.weights.E}=${calc.weightedEFR}`;
+                document.getElementById('red-bot-score').textContent = debugData.score;
+            } else {
+                // Show "no useful moves" message
+                document.getElementById('red-heuristic-debug').classList.remove('hidden');
+                document.getElementById('red-bot-strategy').textContent = 'No useful moves';
+                document.getElementById('red-bot-strategy').className = 'text-red-600 font-bold';
+                document.getElementById('red-bot-weights').textContent = '-';
+                document.getElementById('red-bot-move').textContent = 'None available';
+                document.getElementById('red-bot-move').className = 'text-red-600 italic';
+                document.getElementById('red-bot-before').textContent = '-';
+                document.getElementById('red-bot-after').textContent = '-';
+                document.getElementById('red-bot-calculation').textContent = '-';
+                document.getElementById('red-bot-score').textContent = '0';
+            }
+        } else {
+            document.getElementById('red-heuristic-debug').classList.add('hidden');
+        }
+
+        // Update blue bot debug display
+        const blueBot = this.botPlayers.blue;
+        if (blueBot && blueBot.getDebugData) {
+            const debugData = blueBot.getDebugData();
+            if (debugData) {
+                document.getElementById('blue-heuristic-debug').classList.remove('hidden');
+                document.getElementById('blue-bot-strategy').textContent = debugData.strategy;
+                document.getElementById('blue-bot-strategy').className = '';
+                document.getElementById('blue-bot-weights').textContent = `A=${debugData.weights.A}, B=${debugData.weights.B}, C=${debugData.weights.C}, D=${debugData.weights.D}, E=${debugData.weights.E}`;
+
+                const moveDesc = debugData.move.type === 'tile-placement'
+                    ? `tile-placement(ID:${debugData.move.tile.id}, pos:${debugData.move.row},${debugData.move.col})`
+                    : `house-placement(ID:${debugData.move.tileId}, pos:${debugData.move.tileRow},${debugData.move.tileCol}, placed:${debugData.move.isPlacedTile})`;
+                document.getElementById('blue-bot-move').textContent = moveDesc;
+                document.getElementById('blue-bot-move').className = '';
+
+                document.getElementById('blue-bot-before').textContent = `BVL=${debugData.beforeMetrics.myBVL}, EFL=${debugData.beforeMetrics.myEFL}, OppEFL=${debugData.beforeMetrics.opponentEFL}, BVR=${debugData.beforeMetrics.myBVR}, EFR=${debugData.beforeMetrics.myEFR}`;
+                document.getElementById('blue-bot-after').textContent = `BVL=${debugData.afterMetrics.myBVL}, EFL=${debugData.afterMetrics.myEFL}, OppEFL=${debugData.afterMetrics.opponentEFL}, BVR=${debugData.afterMetrics.myBVR}, EFR=${debugData.afterMetrics.myEFR}`;
+
+                const calc = debugData.calculation;
+                document.getElementById('blue-bot-calculation').textContent = `dBVL=${calc.deltaBVL}*${debugData.weights.A}=${calc.weightedBVL}, dEFL=${calc.deltaEFL}*${debugData.weights.B}=${calc.weightedEFL}, dOppEFL=${calc.deltaOpponentEFL}*-${debugData.weights.C}=${calc.weightedOpponentEFL}, dBVR=${calc.deltaBVR}*${debugData.weights.D}=${calc.weightedBVR}, dEFR=${calc.deltaEFR}*${debugData.weights.E}=${calc.weightedEFR}`;
+                document.getElementById('blue-bot-score').textContent = debugData.score;
+            } else {
+                // Show "no useful moves" message
+                document.getElementById('blue-heuristic-debug').classList.remove('hidden');
+                document.getElementById('blue-bot-strategy').textContent = 'No useful moves';
+                document.getElementById('blue-bot-strategy').className = 'text-blue-600 font-bold';
+                document.getElementById('blue-bot-weights').textContent = '-';
+                document.getElementById('blue-bot-move').textContent = 'None available';
+                document.getElementById('blue-bot-move').className = 'text-blue-600 italic';
+                document.getElementById('blue-bot-before').textContent = '-';
+                document.getElementById('blue-bot-after').textContent = '-';
+                document.getElementById('blue-bot-calculation').textContent = '-';
+                document.getElementById('blue-bot-score').textContent = '0';
+            }
+        } else {
+            document.getElementById('blue-heuristic-debug').classList.add('hidden');
+        }
     }
 
     /**
@@ -2079,7 +2237,7 @@ class UrosGame {
      * Override startNewGame to set up default bot configuration
      */
     startNewGame() {
-        console.log('Starting new game');
+
 
         this.gameState = {
             board: Array(this.boardSize).fill(null).map(() => Array(this.boardSize).fill(null)),
@@ -2121,9 +2279,12 @@ class UrosGame {
         this.updateStatus();
         this.render();
 
+        // Update heuristic debug displays
+        this.updateHeuristicDebugDisplays();
+
         // Start bot turn if current player is a bot
         if (this.isCurrentPlayerBot() && !this.gameState.gameOver) {
-            console.log('Starting bot turn for current player');
+
             const currentBot = this.botPlayers[this.gameState.currentPlayer];
             if (!currentBot) {
                 throw new Error(`Bot not found for current player ${this.gameState.currentPlayer}`);
@@ -2156,10 +2317,10 @@ class UrosGame {
         if (this.useRandomSeed && this.randomSeed !== null) {
             // Use a simple seeded random number generator
             this.seedGenerator = this.createSeededRandom(this.randomSeed);
-            console.log(`Using seeded random generator with seed: ${this.randomSeed}`);
+
         } else {
             this.seedGenerator = null;
-            console.log('Using system random generator');
+
         }
     }
 

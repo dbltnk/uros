@@ -36,7 +36,7 @@ function clearFiles() {
         const sessionStart = `=== SESSION START: ${sessionId} ===\n`;
         fs.writeFileSync(LOGS_FILE, sessionStart);
 
-        console.log('✅ Cleared previous session logs');
+
     } catch (err) {
         console.error('❌ Failed to clear log files:', err.message);
     }
@@ -78,7 +78,7 @@ function writeLogs(logs) {
             if (log.callStack && log.callStack.length > 0) {
                 const stackInfo = formatCallStack(log.callStack);
                 if (stackInfo) {
-                    entry += `\n  ${stackInfo}`;
+                    entry += `  ${stackInfo}`;
                 }
             }
 
@@ -191,19 +191,10 @@ const server = http.createServer(async (req, res) => {
 
 // Start server
 server.listen(PORT, () => {
-    console.log(`🚀 Browser logging server running on http://localhost:${PORT}`);
-    console.log(`📁 Log files will be written to: ${LOGS_DIR}`);
-    console.log(`📝 Console logs: ${LOGS_FILE}`);
-    console.log(`🌐 DOM snapshots: ${DOM_FILE}`);
-    console.log('');
-    console.log('💡 Open index.html in your browser to start logging');
-    console.log('🔄 Press Ctrl+C to stop the server');
 });
 
 // Handle graceful shutdown
 process.on('SIGINT', () => {
-    console.log('\n🛑 Shutting down server...');
-
     // Write session end marker
     try {
         const sessionEnd = `\n=== SESSION END: ${sessionId} ===\n`;
@@ -219,21 +210,17 @@ process.on('SIGINT', () => {
 
     // Close server and force exit after timeout
     server.close(() => {
-        console.log('✅ Server stopped gracefully');
         process.exit(0);
     });
 
     // Force exit after 3 seconds if graceful shutdown fails
     setTimeout(() => {
-        console.log('⚠️ Force shutting down server...');
         process.exit(1);
     }, 3000);
 });
 
 // Also handle SIGTERM for container environments
 process.on('SIGTERM', () => {
-    console.log('\n🛑 Received SIGTERM, shutting down server...');
-
     // Write session end marker
     try {
         const sessionEnd = `\n=== SESSION END: ${sessionId} ===\n`;
@@ -248,12 +235,10 @@ process.on('SIGTERM', () => {
     });
 
     server.close(() => {
-        console.log('✅ Server stopped gracefully');
         process.exit(0);
     });
 
     setTimeout(() => {
-        console.log('⚠️ Force shutting down server...');
         process.exit(1);
     }, 3000);
 });

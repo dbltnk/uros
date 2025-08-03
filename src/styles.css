@@ -2,7 +2,7 @@
 
 .game-grid {
     display: grid;
-    grid-template-columns: 300px 1fr;
+    grid-template-columns: 300px 350px 1fr;
     grid-template-rows: auto 1fr;
     height: 100vh;
     gap: 1rem;
@@ -246,4 +246,36 @@
 .house-emoji.used {
     opacity: 0.3;
     cursor: default;
+}
+
+/* Heuristic Bot Debug Display Styles */
+#heuristic-debug-container {
+    margin-top: 0rem;
+}
+
+#heuristic-debug-container .bg-white {
+    border-left: 4px solid #3b82f6;
+}
+
+#red-heuristic-debug {
+    border-left-color: #dc2626 !important;
+}
+
+#blue-heuristic-debug {
+    border-left-color: #2563eb !important;
+}
+
+#heuristic-debug-container .text-sm {
+    font-family: 'Courier New', monospace;
+    line-height: 1.4;
+}
+
+#heuristic-debug-container strong {
+    color: #374151;
+    font-weight: 600;
+}
+
+#heuristic-debug-container span {
+    color: #1f2937;
+    word-break: break-all;
 }

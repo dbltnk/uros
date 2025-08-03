@@ -31,8 +31,7 @@ class BrowserLogger {
         // Set up event listeners
         this.setupEventListeners();
 
-        // Initial log
-        console.log('Browser logging system initialized');
+
     }
 
     processEarlyLogs() {
@@ -62,7 +61,7 @@ class BrowserLogger {
                 callStack: log.callStack || []
             });
         });
-        console.log(`Processed ${earlyLogs.length} early logs`);
+
     }
 
     clearSession() {
