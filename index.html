@@ -186,28 +186,90 @@
             <!-- Red Heuristic Bot Debug -->
             <div id="red-heuristic-debug" class="bg-white rounded-lg shadow-md p-4 hidden">
                 <h2 class="text-lg font-semibold mb-3 text-red-700">🔴 Red Bot Analysis</h2>
-                <div class="text-sm space-y-2">
+
+                <!-- Main Analysis Section -->
+                <div class="text-sm space-y-2 mb-4 p-3 bg-red-50 rounded">
                     <div><strong>Strategy:</strong> <span id="red-bot-strategy">-</span></div>
                     <div><strong>Weights:</strong> <span id="red-bot-weights">-</span></div>
                     <div><strong>Last Move:</strong> <span id="red-bot-move">-</span></div>
-                    <div><strong>Before State:</strong> <span id="red-bot-before">-</span></div>
-                    <div><strong>After State:</strong> <span id="red-bot-after">-</span></div>
-                    <div><strong>Score Calculation:</strong> <span id="red-bot-calculation">-</span></div>
                     <div><strong>Final Score:</strong> <span id="red-bot-score">-</span></div>
+                </div>
+
+                <!-- Current Turn Analysis -->
+                <div class="mb-4">
+                    <h3 class="text-md font-semibold mb-2 text-red-600">🎯 Current Turn Analysis</h3>
+                    <div id="red-current-analysis" class="text-xs space-y-2">
+                        <!-- Current turn analysis will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Move Rankings Section -->
+                <div class="mb-4">
+                    <h3 class="text-md font-semibold mb-2 text-red-600">📊 Top Moves</h3>
+                    <div id="red-move-rankings" class="text-xs space-y-1">
+                        <!-- Move rankings will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Filtering Info Section -->
+                <div class="mb-4">
+                    <h3 class="text-md font-semibold mb-2 text-red-600">🔍 Move Filtering</h3>
+                    <div id="red-filtering-info" class="text-xs p-2 bg-gray-50 rounded border">
+                        <!-- Filtering info will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Move History Section -->
+                <div>
+                    <h3 class="text-md font-semibold mb-2 text-red-600">📈 Move History</h3>
+                    <div id="red-move-history" class="text-xs space-y-2">
+                        <!-- Move history will be populated here -->
+                    </div>
                 </div>
             </div>
 
             <!-- Blue Heuristic Bot Debug -->
             <div id="blue-heuristic-debug" class="bg-white rounded-lg shadow-md p-4 hidden">
                 <h2 class="text-lg font-semibold mb-3 text-blue-700">🔵 Blue Bot Analysis</h2>
-                <div class="text-sm space-y-2">
+
+                <!-- Main Analysis Section -->
+                <div class="text-sm space-y-2 mb-4 p-3 bg-blue-50 rounded">
                     <div><strong>Strategy:</strong> <span id="blue-bot-strategy">-</span></div>
                     <div><strong>Weights:</strong> <span id="blue-bot-weights">-</span></div>
                     <div><strong>Last Move:</strong> <span id="blue-bot-move">-</span></div>
-                    <div><strong>Before State:</strong> <span id="blue-bot-before">-</span></div>
-                    <div><strong>After State:</strong> <span id="blue-bot-after">-</span></div>
-                    <div><strong>Score Calculation:</strong> <span id="blue-bot-calculation">-</span></div>
                     <div><strong>Final Score:</strong> <span id="blue-bot-score">-</span></div>
+                </div>
+
+                <!-- Current Turn Analysis -->
+                <div class="mb-4">
+                    <h3 class="text-md font-semibold mb-2 text-blue-600">🎯 Current Turn Analysis</h3>
+                    <div id="blue-current-analysis" class="text-xs space-y-2">
+                        <!-- Current turn analysis will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Move Rankings Section -->
+                <div class="mb-4">
+                    <h3 class="text-md font-semibold mb-2 text-blue-600">📊 Top Moves</h3>
+                    <div id="blue-move-rankings" class="text-xs space-y-1">
+                        <!-- Move rankings will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Filtering Info Section -->
+                <div class="mb-4">
+                    <h3 class="text-md font-semibold mb-2 text-blue-600">🔍 Move Filtering</h3>
+                    <div id="blue-filtering-info" class="text-xs p-2 bg-gray-50 rounded border">
+                        <!-- Filtering info will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Move History Section -->
+                <div>
+                    <h3 class="text-md font-semibold mb-2 text-blue-600">📈 Move History</h3>
+                    <div id="blue-move-history" class="text-xs space-y-2">
+                        <!-- Move history will be populated here -->
+                    </div>
                 </div>
             </div>
         </div>

@@ -977,7 +977,6 @@ class UrosHeuristicPlayer extends UrosPlayer {
             'exploit': { A: 5, B: 3, C: 4, D: 1, E: 0.5 }
         };
 
-
         if (!config.strategy) {
             throw new Error('UrosHeuristicPlayer: config.strategy is required');
         }
@@ -988,8 +987,14 @@ class UrosHeuristicPlayer extends UrosPlayer {
             throw new Error(`Unknown strategy: ${this.strategy}`);
         }
 
-        // Store debug data for UI display
+        // Enhanced debug data storage
         this.lastDebugData = null;
+        this.moveHistory = []; // Store last 5 moves for historical context
+        this.filteringStats = {
+            totalMoves: 0,
+            filteredMoves: 0,
+            filteringReasons: {}
+        };
     }
 
     chooseMove() {
@@ -998,17 +1003,16 @@ class UrosHeuristicPlayer extends UrosPlayer {
             return null;
         }
 
-        // Log strategy weights at the start of each turn
-        // console.log(`[UrosHeuristicPlayer-${this.strategy}] TURN_START: Strategy=${this.strategy}, Weights: A=${this.weights.A}, B=${this.weights.B}, C=${this.weights.C}, D=${this.weights.D}, E=${this.weights.E}`);
+        // Track filtering statistics
+        this.filteringStats.totalMoves = validMoves.length;
+        this.filteringStats.filteredMoves = 0;
+        this.filteringStats.filteringReasons = {};
 
         // Filter out pointless house placements on Reedbed
         const filteredMoves = this.filterPointlessMoves(validMoves);
-        // console.log(`[UrosHeuristicPlayer-${this.strategy}] REAL GAME: Starting with ${validMoves.length} moves, filtered to ${filteredMoves.length}`);
 
         if (filteredMoves.length === 0) {
-            // Signal that no useful moves remain (this is a valid game state)
-            // console.log(`[UrosHeuristicPlayer-${this.strategy}] No useful moves remain - signaling game end`);
-            return null; // Return null to indicate no useful moves
+            return null;
         }
 
         // Calculate current metrics for REAL GAME (this is our "before" state)
@@ -1026,14 +1030,33 @@ class UrosHeuristicPlayer extends UrosPlayer {
             // Calculate score using current (real) metrics as "before" and simulated metrics as "after"
             const scoreResult = this.calculateHeuristicScore(currentMetrics, afterMetrics, false);
 
-            // Log detailed move evaluation
-            const moveDesc = move.type === 'tile-placement'
-                ? `tile-placement(ID:${move.tile.id}, pos:${move.row},${move.col})`
-                : `house-placement(ID:${move.tileId}, pos:${move.tileRow},${move.tileCol}, placed:${move.isPlacedTile})`;
-
-            // console.log(`[UrosHeuristicPlayer-${this.strategy}] MOVE ${index + 1}/${filteredMoves.length}: ${moveDesc} | BEFORE: BVL=${currentMetrics.myBVL}, EFL=${currentMetrics.myEFL}, OppEFL=${currentMetrics.opponentEFL}, BVR=${currentMetrics.myBVR}, EFR=${currentMetrics.myEFR} | AFTER: BVL=${afterMetrics.myBVL}, EFL=${afterMetrics.myEFL}, OppEFL=${afterMetrics.opponentEFL}, BVR=${afterMetrics.myBVR}, EFR=${afterMetrics.myEFR} | SCORE=${scoreResult.score}`);
-
-            return { move, score: scoreResult.score, beforeMetrics: currentMetrics, afterMetrics, calculation: scoreResult.calculation };
+            return {
+                move,
+                score: scoreResult.score,
+                beforeMetrics: currentMetrics,
+                afterMetrics,
+                calculation: scoreResult.calculation,
+                moveDescription: this.describeMove(move),
+                fullCalculation: {
+                    beforeMetrics: currentMetrics,
+                    afterMetrics: afterMetrics,
+                    deltas: {
+                        deltaBVL: afterMetrics.myBVL - currentMetrics.myBVL,
+                        deltaEFL: afterMetrics.myEFL - currentMetrics.myEFL,
+                        deltaOpponentEFL: afterMetrics.opponentEFL - currentMetrics.opponentEFL,
+                        deltaBVR: afterMetrics.myBVR - currentMetrics.myBVR,
+                        deltaEFR: afterMetrics.myEFR - currentMetrics.myEFR
+                    },
+                    weightedScores: {
+                        weightedBVL: this.weights.A * (afterMetrics.myBVL - currentMetrics.myBVL),
+                        weightedEFL: this.weights.B * (afterMetrics.myEFL - currentMetrics.myEFL),
+                        weightedOpponentEFL: -this.weights.C * (afterMetrics.opponentEFL - currentMetrics.opponentEFL),
+                        weightedBVR: this.weights.D * (afterMetrics.myBVR - currentMetrics.myBVR),
+                        weightedEFR: this.weights.E * (afterMetrics.myEFR - currentMetrics.myEFR)
+                    },
+                    weights: this.weights
+                }
+            };
         });
 
         // Sort by score (highest first)
@@ -1051,20 +1074,25 @@ class UrosHeuristicPlayer extends UrosPlayer {
         const randomIndex = Math.floor(this.getRandom() * bestMoves.length);
         const selectedMove = bestMoves[randomIndex].move;
 
-        // Log summary of all move scores for comparison
-        const scoreSummary = moveEvaluations.map((evaluation, i) => {
-            const move = evaluation.move;
-            const moveDesc = move.type === 'tile-placement'
-                ? `tile(ID:${move.tile.id}, pos:${move.row},${move.col})`
-                : `house(ID:${move.tileId}, pos:${move.tileRow},${move.tileCol}, placed:${move.isPlacedTile})`;
-            return `${moveDesc}=${evaluation.score}`;
-        }).join(', ');
-
-        // console.log(`[UrosHeuristicPlayer-${this.strategy}] REAL GAME: Best score=${bestScore}, ${bestMoves.length} tied | Selected: ${selectedMove.type}${selectedMove.type === 'tile-placement' ? ` (ID:${selectedMove.tile.id}, pos:${selectedMove.row},${selectedMove.col})` : ` (ID:${selectedMove.tileId}, pos:${selectedMove.tileRow},${selectedMove.tileCol}, placed:${selectedMove.isPlacedTile})`} | ALL_SCORES: ${scoreSummary}`);
-
         // Store debug data for UI display
         const selectedEvaluation = moveEvaluations.find(evaluation => evaluation.move === selectedMove);
         if (selectedEvaluation) {
+            // Add to move history - include ALL evaluated moves, not just the selected one
+            const historyEntry = {
+                turn: this.gameEngine.gameState.currentPlayer === 'red' ? 'red' : 'blue',
+                selectedMove: selectedMove,
+                allEvaluations: moveEvaluations, // Store all evaluations for historical analysis
+                strategy: this.strategy,
+                weights: this.weights,
+                beforeMetrics: selectedEvaluation.beforeMetrics,
+                timestamp: Date.now()
+            };
+
+            this.moveHistory.push(historyEntry);
+            if (this.moveHistory.length > 5) {
+                this.moveHistory.shift(); // Keep only last 5 turns
+            }
+
             this.lastDebugData = {
                 strategy: this.strategy,
                 weights: this.weights,
@@ -1072,11 +1100,25 @@ class UrosHeuristicPlayer extends UrosPlayer {
                 beforeMetrics: selectedEvaluation.beforeMetrics,
                 afterMetrics: selectedEvaluation.afterMetrics,
                 score: selectedEvaluation.score,
-                calculation: selectedEvaluation.calculation
+                calculation: selectedEvaluation.calculation,
+                moveDescription: selectedEvaluation.moveDescription,
+                moveRankings: moveEvaluations.slice(0, 10), // Top 10 moves with full details
+                filteringStats: this.filteringStats,
+                moveHistory: this.moveHistory,
+                selectedEvaluation: selectedEvaluation // Store the selected evaluation for detailed display
             };
         }
 
         return selectedMove;
+    }
+
+    describeMove(move) {
+        if (move.type === 'tile-placement') {
+            return `Place tile ${move.tile.id} at (${move.row}, ${move.col})`;
+        } else {
+            const location = move.isPlacedTile ? 'lake' : 'reedbed';
+            return `Place house on ${location} tile ${move.tileId} at (${move.tileRow}, ${move.tileCol})`;
+        }
     }
 
     filterPointlessMoves(moves) {
@@ -1092,7 +1134,13 @@ class UrosHeuristicPlayer extends UrosPlayer {
                 if (!tile) return true; // Keep if tile not found
 
                 // Check if this tile can still be placed anywhere on the lake
-                return this.canTileFitOnLake(tile);
+                const canFit = this.canTileFitOnLake(tile);
+                if (!canFit) {
+                    this.filteringStats.filteredMoves++;
+                    this.filteringStats.filteringReasons[`tile-${move.tileId}-no-fit`] =
+                        (this.filteringStats.filteringReasons[`tile-${move.tileId}-no-fit`] || 0) + 1;
+                }
+                return canFit;
             }
 
             return true; // Keep all other moves

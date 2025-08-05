@@ -2113,22 +2113,25 @@ class UrosGame {
             const debugData = redBot.getDebugData();
             if (debugData) {
                 document.getElementById('red-heuristic-debug').classList.remove('hidden');
+
+                // Update main summary
                 document.getElementById('red-bot-strategy').textContent = debugData.strategy;
-                document.getElementById('red-bot-strategy').className = '';
                 document.getElementById('red-bot-weights').textContent = `A=${debugData.weights.A}, B=${debugData.weights.B}, C=${debugData.weights.C}, D=${debugData.weights.D}, E=${debugData.weights.E}`;
+                document.getElementById('red-bot-move').textContent = this.describeMove(debugData.move);
+                document.getElementById('red-bot-score').textContent = debugData.score.toFixed(2);
 
-                const moveDesc = debugData.move.type === 'tile-placement'
-                    ? `tile-placement(ID:${debugData.move.tile.id}, pos:${debugData.move.row},${debugData.move.col})`
-                    : `house-placement(ID:${debugData.move.tileId}, pos:${debugData.move.tileRow},${debugData.move.tileCol}, placed:${debugData.move.isPlacedTile})`;
-                document.getElementById('red-bot-move').textContent = moveDesc;
-                document.getElementById('red-bot-move').className = '';
+                // Populate current turn analysis
+                this.populateCurrentAnalysis('red', debugData);
 
-                document.getElementById('red-bot-before').textContent = `BVL=${debugData.beforeMetrics.myBVL}, EFL=${debugData.beforeMetrics.myEFL}, OppEFL=${debugData.beforeMetrics.opponentEFL}, BVR=${debugData.beforeMetrics.myBVR}, EFR=${debugData.beforeMetrics.myEFR}`;
-                document.getElementById('red-bot-after').textContent = `BVL=${debugData.afterMetrics.myBVL}, EFL=${debugData.afterMetrics.myEFL}, OppEFL=${debugData.afterMetrics.opponentEFL}, BVR=${debugData.afterMetrics.myBVR}, EFR=${debugData.afterMetrics.myEFR}`;
+                // Populate move rankings with inline details
+                this.populateMoveRankings('red', debugData.moveRankings || [], debugData.move);
 
-                const calc = debugData.calculation;
-                document.getElementById('red-bot-calculation').textContent = `dBVL=${calc.deltaBVL}*${debugData.weights.A}=${calc.weightedBVL}, dEFL=${calc.deltaEFL}*${debugData.weights.B}=${calc.weightedEFL}, dOppEFL=${calc.deltaOpponentEFL}*-${debugData.weights.C}=${calc.weightedOpponentEFL}, dBVR=${calc.deltaBVR}*${debugData.weights.D}=${calc.weightedBVR}, dEFR=${calc.deltaEFR}*${debugData.weights.E}=${calc.weightedEFR}`;
-                document.getElementById('red-bot-score').textContent = debugData.score;
+                // Populate filtering info
+                this.populateFilteringInfo('red', debugData.filteringStats || {});
+
+                // Populate move history with inline details
+                this.populateMoveHistory('red', debugData.moveHistory || []);
+
             } else {
                 // Show "no useful moves" message
                 document.getElementById('red-heuristic-debug').classList.remove('hidden');
@@ -2136,11 +2139,10 @@ class UrosGame {
                 document.getElementById('red-bot-strategy').className = 'text-red-600 font-bold';
                 document.getElementById('red-bot-weights').textContent = '-';
                 document.getElementById('red-bot-move').textContent = 'None available';
-                document.getElementById('red-bot-move').className = 'text-red-600 italic';
-                document.getElementById('red-bot-before').textContent = '-';
-                document.getElementById('red-bot-after').textContent = '-';
-                document.getElementById('red-bot-calculation').textContent = '-';
                 document.getElementById('red-bot-score').textContent = '0';
+
+                // Clear additional sections
+                this.clearDebugSections('red');
             }
         } else {
             document.getElementById('red-heuristic-debug').classList.add('hidden');
@@ -2152,22 +2154,25 @@ class UrosGame {
             const debugData = blueBot.getDebugData();
             if (debugData) {
                 document.getElementById('blue-heuristic-debug').classList.remove('hidden');
+
+                // Update main summary
                 document.getElementById('blue-bot-strategy').textContent = debugData.strategy;
-                document.getElementById('blue-bot-strategy').className = '';
                 document.getElementById('blue-bot-weights').textContent = `A=${debugData.weights.A}, B=${debugData.weights.B}, C=${debugData.weights.C}, D=${debugData.weights.D}, E=${debugData.weights.E}`;
+                document.getElementById('blue-bot-move').textContent = this.describeMove(debugData.move);
+                document.getElementById('blue-bot-score').textContent = debugData.score.toFixed(2);
 
-                const moveDesc = debugData.move.type === 'tile-placement'
-                    ? `tile-placement(ID:${debugData.move.tile.id}, pos:${debugData.move.row},${debugData.move.col})`
-                    : `house-placement(ID:${debugData.move.tileId}, pos:${debugData.move.tileRow},${debugData.move.tileCol}, placed:${debugData.move.isPlacedTile})`;
-                document.getElementById('blue-bot-move').textContent = moveDesc;
-                document.getElementById('blue-bot-move').className = '';
+                // Populate current turn analysis
+                this.populateCurrentAnalysis('blue', debugData);
 
-                document.getElementById('blue-bot-before').textContent = `BVL=${debugData.beforeMetrics.myBVL}, EFL=${debugData.beforeMetrics.myEFL}, OppEFL=${debugData.beforeMetrics.opponentEFL}, BVR=${debugData.beforeMetrics.myBVR}, EFR=${debugData.beforeMetrics.myEFR}`;
-                document.getElementById('blue-bot-after').textContent = `BVL=${debugData.afterMetrics.myBVL}, EFL=${debugData.afterMetrics.myEFL}, OppEFL=${debugData.afterMetrics.opponentEFL}, BVR=${debugData.afterMetrics.myBVR}, EFR=${debugData.afterMetrics.myEFR}`;
+                // Populate move rankings with inline details
+                this.populateMoveRankings('blue', debugData.moveRankings || [], debugData.move);
 
-                const calc = debugData.calculation;
-                document.getElementById('blue-bot-calculation').textContent = `dBVL=${calc.deltaBVL}*${debugData.weights.A}=${calc.weightedBVL}, dEFL=${calc.deltaEFL}*${debugData.weights.B}=${calc.weightedEFL}, dOppEFL=${calc.deltaOpponentEFL}*-${debugData.weights.C}=${calc.weightedOpponentEFL}, dBVR=${calc.deltaBVR}*${debugData.weights.D}=${calc.weightedBVR}, dEFR=${calc.deltaEFR}*${debugData.weights.E}=${calc.weightedEFR}`;
-                document.getElementById('blue-bot-score').textContent = debugData.score;
+                // Populate filtering info
+                this.populateFilteringInfo('blue', debugData.filteringStats || {});
+
+                // Populate move history with inline details
+                this.populateMoveHistory('blue', debugData.moveHistory || []);
+
             } else {
                 // Show "no useful moves" message
                 document.getElementById('blue-heuristic-debug').classList.remove('hidden');
@@ -2175,14 +2180,373 @@ class UrosGame {
                 document.getElementById('blue-bot-strategy').className = 'text-blue-600 font-bold';
                 document.getElementById('blue-bot-weights').textContent = '-';
                 document.getElementById('blue-bot-move').textContent = 'None available';
-                document.getElementById('blue-bot-move').className = 'text-blue-600 italic';
-                document.getElementById('blue-bot-before').textContent = '-';
-                document.getElementById('blue-bot-after').textContent = '-';
-                document.getElementById('blue-bot-calculation').textContent = '-';
                 document.getElementById('blue-bot-score').textContent = '0';
+
+                // Clear additional sections
+                this.clearDebugSections('blue');
             }
         } else {
             document.getElementById('blue-heuristic-debug').classList.add('hidden');
+        }
+    }
+
+    /**
+     * Populate current turn analysis
+     */
+    populateCurrentAnalysis(color, debugData) {
+        const container = document.getElementById(`${color}-current-analysis`);
+        if (!container) return;
+
+        const selectedEvaluation = debugData.selectedEvaluation;
+        if (!selectedEvaluation) {
+            container.innerHTML = '<div class="text-gray-500 italic">No analysis available</div>';
+            return;
+        }
+
+        const before = selectedEvaluation.beforeMetrics;
+        const after = selectedEvaluation.afterMetrics;
+        const calc = selectedEvaluation.calculation;
+
+        const html = `
+            <div class="p-2 bg-gray-50 rounded border">
+                <div class="grid grid-cols-2 gap-4 text-xs">
+                    <div>
+                        <strong>Before State:</strong>
+                        <div class="ml-2">BVL: ${before.myBVL}, EFL: ${before.myEFL}</div>
+                        <div class="ml-2">OppEFL: ${before.opponentEFL}, BVR: ${before.myBVR}, EFR: ${before.myEFR}</div>
+                    </div>
+                    <div>
+                        <strong>After State:</strong>
+                        <div class="ml-2">BVL: ${after.myBVL}, EFL: ${after.myEFL}</div>
+                        <div class="ml-2">OppEFL: ${after.opponentEFL}, BVR: ${after.myBVR}, EFR: ${after.myEFR}</div>
+                    </div>
+                </div>
+                <div class="mt-2 pt-2 border-t border-gray-200">
+                    <strong>Score Calculation:</strong>
+                    <div class="ml-2 text-xs">dBVL=${calc.deltaBVL}×${debugData.weights.A}=${calc.weightedBVL.toFixed(2)}</div>
+                    <div class="ml-2 text-xs">dEFL=${calc.deltaEFL}×${debugData.weights.B}=${calc.weightedEFL.toFixed(2)}</div>
+                    <div class="ml-2 text-xs">dOppEFL=${calc.deltaOpponentEFL}×-${debugData.weights.C}=${calc.weightedOpponentEFL.toFixed(2)}</div>
+                    <div class="ml-2 text-xs">dBVR=${calc.deltaBVR}×${debugData.weights.D}=${calc.weightedBVR.toFixed(2)}</div>
+                    <div class="ml-2 text-xs">dEFR=${calc.deltaEFR}×${debugData.weights.E}=${calc.weightedEFR.toFixed(2)}</div>
+                    <div class="ml-2 text-xs font-bold">Total: ${debugData.score.toFixed(2)}</div>
+                </div>
+            </div>
+        `;
+
+        container.innerHTML = html;
+    }
+
+    /**
+     * Populate move rankings with inline expandable details
+     */
+    populateMoveRankings(color, rankings, selectedMove) {
+        const container = document.getElementById(`${color}-move-rankings`);
+        if (!container) return;
+
+        if (rankings.length === 0) {
+            container.innerHTML = '<div class="text-gray-500 italic">No moves evaluated</div>';
+            return;
+        }
+
+        const html = rankings.map((ranking, index) => {
+            const isSelected = this.isSameMove(ranking.move, selectedMove);
+            const rank = index + 1;
+            const score = ranking.score.toFixed(2);
+            const description = ranking.moveDescription || this.describeMove(ranking.move);
+            const moveId = `move-${color}-${index}`;
+
+            return `
+                <div class="move-item ${isSelected ? 'selected' : ''}" data-move-id="${moveId}">
+                    <div class="move-header clickable-move" data-color="${color}" data-index="${index}" data-type="rankings">
+                        <span class="move-click-icon">🔍</span>
+                        <strong>#${rank}</strong> (${score}) ${description}
+                        ${isSelected ? '<span class="selected-indicator">✓</span>' : ''}
+                    </div>
+                    <div class="move-details hidden" data-details-id="${moveId}">
+                        <!-- Details will be populated when expanded -->
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        container.innerHTML = html;
+
+        // Add click handlers for each move
+        this.setupMoveClickHandlers(color, 'rankings', rankings);
+    }
+
+    /**
+     * Populate move history with inline expandable details
+     */
+    populateMoveHistory(color, history) {
+        const container = document.getElementById(`${color}-move-history`);
+        if (!container) return;
+
+        if (history.length === 0) {
+            container.innerHTML = '<div class="text-gray-500 italic">No history available</div>';
+            return;
+        }
+
+        const html = history.map((entry, index) => {
+            const time = new Date(entry.timestamp).toLocaleTimeString();
+            const strategy = entry.strategy;
+
+            // Find the selected move's evaluation
+            const selectedEvaluation = entry.allEvaluations.find(evaluation =>
+                this.isSameMove(evaluation.move, entry.selectedMove)
+            );
+
+            const score = selectedEvaluation ? selectedEvaluation.score.toFixed(2) : 'N/A';
+            const description = selectedEvaluation ?
+                (selectedEvaluation.moveDescription || this.describeMove(entry.selectedMove)) :
+                this.describeMove(entry.selectedMove);
+            const historyId = `history-${color}-${index}`;
+
+            return `
+                <div class="history-item ${entry.turn}" data-history-id="${historyId}">
+                    <div class="history-header clickable-move" data-color="${color}" data-index="${index}" data-type="history">
+                        <span class="move-click-icon">🔍</span>
+                        <div><strong>${time}</strong> (${score}) - ${strategy}</div>
+                        <div>${description}</div>
+                    </div>
+                    <div class="history-details hidden" data-details-id="${historyId}">
+                        <!-- Details will be populated when expanded -->
+                    </div>
+                </div>
+            `;
+        }).reverse().join(''); // Show newest first
+
+        container.innerHTML = html;
+
+        // Add click handlers for each history entry
+        this.setupMoveClickHandlers(color, 'history', history);
+    }
+
+    /**
+     * Setup click handlers for move inspection
+     */
+    setupMoveClickHandlers(color, type, data) {
+        const container = document.getElementById(`${color}-${type === 'rankings' ? 'move-rankings' : 'move-history'}`);
+        if (!container) return;
+
+        const clickableMoves = container.querySelectorAll('.clickable-move');
+        clickableMoves.forEach(moveElement => {
+            moveElement.addEventListener('click', (e) => {
+                const dataIndex = parseInt(moveElement.dataset.index);
+                const moveType = moveElement.dataset.type;
+
+                // Toggle details for this specific move
+                this.toggleMoveDetails(color, moveType, dataIndex, data, moveElement);
+            });
+        });
+    }
+
+    /**
+     * Toggle details for a specific move
+     */
+    toggleMoveDetails(color, type, index, data, moveElement) {
+        const moveId = type === 'rankings' ? `move-${color}-${index}` : `history-${color}-${index}`;
+        const detailsContainer = moveElement.parentElement.querySelector(`[data-details-id="${moveId}"]`);
+
+        if (!detailsContainer) return;
+
+        const isHidden = detailsContainer.classList.contains('hidden');
+        const icon = moveElement.querySelector('.move-click-icon');
+
+        if (isHidden) {
+            // Show details
+            detailsContainer.classList.remove('hidden');
+            icon.textContent = '📋';
+
+            // Populate details
+            let detailsHtml = '';
+            if (type === 'rankings') {
+                const bot = this.botPlayers[color];
+                const debugData = bot ? bot.getDebugData() : null;
+                const selectedMove = debugData ? debugData.move : null;
+                detailsHtml = this.generateMoveDetailsHtml(color, index, data[index], selectedMove);
+            } else {
+                detailsHtml = this.generateHistoryDetailsHtml(color, index, data[index]);
+            }
+
+            detailsContainer.innerHTML = detailsHtml;
+        } else {
+            // Hide details
+            detailsContainer.classList.add('hidden');
+            icon.textContent = '��';
+        }
+    }
+
+    /**
+     * Generate HTML for move details
+     */
+    generateMoveDetailsHtml(color, index, ranking, selectedMove) {
+        if (!ranking) return '';
+
+        // Check if this move was the selected one
+        const isSelected = selectedMove && this.isSameMove(ranking.move, selectedMove);
+        const rank = index + 1;
+        const score = ranking.score.toFixed(2);
+        const description = ranking.moveDescription || this.describeMove(ranking.move);
+
+        const calc = ranking.fullCalculation;
+        const deltas = calc.deltas;
+        const weighted = calc.weightedScores;
+        const weights = calc.weights;
+
+        let moveHtml = `<div class="move-ranking-item ${isSelected ? 'selected' : ''} mb-3" data-move-id="rankings-${color}-${index}">
+            <div class="font-bold">#${rank} (${score}) ${description}</div>`;
+
+        if (calc) {
+            moveHtml += `
+            <div class="ml-2 mt-1 text-xs">
+                <div><strong>Before:</strong> BVL=${calc.beforeMetrics.myBVL}, EFL=${calc.beforeMetrics.myEFL}, OppEFL=${calc.beforeMetrics.opponentEFL}, BVR=${calc.beforeMetrics.myBVR}, EFR=${calc.beforeMetrics.myEFR}</div>
+                <div><strong>After:</strong> BVL=${calc.afterMetrics.myBVL}, EFL=${calc.afterMetrics.myEFL}, OppEFL=${calc.afterMetrics.opponentEFL}, BVR=${calc.afterMetrics.myBVR}, EFR=${calc.afterMetrics.myEFR}</div>
+                <div><strong>Deltas:</strong> dBVL=${deltas.deltaBVL}, dEFL=${deltas.deltaEFL}, dOppEFL=${deltas.deltaOpponentEFL}, dBVR=${deltas.deltaBVR}, dEFR=${deltas.deltaEFR}</div>
+                <div><strong>Weighted:</strong> BVL=${deltas.deltaBVL}×${weights.A}=${weighted.weightedBVL.toFixed(2)}, EFL=${deltas.deltaEFL}×${weights.B}=${weighted.weightedEFL.toFixed(2)}, OppEFL=${deltas.deltaOpponentEFL}×-${weights.C}=${weighted.weightedOpponentEFL.toFixed(2)}, BVR=${deltas.deltaBVR}×${weights.D}=${weighted.weightedBVR.toFixed(2)}, EFR=${deltas.deltaEFR}×${weights.E}=${weighted.weightedEFR.toFixed(2)}</div>
+                <div><strong>Total:</strong> ${(weighted.weightedBVL + weighted.weightedEFL + weighted.weightedOpponentEFL + weighted.weightedBVR + weighted.weightedEFR).toFixed(2)}</div>
+            </div>`;
+        }
+
+        moveHtml += '</div>';
+        return moveHtml;
+    }
+
+    /**
+     * Generate HTML for history details
+     */
+    generateHistoryDetailsHtml(color, index, entry) {
+        if (!entry) return '';
+
+        const time = new Date(entry.timestamp).toLocaleTimeString();
+        const strategy = entry.strategy;
+        const weights = entry.weights;
+
+        let historyHtml = `<div class="history-item ${entry.turn} mb-3" data-move-id="history-${color}-${index}">
+            <div class="font-bold">${time} - ${strategy} strategy</div>
+            <div class="ml-2 mt-1 text-xs">
+                <div><strong>Weights:</strong> A=${weights.A}, B=${weights.B}, C=${weights.C}, D=${weights.D}, E=${weights.E}</div>
+                <div><strong>Before State:</strong> BVL=${entry.beforeMetrics.myBVL}, EFL=${entry.beforeMetrics.myEFL}, OppEFL=${entry.beforeMetrics.opponentEFL}, BVR=${entry.beforeMetrics.myBVR}, EFR=${entry.beforeMetrics.myEFR}</div>`;
+
+        if (entry.allEvaluations && entry.allEvaluations.length > 0) {
+            const selectedMove = entry.selectedMove;
+            const topMoves = entry.allEvaluations.slice(0, 5); // Show top 5 moves from history
+
+            historyHtml += `<div class="mt-2"><strong>Top Moves:</strong></div>`;
+            topMoves.forEach((evaluation, moveIndex) => {
+                const isSelected = this.isSameMove(evaluation.move, selectedMove);
+                const moveDesc = evaluation.moveDescription || this.describeMove(evaluation.move);
+                const score = evaluation.score.toFixed(2);
+
+                historyHtml += `<div class="ml-2 ${isSelected ? 'font-bold text-green-600' : ''}">
+                    ${moveIndex + 1}. (${score}) ${moveDesc}${isSelected ? ' ← SELECTED' : ''}
+                </div>`;
+            });
+        }
+
+        historyHtml += '</div></div>';
+        return historyHtml;
+    }
+
+    /**
+     * Clear debug sections when no data available
+     */
+    clearDebugSections(color) {
+        const rankingsContainer = document.getElementById(`${color}-move-rankings`);
+        const filteringContainer = document.getElementById(`${color}-filtering-info`);
+        const historyContainer = document.getElementById(`${color}-move-history`);
+        const moveDetailsContainer = document.getElementById(`${color}-move-details`);
+        const historyDetailsContainer = document.getElementById(`${color}-history-details`);
+
+        if (rankingsContainer) rankingsContainer.innerHTML = '<div class="text-gray-500 italic">No data</div>';
+        if (filteringContainer) filteringContainer.innerHTML = '<div class="text-gray-500 italic">No data</div>';
+        if (historyContainer) historyContainer.innerHTML = '<div class="text-gray-500 italic">No data</div>';
+        if (moveDetailsContainer) moveDetailsContainer.innerHTML = '<div class="text-gray-500 italic">No data</div>';
+        if (historyDetailsContainer) historyDetailsContainer.innerHTML = '<div class="text-gray-500 italic">No data</div>';
+    }
+
+    /**
+     * Helper method to describe a move
+     */
+    describeMove(move) {
+        if (move.type === 'tile-placement') {
+            return `Place tile ${move.tile.id} at (${move.row}, ${move.col})`;
+        } else {
+            const location = move.isPlacedTile ? 'lake' : 'reedbed';
+            return `Place house on ${location} tile ${move.tileId} at (${move.tileRow}, ${move.tileCol})`;
+        }
+    }
+
+    /**
+     * Helper method to compare moves
+     */
+    isSameMove(move1, move2) {
+        if (move1.type !== move2.type) return false;
+
+        if (move1.type === 'tile-placement') {
+            return move1.tile.id === move2.tile.id &&
+                move1.row === move2.row &&
+                move1.col === move2.col;
+        } else {
+            return move1.tileId === move2.tileId &&
+                move1.tileRow === move2.tileRow &&
+                move1.tileCol === move2.tileCol &&
+                move1.isPlacedTile === move2.isPlacedTile;
+        }
+    }
+
+    /**
+     * Setup click handlers for move inspection
+     */
+    setupMoveClickHandlers(color, type, data) {
+        const container = document.getElementById(`${color}-${type === 'rankings' ? 'move-rankings' : 'move-history'}`);
+        if (!container) return;
+
+        const clickableMoves = container.querySelectorAll('.clickable-move');
+        clickableMoves.forEach(moveElement => {
+            moveElement.addEventListener('click', (e) => {
+                const dataIndex = parseInt(moveElement.dataset.index);
+                const moveType = moveElement.dataset.type;
+
+                // Toggle details for this specific move
+                this.toggleMoveDetails(color, moveType, dataIndex, data, moveElement);
+            });
+        });
+    }
+
+    /**
+     * Toggle details for a specific move
+     */
+    toggleMoveDetails(color, type, index, data, moveElement) {
+        const moveId = type === 'rankings' ? `move-${color}-${index}` : `history-${color}-${index}`;
+        const detailsContainer = moveElement.parentElement.querySelector(`[data-details-id="${moveId}"]`);
+
+        if (!detailsContainer) return;
+
+        const isHidden = detailsContainer.classList.contains('hidden');
+        const icon = moveElement.querySelector('.move-click-icon');
+
+        if (isHidden) {
+            // Show details
+            detailsContainer.classList.remove('hidden');
+            icon.textContent = '📋';
+
+            // Populate details
+            let detailsHtml = '';
+            if (type === 'rankings') {
+                const bot = this.botPlayers[color];
+                const debugData = bot ? bot.getDebugData() : null;
+                const selectedMove = debugData ? debugData.move : null;
+                detailsHtml = this.generateMoveDetailsHtml(color, index, data[index], selectedMove);
+            } else {
+                detailsHtml = this.generateHistoryDetailsHtml(color, index, data[index]);
+            }
+
+            detailsContainer.innerHTML = detailsHtml;
+        } else {
+            // Hide details
+            detailsContainer.classList.add('hidden');
+            icon.textContent = '��';
         }
     }
 
@@ -2370,6 +2734,91 @@ class UrosGame {
         };
 
         return botTypeMap[bot.constructor.name] || 'Bot';
+    }
+
+    /**
+     * Populate filtering info section
+     */
+    populateFilteringInfo(color, filteringStats) {
+        const container = document.getElementById(`${color}-filtering-info`);
+        if (!container) return;
+
+        if (!filteringStats.totalMoves) {
+            container.innerHTML = '<div class="text-gray-500 italic">No filtering data</div>';
+            return;
+        }
+
+        const filteredCount = filteringStats.filteredMoves || 0;
+        const totalCount = filteringStats.totalMoves;
+        const keptCount = totalCount - filteredCount;
+
+        let html = `<div class="mb-2"><strong>Total moves:</strong> ${totalCount}</div>`;
+        html += `<div class="mb-2"><strong>Kept:</strong> ${keptCount} | <strong>Filtered:</strong> ${filteredCount}</div>`;
+
+        if (Object.keys(filteringStats.filteringReasons || {}).length > 0) {
+            html += '<div class="mt-2"><strong>Reasons:</strong></div>';
+            Object.entries(filteringStats.filteringReasons).forEach(([reason, count]) => {
+                const reasonText = reason.replace(/-/g, ' ').replace(/([A-Z])/g, ' $1').toLowerCase();
+                html += `<div class="filtering-reason">${reasonText}: ${count}</div>`;
+            });
+        }
+
+        container.innerHTML = html;
+    }
+
+    /**
+     * Setup click handlers for move inspection
+     */
+    setupMoveClickHandlers(color, type, data) {
+        const container = document.getElementById(`${color}-${type === 'rankings' ? 'move-rankings' : 'move-history'}`);
+        if (!container) return;
+
+        const clickableMoves = container.querySelectorAll('.clickable-move');
+        clickableMoves.forEach(moveElement => {
+            moveElement.addEventListener('click', (e) => {
+                const dataIndex = parseInt(moveElement.dataset.index);
+                const moveType = moveElement.dataset.type;
+
+                // Toggle details for this specific move
+                this.toggleMoveDetails(color, moveType, dataIndex, data, moveElement);
+            });
+        });
+    }
+
+    /**
+     * Toggle details for a specific move
+     */
+    toggleMoveDetails(color, type, index, data, moveElement) {
+        const moveId = type === 'rankings' ? `move-${color}-${index}` : `history-${color}-${index}`;
+        const detailsContainer = moveElement.parentElement.querySelector(`[data-details-id="${moveId}"]`);
+
+        if (!detailsContainer) return;
+
+        const isHidden = detailsContainer.classList.contains('hidden');
+        const icon = moveElement.querySelector('.move-click-icon');
+
+        if (isHidden) {
+            // Show details
+            detailsContainer.classList.remove('hidden');
+            icon.textContent = '📋';
+
+            // Populate details
+            let detailsHtml = '';
+            if (type === 'rankings') {
+                const bot = this.botPlayers[color];
+                const debugData = bot ? bot.getDebugData() : null;
+                const selectedMove = debugData ? debugData.move : null;
+                detailsHtml = this.generateMoveDetailsHtml(color, index, data[index], selectedMove);
+            } else {
+                detailsHtml = this.generateHistoryDetailsHtml(color, index, data[index]);
+            }
+
+            detailsContainer.innerHTML = detailsHtml;
+        } else {
+            // Hide details
+            detailsContainer.classList.add('hidden');
+            icon.textContent = '��';
+        }
     }
 }
 
