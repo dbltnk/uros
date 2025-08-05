@@ -435,7 +435,7 @@ class SimulatedUrosGame {
                     player: player
                 });
 
-                // Check adjacent positions (up, down, left, right)
+                // Check adjacent positions within the same tile
                 const adjacent = [
                     { row: row - 1, col: col },
                     { row: row + 1, col: col },
@@ -447,6 +447,48 @@ class SimulatedUrosGame {
                     if (pos.row >= 0 && pos.row < tile.houses.length &&
                         pos.col >= 0 && pos.col < tile.houses[pos.row].length) {
                         stack.push({ tile: tile, row: pos.row, col: pos.col });
+                    }
+                }
+
+                // Check cross-tile adjacency for placed tiles (lake board)
+                if (isPlacedTile) {
+                    // Compute the board coordinates of this house
+                    const boardRow = tile.row + (row - (tile.anchor ? tile.anchor.tileRow : 0));
+                    const boardCol = tile.col + (col - (tile.anchor ? tile.anchor.tileCol : 0));
+
+                    // Check orthogonal neighbors on adjacent tiles
+                    const crossTilePositions = [
+                        { row: boardRow - 1, col: boardCol },
+                        { row: boardRow + 1, col: boardCol },
+                        { row: boardRow, col: boardCol - 1 },
+                        { row: boardRow, col: boardCol + 1 }
+                    ];
+
+                    for (const pos of crossTilePositions) {
+                        if (pos.row >= 0 && pos.row < this.boardSize &&
+                            pos.col >= 0 && pos.col < this.boardSize) {
+                            const adjacentTile = this.gameState.board[pos.row][pos.col];
+                            if (adjacentTile && adjacentTile !== tile) {
+                                // For the adjacent tile, recompute tile-local coordinates
+                                if (!adjacentTile.anchor) {
+                                    continue; // Skip if anchor data is missing
+                                }
+                                const anchor = adjacentTile.anchor;
+                                const adjacentTileRow = anchor.tileRow + (pos.row - adjacentTile.row);
+                                const adjacentTileCol = anchor.tileCol + (pos.col - adjacentTile.col);
+
+                                if (adjacentTileRow >= 0 && adjacentTileRow < adjacentTile.houses.length &&
+                                    adjacentTileCol >= 0 && adjacentTileCol < adjacentTile.houses[0].length &&
+                                    adjacentTile.shape_grid[adjacentTileRow][adjacentTileCol] === 1 &&
+                                    adjacentTile.houses[adjacentTileRow][adjacentTileCol] === player) {
+
+                                    const adjKey = `placed-${adjacentTile.id}-${adjacentTileRow}-${adjacentTileCol}`;
+                                    if (!visited.has(adjKey)) {
+                                        stack.push({ tile: adjacentTile, row: adjacentTileRow, col: adjacentTileCol });
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -969,7 +1011,7 @@ class UrosHeuristicPlayer extends UrosPlayer {
             return null; // Return null to indicate no useful moves
         }
 
-        // Calculate current metrics for REAL GAME
+        // Calculate current metrics for REAL GAME (this is our "before" state)
         const currentMetrics = this.calculateMetrics(this.gameEngine, true);
 
         // Evaluate each move with detailed logging
@@ -977,22 +1019,21 @@ class UrosHeuristicPlayer extends UrosPlayer {
             const originalState = this.gameEngine.getGameState();
             const simGame = this.simulateGame(originalState);
 
-            const beforeMetrics = this.calculateMetrics(simGame, false);
-
-            // Apply move and check return value
+            // Apply move to get the "after" state
             const moveResult = simGame.makeMove(move);
-
             const afterMetrics = this.calculateMetrics(simGame, false);
-            const scoreResult = this.calculateHeuristicScore(beforeMetrics, afterMetrics, false);
+
+            // Calculate score using current (real) metrics as "before" and simulated metrics as "after"
+            const scoreResult = this.calculateHeuristicScore(currentMetrics, afterMetrics, false);
 
             // Log detailed move evaluation
             const moveDesc = move.type === 'tile-placement'
                 ? `tile-placement(ID:${move.tile.id}, pos:${move.row},${move.col})`
                 : `house-placement(ID:${move.tileId}, pos:${move.tileRow},${move.tileCol}, placed:${move.isPlacedTile})`;
 
-            // console.log(`[UrosHeuristicPlayer-${this.strategy}] MOVE ${index + 1}/${filteredMoves.length}: ${moveDesc} | BEFORE: BVL=${beforeMetrics.myBVL}, EFL=${beforeMetrics.myEFL}, OppEFL=${beforeMetrics.opponentEFL}, BVR=${beforeMetrics.myBVR}, EFR=${beforeMetrics.myEFR} | AFTER: BVL=${afterMetrics.myBVL}, EFL=${afterMetrics.myEFL}, OppEFL=${afterMetrics.opponentEFL}, BVR=${afterMetrics.myBVR}, EFR=${afterMetrics.myEFR} | SCORE=${scoreResult.score}`);
+            // console.log(`[UrosHeuristicPlayer-${this.strategy}] MOVE ${index + 1}/${filteredMoves.length}: ${moveDesc} | BEFORE: BVL=${currentMetrics.myBVL}, EFL=${currentMetrics.myEFL}, OppEFL=${currentMetrics.opponentEFL}, BVR=${currentMetrics.myBVR}, EFR=${currentMetrics.myEFR} | AFTER: BVL=${afterMetrics.myBVL}, EFL=${afterMetrics.myEFL}, OppEFL=${afterMetrics.opponentEFL}, BVR=${afterMetrics.myBVR}, EFR=${afterMetrics.myEFR} | SCORE=${scoreResult.score}`);
 
-            return { move, score: scoreResult.score, beforeMetrics, afterMetrics, calculation: scoreResult.calculation };
+            return { move, score: scoreResult.score, beforeMetrics: currentMetrics, afterMetrics, calculation: scoreResult.calculation };
         });
 
         // Sort by score (highest first)
@@ -1028,7 +1069,7 @@ class UrosHeuristicPlayer extends UrosPlayer {
                 strategy: this.strategy,
                 weights: this.weights,
                 move: selectedMove,
-                beforeMetrics: currentMetrics,
+                beforeMetrics: selectedEvaluation.beforeMetrics,
                 afterMetrics: selectedEvaluation.afterMetrics,
                 score: selectedEvaluation.score,
                 calculation: selectedEvaluation.calculation
@@ -1172,7 +1213,7 @@ class UrosHeuristicPlayer extends UrosPlayer {
             const tileRow = house.tileRow;
             const tileCol = house.tileCol;
 
-            // Check all adjacent positions
+            // Check all adjacent positions within the same tile
             const adjacentPositions = [
                 { row: tileRow - 1, col: tileCol },
                 { row: tileRow + 1, col: tileCol },
@@ -1191,6 +1232,51 @@ class UrosHeuristicPlayer extends UrosPlayer {
                         // Create unique identifier for this empty square
                         const squareId = `${tile.id}-${pos.row}-${pos.col}`;
                         emptyAdjacentSquares.add(squareId);
+                    }
+                }
+            }
+
+            // Check cross-tile adjacency for placed tiles (lake board)
+            // This matches the game's floodFill logic for cross-tile village detection
+            if (this.gameEngine.gameState.placedTiles.find(t => t.id === tile.id)) {
+                // Compute the board coordinates of this house
+                const boardRow = tile.row + (tileRow - (tile.anchor ? tile.anchor.tileRow : 0));
+                const boardCol = tile.col + (tileCol - (tile.anchor ? tile.anchor.tileCol : 0));
+
+                // Check orthogonal neighbors on adjacent tiles
+                const crossTilePositions = [
+                    { row: boardRow - 1, col: boardCol },
+                    { row: boardRow + 1, col: boardCol },
+                    { row: boardRow, col: boardCol - 1 },
+                    { row: boardRow, col: boardCol + 1 }
+                ];
+
+                for (const pos of crossTilePositions) {
+                    if (pos.row >= 0 && pos.row < this.gameEngine.boardSize &&
+                        pos.col >= 0 && pos.col < this.gameEngine.boardSize) {
+                        const adjacentTile = this.gameEngine.gameState.board[pos.row][pos.col];
+                        if (adjacentTile && adjacentTile !== tile) {
+                            // For the adjacent tile, recompute tile-local coordinates
+                            if (!adjacentTile.anchor) {
+                                continue; // Skip if anchor data is missing
+                            }
+                            const anchor = adjacentTile.anchor;
+                            const adjacentTileRow = anchor.tileRow + (pos.row - adjacentTile.row);
+                            const adjacentTileCol = anchor.tileCol + (pos.col - adjacentTile.col);
+
+                            if (adjacentTileRow >= 0 && adjacentTileRow < adjacentTile.houses.length &&
+                                adjacentTileCol >= 0 && adjacentTileCol < adjacentTile.houses[0].length) {
+
+                                const isAdjacentIslandSquare = adjacentTile.shape_grid[adjacentTileRow][adjacentTileCol] === 1;
+                                const isAdjacentEmpty = adjacentTile.houses[adjacentTileRow][adjacentTileCol] === null;
+
+                                if (isAdjacentIslandSquare && isAdjacentEmpty) {
+                                    // Create unique identifier for this cross-tile empty square
+                                    const crossTileSquareId = `${adjacentTile.id}-${adjacentTileRow}-${adjacentTileCol}`;
+                                    emptyAdjacentSquares.add(crossTileSquareId);
+                                }
+                            }
+                        }
                     }
                 }
             }
