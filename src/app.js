@@ -415,50 +415,6 @@ class UrosGame {
         this.updateStatus();
     }
 
-    nextTurn() {
-        // Call original nextTurn logic
-        if (typeof this.gameState.placementsThisTurn !== 'number') {
-            throw new Error('Game state placementsThisTurn must be initialized as a number');
-        }
-        this.gameState.placementsThisTurn = this.gameState.placementsThisTurn + 1;
-        if (this.gameState.isFirstTurn) {
-            // First turn: only 1 placement
-            if (this.gameState.placementsThisTurn >= 1) {
-                this.gameState.isFirstTurn = false;
-                this.gameState.currentPlayer = 'blue';
-                this.gameState.placementsThisTurn = 0;
-                this.gameState.placementsRequired = 2;
-            }
-        } else {
-            // All subsequent turns: 2 placements per turn
-            if (this.gameState.placementsThisTurn >= 2) {
-                this.gameState.currentPlayer = this.gameState.currentPlayer === 'red' ? 'blue' : 'red';
-                this.gameState.placementsThisTurn = 0;
-                this.gameState.placementsRequired = 2;
-            }
-        }
-
-        this.updateStatus();
-        if (this.checkGameOver()) {
-            return;
-        }
-        this.render();
-
-        // Check if current player is a bot and execute bot turn with delay
-        if (this.isCurrentPlayerBot() && !this.gameState.gameOver) {
-            // Always use the bot's thinking time for delay between turns
-            const currentBot = this.botPlayers[this.gameState.currentPlayer];
-            if (!currentBot) {
-                throw new Error(`Bot not found for current player ${this.gameState.currentPlayer}`);
-            }
-            if (typeof currentBot.thinkingTime !== 'number' || currentBot.thinkingTime <= 0) {
-                throw new Error(`Bot thinking time must be a positive number, got ${currentBot.thinkingTime}`);
-            }
-            const thinkingTime = currentBot.thinkingTime;
-            setTimeout(() => this.executeBotTurn(), thinkingTime);
-        }
-    }
-
     updateStatus() {
         const status = document.getElementById('game-status');
         // const redHouses = document.getElementById('red-houses-left');
@@ -1732,7 +1688,6 @@ class UrosGame {
 
             // Start bot turn if current player is a bot (after initialization is complete)
             if (this.isCurrentPlayerBot() && !this.gameState.gameOver) {
-
                 setTimeout(() => this.executeBotTurn(), this.botMoveDelay);
             }
         }).catch(error => {
@@ -2331,11 +2286,9 @@ class UrosGame {
 
         const clickableMoves = container.querySelectorAll('.clickable-move');
         clickableMoves.forEach(moveElement => {
-            moveElement.addEventListener('click', (e) => {
+            moveElement.addEventListener('click', () => {
                 const dataIndex = parseInt(moveElement.dataset.index);
                 const moveType = moveElement.dataset.type;
-
-                // Toggle details for this specific move
                 this.toggleMoveDetails(color, moveType, dataIndex, data, moveElement);
             });
         });
@@ -2347,18 +2300,15 @@ class UrosGame {
     toggleMoveDetails(color, type, index, data, moveElement) {
         const moveId = type === 'rankings' ? `move-${color}-${index}` : `history-${color}-${index}`;
         const detailsContainer = moveElement.parentElement.querySelector(`[data-details-id="${moveId}"]`);
-
         if (!detailsContainer) return;
 
         const isHidden = detailsContainer.classList.contains('hidden');
         const icon = moveElement.querySelector('.move-click-icon');
 
         if (isHidden) {
-            // Show details
             detailsContainer.classList.remove('hidden');
-            icon.textContent = '📋';
+            if (icon) icon.textContent = '📋';
 
-            // Populate details
             let detailsHtml = '';
             if (type === 'rankings') {
                 const bot = this.botPlayers[color];
@@ -2368,12 +2318,10 @@ class UrosGame {
             } else {
                 detailsHtml = this.generateHistoryDetailsHtml(color, index, data[index]);
             }
-
             detailsContainer.innerHTML = detailsHtml;
         } else {
-            // Hide details
             detailsContainer.classList.add('hidden');
-            icon.textContent = '��';
+            if (icon) icon.textContent = '🔍';
         }
     }
 
@@ -2492,61 +2440,6 @@ class UrosGame {
                 move1.tileRow === move2.tileRow &&
                 move1.tileCol === move2.tileCol &&
                 move1.isPlacedTile === move2.isPlacedTile;
-        }
-    }
-
-    /**
-     * Setup click handlers for move inspection
-     */
-    setupMoveClickHandlers(color, type, data) {
-        const container = document.getElementById(`${color}-${type === 'rankings' ? 'move-rankings' : 'move-history'}`);
-        if (!container) return;
-
-        const clickableMoves = container.querySelectorAll('.clickable-move');
-        clickableMoves.forEach(moveElement => {
-            moveElement.addEventListener('click', (e) => {
-                const dataIndex = parseInt(moveElement.dataset.index);
-                const moveType = moveElement.dataset.type;
-
-                // Toggle details for this specific move
-                this.toggleMoveDetails(color, moveType, dataIndex, data, moveElement);
-            });
-        });
-    }
-
-    /**
-     * Toggle details for a specific move
-     */
-    toggleMoveDetails(color, type, index, data, moveElement) {
-        const moveId = type === 'rankings' ? `move-${color}-${index}` : `history-${color}-${index}`;
-        const detailsContainer = moveElement.parentElement.querySelector(`[data-details-id="${moveId}"]`);
-
-        if (!detailsContainer) return;
-
-        const isHidden = detailsContainer.classList.contains('hidden');
-        const icon = moveElement.querySelector('.move-click-icon');
-
-        if (isHidden) {
-            // Show details
-            detailsContainer.classList.remove('hidden');
-            icon.textContent = '📋';
-
-            // Populate details
-            let detailsHtml = '';
-            if (type === 'rankings') {
-                const bot = this.botPlayers[color];
-                const debugData = bot ? bot.getDebugData() : null;
-                const selectedMove = debugData ? debugData.move : null;
-                detailsHtml = this.generateMoveDetailsHtml(color, index, data[index], selectedMove);
-            } else {
-                detailsHtml = this.generateHistoryDetailsHtml(color, index, data[index]);
-            }
-
-            detailsContainer.innerHTML = detailsHtml;
-        } else {
-            // Hide details
-            detailsContainer.classList.add('hidden');
-            icon.textContent = '��';
         }
     }
 
@@ -2764,61 +2657,6 @@ class UrosGame {
         }
 
         container.innerHTML = html;
-    }
-
-    /**
-     * Setup click handlers for move inspection
-     */
-    setupMoveClickHandlers(color, type, data) {
-        const container = document.getElementById(`${color}-${type === 'rankings' ? 'move-rankings' : 'move-history'}`);
-        if (!container) return;
-
-        const clickableMoves = container.querySelectorAll('.clickable-move');
-        clickableMoves.forEach(moveElement => {
-            moveElement.addEventListener('click', (e) => {
-                const dataIndex = parseInt(moveElement.dataset.index);
-                const moveType = moveElement.dataset.type;
-
-                // Toggle details for this specific move
-                this.toggleMoveDetails(color, moveType, dataIndex, data, moveElement);
-            });
-        });
-    }
-
-    /**
-     * Toggle details for a specific move
-     */
-    toggleMoveDetails(color, type, index, data, moveElement) {
-        const moveId = type === 'rankings' ? `move-${color}-${index}` : `history-${color}-${index}`;
-        const detailsContainer = moveElement.parentElement.querySelector(`[data-details-id="${moveId}"]`);
-
-        if (!detailsContainer) return;
-
-        const isHidden = detailsContainer.classList.contains('hidden');
-        const icon = moveElement.querySelector('.move-click-icon');
-
-        if (isHidden) {
-            // Show details
-            detailsContainer.classList.remove('hidden');
-            icon.textContent = '📋';
-
-            // Populate details
-            let detailsHtml = '';
-            if (type === 'rankings') {
-                const bot = this.botPlayers[color];
-                const debugData = bot ? bot.getDebugData() : null;
-                const selectedMove = debugData ? debugData.move : null;
-                detailsHtml = this.generateMoveDetailsHtml(color, index, data[index], selectedMove);
-            } else {
-                detailsHtml = this.generateHistoryDetailsHtml(color, index, data[index]);
-            }
-
-            detailsContainer.innerHTML = detailsHtml;
-        } else {
-            // Hide details
-            detailsContainer.classList.add('hidden');
-            icon.textContent = '��';
-        }
     }
 }
 

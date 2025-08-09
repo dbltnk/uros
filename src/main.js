@@ -6,13 +6,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize logging system
     window.browserLogger = new BrowserLogger();
 
-    // Test bot system loading
-    import('./uros-bots.js').then(module => {
-        window.urosBots = module;
-    }).catch(error => {
-        console.error('Failed to load bot system in main.js:', error);
-    });
-
     // Initialize game
     window.urosGame = new UrosGame();
 }); 
