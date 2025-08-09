@@ -1,0 +1,59 @@
+Heuristics & Bot Strategies for Uros
+
+Definitions:
+"Adjacent" always means orthogonally adjacent.
+An "island square" is a square on an island.
+A "Lake square" is a square on an island that is on the Lake.
+A "Reedbed square" is a square on a Reedbed island.
+A "Reedbed village" is a connected group of adjacent houses of one colour, on a Reedbed island, that has an
+expansion front of size > 0.
+Any village's "expansion front" = every empty island square which is adjacent to at least one house in the village.
+
+Metrics needed by bots, to evaluate the board state:
+(The "size" of something means the number of island squares it comprises.)
+Your BVL = The size of your biggest village on the Lake.
+Your EFL = The size of the expansion front of your biggest village on the Lake.
+Your BVR = The size of your biggest Reedbed village.
+Your EFR = The size of the expansion front of your biggest Reedbed village.
+Opponent's BVL = The size of your opponent's biggest village on the Lake.
+Opponent's EFL = The size of the expansion front of your opponent's biggest village on the {ake.
+With any of these, if the player has more than one candidate for "biggest village", choose the one that has the
+biggest expansion front.
+If still a tie, choose one randomly between them to be the player’s "biggest village".
+
+Metrics to be reported at end of a game:
+The winner's BVL, and the loser's BVL.
+Was the winner player 1 (the start player) or player 2?
+Which tiles were left in the Reedbed, unplaced?
+
+How a Bot uses heuristics
+Each different bot will follow its own strategy, by using the same main heuristic, but weighting the parts according to
+its own priorities.
+i.e. The bot will:
+- Calculate the current value of these 5 metrics:
+your BVL, your EFL, opponent's EFL, your BVR, your EFR.
+- Consider the possible legal placements. (Ignore pointless house placements, i.e. Don’t place onto a Reedbed
+island when that island can no longer fit onto the lake.)
+- For each possible placement:
+- - Examine the new game state that would result from that placement.
+- - Calculate the value of the 5 metrics for that new game state.
+- - Calculate the amount that each metric would therefore change by, if that placement were made. (Each change
+will be an amount like +2 or -1.)
+- - Then calculate that placement's score as follows:
+Score = (A * change in your BVL) + (B * change in your EFL) - (C * change in opponent's EFL)
++ (D * change in your BVR) + (E * change in your EFR)
+...where A, B, C, D and E are weightings set by the bot according to its priorities.
+- The bot then makes the placement that has the highest score.
+If there are several placements with the same highest score, the bot will choose randomly between them.
+
+The Bots and their Strategies:
+"Balanced" (an all-round approach)
+A = 5, B = 3, C = 4, D = 0.2, E = 0.1
+"Explore" (prioritise extending potential territory)
+A = 5, B = 4, C = 3, D = 0.2, E = 0.1
+"Expand" (grab territory whenever available)
+A = 6, B = 3, C = 3.5, D = 0.2, E = 0.1
+"Exterminate" (deny territory to opponent)
+A = 4, B = 3.5, C = 5, D = 0.2, E = 0.1
+"Exploit" (make opponent place the islands)
+A = 5, B = 3, C = 4, D = 1, E = 0.5
