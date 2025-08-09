@@ -457,10 +457,13 @@ class UrosGame {
                 status.textContent = "🤝 It's a Tie!";
             }
 
-            // Show final scores
+            // Show final scores and list unplaced reedbed tiles per design report
+            const remainingTiles = (this.gameState.reedbed || []).map(t => t.name || `Tile ${t.id}`);
+            const remainingList = remainingTiles.length > 0 ? remainingTiles.join(', ') : 'None';
             scores.innerHTML = `
                 <span class="text-red-300">Red: ${redLargest.size} houses on ${redLargest.islands} islands</span> | 
                 <span class="text-blue-300">Blue: ${blueLargest.size} houses on ${blueLargest.islands} islands</span>
+                <div class="text-gray-300 mt-1">Unplaced Reedbed tiles: ${remainingList}</div>
             `;
 
             // No more house counters to update

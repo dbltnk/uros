@@ -1180,13 +1180,18 @@ class UrosHeuristicPlayer extends UrosPlayer {
         const myLakeVillages = this.getLakeVillages(villages[myColor], game);
         const opponentLakeVillages = this.getLakeVillages(villages[opponentColor], game);
 
-        // Calculate Reedbed villages
-        const myReedbedVillages = this.getReedbedVillages(villages[myColor], game);
+        // Calculate Reedbed villages by scanning reedbed directly
+        const myReedbedVillages = this.buildReedbedVillages(game, myColor);
 
         // Get biggest villages with expansion fronts
-        const myBiggestLake = this.getBiggestVillageWithExpansion(myLakeVillages);
-        const opponentBiggestLake = this.getBiggestVillageWithExpansion(opponentLakeVillages);
-        const myBiggestReedbed = this.getBiggestVillageWithExpansion(myReedbedVillages);
+        const myBiggestLake = this.getBiggestVillageWithExpansion(myLakeVillages, game);
+        const opponentBiggestLake = this.getBiggestVillageWithExpansion(opponentLakeVillages, game);
+        // Reedbed village must have expansion front > 0 to count
+        const filteredReedbed = myReedbedVillages
+            .map(v => ({ v, ef: this.calculateExpansionFront(v, game) }))
+            .filter(x => x.ef > 0)
+            .map(x => x.v);
+        const myBiggestReedbed = this.getBiggestVillageWithExpansion(filteredReedbed, game);
 
         const metrics = {
             myBVL: myBiggestLake.size,
@@ -1213,24 +1218,79 @@ class UrosHeuristicPlayer extends UrosPlayer {
         });
     }
 
-    getReedbedVillages(villages, game) {
-        return villages.filter(village => {
-            // Check if all houses in the village are on Reedbed tiles
-            return village.every(house => {
-                const tile = game.gameState.reedbed.find(t => t.id === house.tile.id);
-                return tile !== undefined;
-            });
-        });
+    // Build Reedbed villages directly from reedbed tiles
+    buildReedbedVillages(game, color) {
+        const visited = new Set();
+        const villages = [];
+
+        if (!game || !game.gameState || !Array.isArray(game.gameState.reedbed)) {
+            return villages;
+        }
+
+        for (const tile of game.gameState.reedbed) {
+            if (!tile || !Array.isArray(tile.houses) || !Array.isArray(tile.shape_grid)) continue;
+            for (let r = 0; r < tile.houses.length; r++) {
+                for (let c = 0; c < tile.houses[r].length; c++) {
+                    const key = `reedbed-${tile.id}-${r}-${c}`;
+                    if (visited.has(key)) continue;
+                    const occupant = tile.houses[r][c];
+                    if (occupant === color && tile.shape_grid[r][c] === 1) {
+                        const village = this.floodFillReedbed(game, tile, r, c, color, visited);
+                        if (village.length > 0) {
+                            villages.push(village);
+                        }
+                    }
+                }
+            }
+        }
+
+        return villages;
     }
 
-    getBiggestVillageWithExpansion(villages) {
+    floodFillReedbed(game, startTile, startRow, startCol, color, visited) {
+        const stack = [{ tile: startTile, row: startRow, col: startCol }];
+        const village = [];
+
+        while (stack.length > 0) {
+            const { tile, row, col } = stack.pop();
+            const key = `reedbed-${tile.id}-${row}-${col}`;
+            if (visited.has(key)) continue;
+            visited.add(key);
+
+            if (row < 0 || col < 0 || row >= tile.houses.length || col >= tile.houses[0].length) continue;
+            if (tile.shape_grid[row][col] !== 1) continue;
+            if (tile.houses[row][col] !== color) continue;
+
+            village.push({ tile, tileRow: row, tileCol: col, player: color });
+
+            // Orthogonal neighbors within the same reedbed tile
+            const neighbors = [
+                { row: row - 1, col },
+                { row: row + 1, col },
+                { row, col: col - 1 },
+                { row, col: col + 1 }
+            ];
+            for (const n of neighbors) {
+                if (n.row >= 0 && n.row < tile.houses.length && n.col >= 0 && n.col < tile.houses[0].length) {
+                    const nKey = `reedbed-${tile.id}-${n.row}-${n.col}`;
+                    if (!visited.has(nKey) && tile.shape_grid[n.row][n.col] === 1 && tile.houses[n.row][n.col] === color) {
+                        stack.push({ tile, row: n.row, col: n.col });
+                    }
+                }
+            }
+        }
+
+        return village;
+    }
+
+    getBiggestVillageWithExpansion(villages, game) {
         if (villages.length === 0) {
             return { size: 0, expansionFront: 0 };
         }
 
         // Calculate expansion front for each village
         const villagesWithExpansion = villages.map(village => {
-            const expansionFront = this.calculateExpansionFront(village);
+            const expansionFront = this.calculateExpansionFront(village, game);
             return { village, size: village.length, expansionFront };
         });
 
@@ -1242,24 +1302,37 @@ class UrosHeuristicPlayer extends UrosPlayer {
             return b.expansionFront - a.expansionFront;
         });
 
-        // If still tied, choose randomly
+        // If still tied, choose deterministically to avoid phantom deltas
         const bestSize = villagesWithExpansion[0].size;
         const bestExpansion = villagesWithExpansion[0].expansionFront;
         const tiedVillages = villagesWithExpansion.filter(v =>
             v.size === bestSize && v.expansionFront === bestExpansion
         );
 
-        const randomIndex = Math.floor(this.getRandom() * tiedVillages.length);
-        return tiedVillages[randomIndex];
+        const stableKey = (v) => {
+            const parts = v.village.map(h => {
+                const tileId = h.tile.id;
+                const r = (h.tileRow !== undefined) ? h.tileRow : h.row;
+                const c = (h.tileCol !== undefined) ? h.tileCol : h.col;
+                return `${tileId}:${r}:${c}`;
+            }).sort();
+            return parts[0] || '';
+        };
+        tiedVillages.sort((a, b) => {
+            const ka = stableKey(a);
+            const kb = stableKey(b);
+            return ka < kb ? -1 : ka > kb ? 1 : 0;
+        });
+        return tiedVillages[0];
     }
 
-    calculateExpansionFront(village) {
+    calculateExpansionFront(village, game) {
         const emptyAdjacentSquares = new Set();
 
         for (const house of village) {
             const tile = house.tile;
-            const tileRow = house.tileRow;
-            const tileCol = house.tileCol;
+            const tileRow = (house.tileRow !== undefined) ? house.tileRow : house.row;
+            const tileCol = (house.tileCol !== undefined) ? house.tileCol : house.col;
 
             // Check all adjacent positions within the same tile
             const adjacentPositions = [
@@ -1285,8 +1358,8 @@ class UrosHeuristicPlayer extends UrosPlayer {
             }
 
             // Check cross-tile adjacency for placed tiles (lake board)
-            // This matches the game's floodFill logic for cross-tile village detection
-            if (this.gameEngine.gameState.placedTiles.find(t => t.id === tile.id)) {
+            // Use the provided game's state (real or simulated), not the live engine
+            if (game && game.gameState && Array.isArray(game.gameState.placedTiles) && game.gameState.placedTiles.find(t => t.id === tile.id)) {
                 // Compute the board coordinates of this house
                 const boardRow = tile.row + (tileRow - (tile.anchor ? tile.anchor.tileRow : 0));
                 const boardCol = tile.col + (tileCol - (tile.anchor ? tile.anchor.tileCol : 0));
@@ -1300,9 +1373,9 @@ class UrosHeuristicPlayer extends UrosPlayer {
                 ];
 
                 for (const pos of crossTilePositions) {
-                    if (pos.row >= 0 && pos.row < this.gameEngine.boardSize &&
-                        pos.col >= 0 && pos.col < this.gameEngine.boardSize) {
-                        const adjacentTile = this.gameEngine.gameState.board[pos.row][pos.col];
+                    if (pos.row >= 0 && pos.row < game.boardSize &&
+                        pos.col >= 0 && pos.col < game.boardSize) {
+                        const adjacentTile = game.gameState.board[pos.row][pos.col];
                         if (adjacentTile && adjacentTile !== tile) {
                             // For the adjacent tile, recompute tile-local coordinates
                             if (!adjacentTile.anchor) {
