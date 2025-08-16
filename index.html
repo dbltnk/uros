@@ -178,10 +178,76 @@
                 </div>
             </div>
 
+            <!-- Live Metrics (always visible for Humans and Bots) -->
+            <div id="live-metrics" class="bg-white rounded-lg shadow-md p-4">
+                <h2 class="text-lg font-semibold mb-3">📐 Live Metrics</h2>
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <h3 class="font-semibold text-red-700 mb-2">🔴 Red</h3>
+                        <div class="space-y-1">
+                            <div>
+                                <strong>BVL</strong> <span class="info-icon"
+                                    title="Biggest Village on Lake: size (in houses) of your largest orthogonally connected village on placed tiles (the Lake).">ⓘ</span>:
+                                <span id="red-metrics-bvl">-</span>
+                            </div>
+                            <div>
+                                <strong>EFL</strong> <span class="info-icon"
+                                    title="Expansion Front (Lake): number of unique empty island squares orthogonally adjacent to your biggest lake village (includes cross‑tile adjacency via anchors).">ⓘ</span>:
+                                <span id="red-metrics-efl">-</span>
+                            </div>
+                            <div>
+                                <strong>OppEFL</strong> <span class="info-icon"
+                                    title="Opponent’s Expansion Front (Lake): number of unique empty island squares orthogonally adjacent to your opponent’s biggest lake village.">ⓘ</span>:
+                                <span id="red-metrics-oppefl">-</span>
+                            </div>
+                            <div>
+                                <strong>BVR</strong> <span class="info-icon"
+                                    title="Biggest Village on Reedbed: size (in houses) of your largest orthogonally connected village on reedbed tiles, considering only reedbed villages with expansion front > 0.">ⓘ</span>:
+                                <span id="red-metrics-bvr">-</span>
+                            </div>
+                            <div>
+                                <strong>EFR</strong> <span class="info-icon"
+                                    title="Expansion Front (Reedbed): number of unique empty island squares orthogonally adjacent to your biggest reedbed village (only villages with EF > 0 are considered).">ⓘ</span>:
+                                <span id="red-metrics-efr">-</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-blue-700 mb-2">🔵 Blue</h3>
+                        <div class="space-y-1">
+                            <div>
+                                <strong>BVL</strong> <span class="info-icon"
+                                    title="Biggest Village on Lake: size (in houses) of your largest orthogonally connected village on placed tiles (the Lake).">ⓘ</span>:
+                                <span id="blue-metrics-bvl">-</span>
+                            </div>
+                            <div>
+                                <strong>EFL</strong> <span class="info-icon"
+                                    title="Expansion Front (Lake): number of unique empty island squares orthogonally adjacent to your biggest lake village (includes cross‑tile adjacency via anchors).">ⓘ</span>:
+                                <span id="blue-metrics-efl">-</span>
+                            </div>
+                            <div>
+                                <strong>OppEFL</strong> <span class="info-icon"
+                                    title="Opponent’s Expansion Front (Lake): number of unique empty island squares orthogonally adjacent to your opponent’s biggest lake village.">ⓘ</span>:
+                                <span id="blue-metrics-oppefl">-</span>
+                            </div>
+                            <div>
+                                <strong>BVR</strong> <span class="info-icon"
+                                    title="Biggest Village on Reedbed: size (in houses) of your largest orthogonally connected village on reedbed tiles, considering only reedbed villages with expansion front > 0.">ⓘ</span>:
+                                <span id="blue-metrics-bvr">-</span>
+                            </div>
+                            <div>
+                                <strong>EFR</strong> <span class="info-icon"
+                                    title="Expansion Front (Reedbed): number of unique empty island squares orthogonally adjacent to your biggest reedbed village (only villages with EF > 0 are considered).">ⓘ</span>:
+                                <span id="blue-metrics-efr">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
         </div>
 
-        <!-- Middle Column: Heuristic Bot Debug Displays -->
+        <!-- Middle Column: Live Metrics + Heuristic Bot Debug Displays -->
         <div id="heuristic-debug-container" class="flex flex-col gap-4">
             <!-- Red Heuristic Bot Debug -->
             <div id="red-heuristic-debug" class="bg-white rounded-lg shadow-md p-4 hidden">

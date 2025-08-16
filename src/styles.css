@@ -473,3 +473,18 @@
 #heuristic-debug-container .mt-2 {
     margin-top: 0.5rem;
 }
+
+/* Info icon tooltip styling for Live Metrics */
+.info-icon {
+    display: inline-block;
+    margin-left: 0.25rem;
+    color: #6b7280;
+    /* gray-500 */
+    font-size: 0.85em;
+    cursor: help;
+}
+
+.info-icon:hover {
+    color: #374151;
+    /* gray-700 */
+}

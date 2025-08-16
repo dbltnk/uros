@@ -304,6 +304,14 @@ class SimulatedUrosGame {
             gameOverBlueLargest: state.gameOverBlueLargest
         };
 
+        // Rebuild board so each occupied square references the cloned placed tile objects
+        const placedById = new Map(this.gameState.placedTiles.map(t => [t.id, t]));
+        this.gameState.board = state.board.map(row => row.map(cell => {
+            if (!cell) return null;
+            const clone = placedById.get(cell.id);
+            return clone || null;
+        }));
+
         // Copy interaction state
         this.interactionState = {
             mode: null,
@@ -316,7 +324,20 @@ class SimulatedUrosGame {
 
     // Delegate methods to original game engine
     canPlaceTile(tile, row, col, anchorTileRow = 0, anchorTileCol = 0) {
-        return this.gameEngine.canPlaceTile(tile, row, col, anchorTileRow, anchorTileCol);
+        if (!tile) return false;
+        const grid = tile.shape_grid;
+        const rows = grid.length;
+        const cols = grid[0].length;
+        for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+                if (grid[r][c] !== 1) continue;
+                const br = row + (r - anchorTileRow);
+                const bc = col + (c - anchorTileCol);
+                if (br < 0 || br >= this.boardSize || bc < 0 || bc >= this.boardSize) return false;
+                if (this.gameState.board[br][bc]) return false;
+            }
+        }
+        return true;
     }
 
     rotateTile(tile, direction = 1) {
@@ -1023,36 +1044,60 @@ class UrosHeuristicPlayer extends UrosPlayer {
             const originalState = this.gameEngine.getGameState();
             const simGame = this.simulateGame(originalState);
 
-            // Apply move to get the "after" state
-            const moveResult = simGame.makeMove(move);
-            const afterMetrics = this.calculateMetrics(simGame, false);
+            // Compute BEFORE metrics in SIM to avoid cross-context deltas
+            const beforeSimMetrics = this.calculateMetrics(simGame, false);
 
-            // Calculate score using current (real) metrics as "before" and simulated metrics as "after"
-            const scoreResult = this.calculateHeuristicScore(currentMetrics, afterMetrics, false);
+            // Apply move to get the AFTER state
+            const moveResult = simGame.makeMove(move);
+            if (!moveResult) {
+                return {
+                    move,
+                    score: -Infinity,
+                    beforeMetrics: beforeSimMetrics,
+                    afterMetrics: beforeSimMetrics,
+                    calculation: {
+                        deltaBVL: 0, deltaEFL: 0, deltaOpponentEFL: 0, deltaBVR: 0, deltaEFR: 0,
+                        weightedBVL: 0, weightedEFL: 0, weightedOpponentEFL: 0, weightedBVR: 0, weightedEFR: 0
+                    },
+                    moveDescription: this.describeMove(move),
+                    fullCalculation: {
+                        beforeMetrics: beforeSimMetrics,
+                        afterMetrics: beforeSimMetrics,
+                        deltas: { deltaBVL: 0, deltaEFL: 0, deltaOpponentEFL: 0, deltaBVR: 0, deltaEFR: 0 },
+                        weightedScores: { weightedBVL: 0, weightedEFL: 0, weightedOpponentEFL: 0, weightedBVR: 0, weightedEFR: 0 },
+                        weights: this.weights
+                    }
+                };
+            }
+
+            const afterSimMetrics = this.calculateMetrics(simGame, false);
+
+            // Calculate score using SIM before vs SIM after
+            const scoreResult = this.calculateHeuristicScore(beforeSimMetrics, afterSimMetrics, false);
 
             return {
                 move,
                 score: scoreResult.score,
-                beforeMetrics: currentMetrics,
-                afterMetrics,
+                beforeMetrics: beforeSimMetrics,
+                afterMetrics: afterSimMetrics,
                 calculation: scoreResult.calculation,
                 moveDescription: this.describeMove(move),
                 fullCalculation: {
-                    beforeMetrics: currentMetrics,
-                    afterMetrics: afterMetrics,
+                    beforeMetrics: beforeSimMetrics,
+                    afterMetrics: afterSimMetrics,
                     deltas: {
-                        deltaBVL: afterMetrics.myBVL - currentMetrics.myBVL,
-                        deltaEFL: afterMetrics.myEFL - currentMetrics.myEFL,
-                        deltaOpponentEFL: afterMetrics.opponentEFL - currentMetrics.opponentEFL,
-                        deltaBVR: afterMetrics.myBVR - currentMetrics.myBVR,
-                        deltaEFR: afterMetrics.myEFR - currentMetrics.myEFR
+                        deltaBVL: afterSimMetrics.myBVL - beforeSimMetrics.myBVL,
+                        deltaEFL: afterSimMetrics.myEFL - beforeSimMetrics.myEFL,
+                        deltaOpponentEFL: afterSimMetrics.opponentEFL - beforeSimMetrics.opponentEFL,
+                        deltaBVR: afterSimMetrics.myBVR - beforeSimMetrics.myBVR,
+                        deltaEFR: afterSimMetrics.myEFR - beforeSimMetrics.myEFR
                     },
                     weightedScores: {
-                        weightedBVL: this.weights.A * (afterMetrics.myBVL - currentMetrics.myBVL),
-                        weightedEFL: this.weights.B * (afterMetrics.myEFL - currentMetrics.myEFL),
-                        weightedOpponentEFL: -this.weights.C * (afterMetrics.opponentEFL - currentMetrics.opponentEFL),
-                        weightedBVR: this.weights.D * (afterMetrics.myBVR - currentMetrics.myBVR),
-                        weightedEFR: this.weights.E * (afterMetrics.myEFR - currentMetrics.myEFR)
+                        weightedBVL: this.weights.A * (afterSimMetrics.myBVL - beforeSimMetrics.myBVL),
+                        weightedEFL: this.weights.B * (afterSimMetrics.myEFL - beforeSimMetrics.myEFL),
+                        weightedOpponentEFL: -this.weights.C * (afterSimMetrics.opponentEFL - beforeSimMetrics.opponentEFL),
+                        weightedBVR: this.weights.D * (afterSimMetrics.myBVR - beforeSimMetrics.myBVR),
+                        weightedEFR: this.weights.E * (afterSimMetrics.myEFR - beforeSimMetrics.myEFR)
                     },
                     weights: this.weights
                 }

@@ -506,10 +506,193 @@ class UrosGame {
         }
     }
 
+    /**
+     * Update the always-visible live metrics panel for both players
+     */
+    updateLiveMetrics() {
+        const ids = [
+            'red-metrics-bvl', 'red-metrics-efl', 'red-metrics-oppefl', 'red-metrics-bvr', 'red-metrics-efr',
+            'blue-metrics-bvl', 'blue-metrics-efl', 'blue-metrics-oppefl', 'blue-metrics-bvr', 'blue-metrics-efr'
+        ];
+        // If panel not present, do nothing (keeps code safe when embedded elsewhere)
+        if (!ids.every(id => document.getElementById(id))) return;
+
+        if (!this.gameState) {
+            ids.forEach(id => { const el = document.getElementById(id); if (el) el.textContent = '-'; });
+            return;
+        }
+
+        // Build per-player metrics consistent with heuristic spec
+        const computePlayerMetrics = (perspectiveColor) => {
+            // Use existing metric functions from heuristic design implemented in bots
+            // Reuse the logic inline to avoid importing bots for human mode
+            // Calculate villages
+            const villages = this.calculateVillages();
+            const myColor = perspectiveColor;
+            const opponentColor = myColor === 'red' ? 'blue' : 'red';
+
+            // Lake villages
+            const getLakeVillages = (vills) => vills.filter(village => village.some(house => {
+                const tile = this.gameState.placedTiles.find(t => t.id === house.tile.id);
+                return tile !== undefined;
+            }));
+
+            const myLakeVillages = getLakeVillages(villages[myColor]);
+            const opponentLakeVillages = getLakeVillages(villages[opponentColor]);
+
+            // Expansion front calculator compatible with engine tiles
+            const calculateExpansionFront = (village) => {
+                const emptyAdjacentSquares = new Set();
+                for (const house of village) {
+                    const tile = house.tile;
+                    const tileRow = (house.row !== undefined) ? house.row : house.tileRow;
+                    const tileCol = (house.col !== undefined) ? house.col : house.tileCol;
+                    // within-tile neighbors
+                    const adj = [
+                        { row: tileRow - 1, col: tileCol },
+                        { row: tileRow + 1, col: tileCol },
+                        { row: tileRow, col: tileCol - 1 },
+                        { row: tileRow, col: tileCol + 1 }
+                    ];
+                    for (const pos of adj) {
+                        if (pos.row >= 0 && pos.row < tile.houses.length && pos.col >= 0 && pos.col < tile.houses[0].length) {
+                            if (tile.shape_grid[pos.row][pos.col] === 1 && tile.houses[pos.row][pos.col] === null) {
+                                emptyAdjacentSquares.add(`${tile.id}-${pos.row}-${pos.col}`);
+                            }
+                        }
+                    }
+                    // cross-tile adjacency for placed tiles on the lake
+                    const placedTile = this.gameState.placedTiles.find(t => t.id === tile.id);
+                    if (placedTile) {
+                        const boardRow = placedTile.row + (tileRow - (placedTile.anchor ? placedTile.anchor.tileRow : 0));
+                        const boardCol = placedTile.col + (tileCol - (placedTile.anchor ? placedTile.anchor.tileCol : 0));
+                        const cross = [
+                            { row: boardRow - 1, col: boardCol },
+                            { row: boardRow + 1, col: boardCol },
+                            { row: boardRow, col: boardCol - 1 },
+                            { row: boardRow, col: boardCol + 1 }
+                        ];
+                        for (const pos of cross) {
+                            if (pos.row >= 0 && pos.row < this.boardSize && pos.col >= 0 && pos.col < this.boardSize) {
+                                const adjacentTile = this.gameState.board[pos.row][pos.col];
+                                if (adjacentTile && adjacentTile.anchor) {
+                                    const anchor = adjacentTile.anchor;
+                                    const aRow = anchor.tileRow + (pos.row - adjacentTile.row);
+                                    const aCol = anchor.tileCol + (pos.col - adjacentTile.col);
+                                    if (aRow >= 0 && aRow < adjacentTile.houses.length && aCol >= 0 && aCol < adjacentTile.houses[0].length) {
+                                        if (adjacentTile.shape_grid[aRow][aCol] === 1 && adjacentTile.houses[aRow][aCol] === null) {
+                                            emptyAdjacentSquares.add(`${adjacentTile.id}-${aRow}-${aCol}`);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                return emptyAdjacentSquares.size;
+            };
+
+            // Select biggest village with EF tiebreak and stable key tiebreak
+            const getBiggestWithEF = (vills) => {
+                if (vills.length === 0) return { size: 0, expansionFront: 0 };
+                const withEf = vills.map(v => ({ village: v, size: v.length, expansionFront: calculateExpansionFront(v) }));
+                withEf.sort((a, b) => (b.size - a.size) || (b.expansionFront - a.expansionFront));
+                // deterministic final tiebreak
+                const bestSize = withEf[0].size;
+                const bestEf = withEf[0].expansionFront;
+                const tied = withEf.filter(x => x.size === bestSize && x.expansionFront === bestEf);
+                const stableKey = (entry) => {
+                    return entry.village.map(h => `${h.tile.id}:${(h.row ?? h.tileRow)}:${(h.col ?? h.tileCol)}`).sort()[0] || '';
+                };
+                tied.sort((a, b) => stableKey(a) < stableKey(b) ? -1 : stableKey(a) > stableKey(b) ? 1 : 0);
+                return tied[0];
+            };
+
+            // Reedbed villages (scan reedbed directly)
+            const buildReedbedVillages = (color) => {
+                const visited = new Set();
+                const result = [];
+                for (const tile of (this.gameState.reedbed || [])) {
+                    for (let r = 0; r < tile.houses.length; r++) {
+                        for (let c = 0; c < tile.houses[r].length; c++) {
+                            const key = `reedbed-${tile.id}-${r}-${c}`;
+                            if (visited.has(key)) continue;
+                            if (tile.shape_grid[r][c] === 1 && tile.houses[r][c] === color) {
+                                // flood fill within this reedbed tile only
+                                const stack = [{ tile, r, c }];
+                                const village = [];
+                                while (stack.length) {
+                                    const { tile: t, r: rr, c: cc } = stack.pop();
+                                    const k = `reedbed-${t.id}-${rr}-${cc}`;
+                                    if (visited.has(k)) continue;
+                                    visited.add(k);
+                                    if (rr < 0 || cc < 0 || rr >= t.houses.length || cc >= t.houses[0].length) continue;
+                                    if (t.shape_grid[rr][cc] !== 1) continue;
+                                    if (t.houses[rr][cc] !== color) continue;
+                                    village.push({ tile: t, tileRow: rr, tileCol: cc, player: color });
+                                    const neigh = [
+                                        { r: rr - 1, c: cc }, { r: rr + 1, c: cc }, { r: rr, c: cc - 1 }, { r: rr, c: cc + 1 }
+                                    ];
+                                    for (const n of neigh) {
+                                        if (n.r >= 0 && n.r < t.houses.length && n.c >= 0 && n.c < t.houses[0].length) {
+                                            const nk = `reedbed-${t.id}-${n.r}-${n.c}`;
+                                            if (!visited.has(nk) && t.shape_grid[n.r][n.c] === 1 && t.houses[n.r][n.c] === color) {
+                                                stack.push({ tile: t, r: n.r, c: n.c });
+                                            }
+                                        }
+                                    }
+                                }
+                                if (village.length) result.push(village);
+                            }
+                        }
+                    }
+                }
+                return result;
+            };
+
+            const myReedbedVillages = buildReedbedVillages(myColor);
+            const myReedbedWithEf = myReedbedVillages
+                .map(v => ({ v, ef: calculateExpansionFront(v) }))
+                .filter(x => x.ef > 0)
+                .map(x => x.v);
+
+            const myBigLake = getLakeVillages.length === 0 ? { size: 0, expansionFront: 0 } : getBiggestWithEF(myLakeVillages);
+            const oppBigLake = getLakeVillages.length === 0 ? { size: 0, expansionFront: 0 } : getBiggestWithEF(opponentLakeVillages);
+            const myBigReed = myReedbedWithEf.length === 0 ? { size: 0, expansionFront: 0 } : getBiggestWithEF(myReedbedWithEf);
+
+            return {
+                myBVL: myBigLake.size || 0,
+                myEFL: myBigLake.expansionFront || 0,
+                opponentEFL: oppBigLake.expansionFront || 0,
+                myBVR: myBigReed.size || 0,
+                myEFR: myBigReed.expansionFront || 0
+            };
+        };
+
+        const red = computePlayerMetrics('red');
+        const blue = computePlayerMetrics('blue');
+
+        // Update DOM
+        const assign = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = String(val); };
+        assign('red-metrics-bvl', red.myBVL);
+        assign('red-metrics-efl', red.myEFL);
+        assign('red-metrics-oppefl', red.opponentEFL);
+        assign('red-metrics-bvr', red.myBVR);
+        assign('red-metrics-efr', red.myEFR);
+
+        assign('blue-metrics-bvl', blue.myBVL);
+        assign('blue-metrics-efl', blue.myEFL);
+        assign('blue-metrics-oppefl', blue.opponentEFL);
+        assign('blue-metrics-bvr', blue.myBVR);
+        assign('blue-metrics-efr', blue.myEFR);
+    }
+
     render() {
         this.renderBoard();
         this.renderReedbed();
         this.renderHousePools();
+        // Keep live metrics in sync on every render
+        this.updateLiveMetrics();
     }
 
     renderBoard() {
@@ -2473,6 +2656,7 @@ class UrosGame {
         }
 
         this.updateStatus();
+        this.updateLiveMetrics();
         if (this.checkGameOver()) {
             return;
         }
@@ -2541,6 +2725,7 @@ class UrosGame {
 
         // Update heuristic debug displays
         this.updateHeuristicDebugDisplays();
+        this.updateLiveMetrics();
 
         // Start bot turn if current player is a bot
         if (this.isCurrentPlayerBot() && !this.gameState.gameOver) {
